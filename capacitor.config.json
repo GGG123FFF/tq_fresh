@@ -1,0 +1,18 @@
+{
+  "appId": "app.sodiumfabrications.tokenqueen",
+  "appName": "Token Queen",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": [
+      "api.scryfall.com",
+      "cards.scryfall.io",
+      "fonts.googleapis.com",
+      "fonts.gstatic.com"
+    ]
+  },
+  "android": {
+    "allowMixedContent": true,
+    "webContentsDebuggingEnabled": true
+  }
+}
