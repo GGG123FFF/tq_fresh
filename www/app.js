@@ -10053,9 +10053,9 @@ function TokenTracker() {
   }, "Card data & art via Scryfall. Saved locally between sessions.", /*#__PURE__*/React.createElement("br", null), "Not affiliated with Wizards of the Coast.")))), copyOpen && /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto",
     style: {
-      background: "rgba(5, 3, 10, 0.85)",
-      backdropFilter: "blur(6px)",
-      WebkitBackdropFilter: "blur(6px)"
+      background: "rgba(5, 3, 10, 0.96)",
+      backdropFilter: "blur(10px) saturate(120%)",
+      WebkitBackdropFilter: "blur(10px) saturate(120%)"
     },
     onClick: function onClick() {
       return setCopyOpen(false);
@@ -10249,9 +10249,9 @@ function TokenTracker() {
     return /*#__PURE__*/React.createElement("div", {
       className: "fixed inset-0 z-[105] flex items-end justify-center",
       style: {
-        background: "rgba(5, 3, 10, 0.75)",
-        backdropFilter: "blur(4px)",
-        WebkitBackdropFilter: "blur(4px)"
+        background: "rgba(5, 3, 10, 0.92)",
+        backdropFilter: "blur(8px) saturate(120%)",
+        WebkitBackdropFilter: "blur(8px) saturate(120%)"
       },
       onClick: function onClick() {
         setNumpadFor(null);
@@ -10370,9 +10370,9 @@ function TokenTracker() {
   }(), wipeConfirmOpen && /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[105] flex items-center justify-center p-4",
     style: {
-      background: "rgba(5, 3, 10, 0.85)",
-      backdropFilter: "blur(6px)",
-      WebkitBackdropFilter: "blur(6px)"
+      background: "rgba(5, 3, 10, 0.96)",
+      backdropFilter: "blur(10px) saturate(120%)",
+      WebkitBackdropFilter: "blur(10px) saturate(120%)"
     },
     onClick: function onClick() {
       return setWipeConfirmOpen(false);
@@ -11423,11 +11423,11 @@ function TokenTracker() {
       boxShadow: chosenType ? "0 0 16px rgba(212,184,122,0.3)" : 'none'
     }
   }, "Awaken")))), petRenameOpen && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[60] flex items-center justify-center p-4",
+    className: "fixed inset-0 z-[130] flex items-center justify-center p-4",
     style: {
-      background: "rgba(5, 3, 10, 0.85)",
-      backdropFilter: "blur(6px)",
-      WebkitBackdropFilter: "blur(6px)"
+      background: "rgba(5, 3, 10, 0.96)",
+      backdropFilter: "blur(10px) saturate(120%)",
+      WebkitBackdropFilter: "blur(10px) saturate(120%)"
     },
     onClick: function onClick() {
       setPetRenameOpen(false);
@@ -11533,11 +11533,11 @@ function TokenTracker() {
       borderRadius: "2px"
     }
   }, "Save"))))), petResetConfirmOpen && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[60] flex items-center justify-center p-4",
+    className: "fixed inset-0 z-[130] flex items-center justify-center p-4",
     style: {
-      background: "rgba(5, 3, 10, 0.85)",
-      backdropFilter: "blur(6px)",
-      WebkitBackdropFilter: "blur(6px)"
+      background: "rgba(5, 3, 10, 0.96)",
+      backdropFilter: "blur(10px) saturate(120%)",
+      WebkitBackdropFilter: "blur(10px) saturate(120%)"
     },
     onClick: function onClick() {
       return setPetResetConfirmOpen(false);
@@ -11638,11 +11638,20 @@ function TokenTracker() {
       current: null
     };
     return /*#__PURE__*/React.createElement("div", {
-      className: "fixed inset-0 z-[55] flex flex-col items-center justify-center",
+      className: "fixed inset-0 flex flex-col items-center justify-center",
       style: {
-        background: "rgba(0, 0, 0, 0.93)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)"
+        zIndex: 200,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: "#000",
+        backgroundImage: "radial-gradient(ellipse at center, rgba(20, 14, 8, 0.95) 0%, rgba(0, 0, 0, 1) 70%)",
+        backdropFilter: "blur(12px) saturate(110%)",
+        WebkitBackdropFilter: "blur(12px) saturate(110%)",
+        padding: "1rem",
+        boxSizing: "border-box",
+        overflow: "hidden"
       },
       onClick: function onClick() {
         return setZoomImage(null);
@@ -11920,9 +11929,9 @@ function TokenTracker() {
     return /*#__PURE__*/React.createElement("div", {
       className: "fixed inset-0 z-[105] flex items-center justify-center p-4",
       style: {
-        background: "rgba(5, 3, 10, 0.85)",
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)"
+        background: "rgba(5, 3, 10, 0.96)",
+        backdropFilter: "blur(10px) saturate(120%)",
+        WebkitBackdropFilter: "blur(10px) saturate(120%)"
       },
       onClick: function onClick() {
         setOracleFor(null);
@@ -12005,9 +12014,9 @@ function TokenTracker() {
   }(), presetMenuOpen && /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[105] flex items-start justify-center pt-12 p-4",
     style: {
-      background: "rgba(5, 3, 10, 0.85)",
-      backdropFilter: "blur(6px)",
-      WebkitBackdropFilter: "blur(6px)"
+      background: "rgba(5, 3, 10, 0.96)",
+      backdropFilter: "blur(10px) saturate(120%)",
+      WebkitBackdropFilter: "blur(10px) saturate(120%)"
     },
     onClick: function onClick() {
       return setPresetMenuOpen(false);
@@ -12132,9 +12141,9 @@ function TokenTracker() {
   }), "Save current as preset")))), savePresetOpen && /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[105] flex items-center justify-center p-4",
     style: {
-      background: "rgba(5, 3, 10, 0.85)",
-      backdropFilter: "blur(6px)",
-      WebkitBackdropFilter: "blur(6px)"
+      background: "rgba(5, 3, 10, 0.96)",
+      backdropFilter: "blur(10px) saturate(120%)",
+      WebkitBackdropFilter: "blur(10px) saturate(120%)"
     },
     onClick: function onClick() {
       setSavePresetOpen(false);
@@ -12535,9 +12544,9 @@ function TokenTracker() {
     return /*#__PURE__*/React.createElement("div", {
       className: "fixed inset-0 z-[105] flex items-center justify-center p-4",
       style: {
-        background: "rgba(5, 3, 10, 0.85)",
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)"
+        background: "rgba(5, 3, 10, 0.96)",
+        backdropFilter: "blur(10px) saturate(120%)",
+        WebkitBackdropFilter: "blur(10px) saturate(120%)"
       },
       onClick: function onClick() {
         return setCmdrDamageFor(null);
