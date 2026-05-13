@@ -1814,230 +1814,265 @@ var PetPanel = function PetPanel(_ref12) {
     return "".concat(m, "m");
   };
   return /*#__PURE__*/React.createElement("div", {
-    className: "px-4 py-4",
+    className: "overflow-hidden",
     style: {
-      background: "radial-gradient(ellipse at top, ".concat(coreData.glow, " 0%, transparent 60%), rgba(20, 14, 8, 0.5)"),
-      border: "1px solid ".concat(coreData.symbol, "55"),
-      borderRadius: "2px"
+      background: "radial-gradient(ellipse at center top, ".concat(coreData.glow, " 0%, rgba(20, 14, 8, 0.92) 70%), rgba(10, 6, 4, 0.95)"),
+      border: "1px solid ".concat(coreData.symbol, "66"),
+      borderRadius: "4px",
+      boxShadow: "inset 0 1px 0 ".concat(coreData.symbol, "22, 0 4px 24px rgba(0,0,0,0.4)")
     }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col items-center mb-3",
+    className: "flex flex-col items-center px-4 pt-5 pb-3",
     style: {
       position: 'relative'
     }
   }, /*#__PURE__*/React.createElement(PetCreature, {
     pet: pet,
-    size: 140,
+    size: 170,
     petHunger: petHunger,
     petHappiness: petHappiness,
     onTap: handleTap,
     onSwipeUp: handleSwipeUp,
     onHold: handleHold
   }), response && /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 px-3 py-1.5 text-center",
+    className: "mt-3 px-4 py-2 text-center",
     style: {
       fontFamily: responseType === 'tap' ? "'Crimson Pro', serif" : "'Cinzel', serif",
       fontStyle: responseType === 'tap' ? 'italic' : 'normal',
-      fontSize: responseType === 'tap' ? '0.9rem' : '0.7rem',
+      fontSize: responseType === 'tap' ? '0.95rem' : '0.75rem',
       letterSpacing: responseType === 'tap' ? '0' : '0.15em',
       textTransform: responseType === 'tap' ? 'none' : 'uppercase',
-      color: responseType === 'cooldown' ? '#8a7555' : responseType === 'feed' ? '#8fbc8f' : responseType === 'play' ? '#9fc7e6' : coreData.symbol,
-      background: 'rgba(10, 6, 4, 0.7)',
-      border: "1px solid ".concat(coreData.symbol, "44"),
-      borderRadius: '2px',
-      maxWidth: '180px',
-      animation: 'petResponseIn 0.2s ease-out'
+      color: responseType === 'cooldown' ? '#8a7555' : responseType === 'feed' ? '#b4d4a0' : responseType === 'play' ? '#9fc7e6' : coreData.symbol,
+      background: 'rgba(5, 3, 10, 0.85)',
+      border: "1px solid ".concat(coreData.symbol, "55"),
+      borderRadius: '3px',
+      maxWidth: '220px',
+      animation: 'petResponseIn 0.2s ease-out',
+      boxShadow: "0 2px 12px ".concat(coreData.glow)
     }
   }, response), !response && /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[8px] italic text-center",
+    className: "mt-2 text-[9px] italic text-center",
     style: {
-      color: "#6a5042",
+      color: "#8a7555",
       fontFamily: "'Crimson Pro', serif",
-      opacity: 0.6
+      opacity: 0.75,
+      letterSpacing: '0.05em'
     }
-  }, "tap . swipe-up to feed . hold to play")), /*#__PURE__*/React.createElement("div", {
-    className: "text-center mb-3"
-  }, pet.name && /*#__PURE__*/React.createElement("p", {
-    className: "text-base sm:text-lg",
+  }, "tap to greet . swipe up to feed . hold to play")), /*#__PURE__*/React.createElement("div", {
+    className: "mx-4 mb-3 px-3 py-2.5 text-center",
+    style: {
+      background: 'rgba(5, 3, 10, 0.6)',
+      border: "1px solid ".concat(coreData.symbol, "33"),
+      borderRadius: '3px'
+    }
+  }, pet.name ? /*#__PURE__*/React.createElement("p", {
+    className: "text-lg",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#e8dcc4",
+      color: "#f5e9d0",
       fontWeight: 600,
-      letterSpacing: "0.1em"
+      letterSpacing: "0.12em",
+      lineHeight: 1
     }
-  }, pet.name), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs italic mt-0.5",
+  }, pet.name) : /*#__PURE__*/React.createElement("p", {
+    className: "text-sm italic",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: coreData.symbol
+      color: "#8a7555",
+      opacity: 0.7
     }
-  }, stageName, " . ", petTypeName)), flavour && /*#__PURE__*/React.createElement("p", {
-    className: "text-center text-sm italic mb-4 px-2",
-    style: {
-      fontFamily: "'Crimson Pro', serif",
-      color: "#c9a961",
-      lineHeight: 1.5
-    }
-  }, flavour), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-2 gap-2 mb-3"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-1",
-    style: {
-      background: "rgba(10, 6, 4, 0.4)",
-      border: "1px solid rgba(201, 169, 97, 0.2)",
-      borderRadius: "2px",
-      padding: "6px 8px"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-[8px] tracking-[0.25em] uppercase",
+  }, "unnamed companion"), /*#__PURE__*/React.createElement("p", {
+    className: "text-[10px] mt-1 tracking-[0.25em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
+      color: coreData.symbol,
+      fontWeight: 500
+    }
+  }, stageName, " . ", petTypeName), /*#__PURE__*/React.createElement("p", {
+    className: "text-[9px] mt-0.5 italic",
+    style: {
+      fontFamily: "'Crimson Pro', serif",
       color: "#9a8765"
     }
+  }, identityLabel)), /*#__PURE__*/React.createElement("div", {
+    className: "px-4 mb-3 grid grid-cols-2 gap-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "px-3 py-2",
+    style: {
+      background: "rgba(5, 3, 10, 0.55)",
+      border: "1px solid rgba(201, 169, 97, 0.18)",
+      borderRadius: "3px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-1.5"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-[9px] tracking-[0.2em] uppercase",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: "#b09870",
+      fontWeight: 600
+    }
   }, "Happy"), /*#__PURE__*/React.createElement("span", {
-    className: "text-[10px]",
+    className: "text-[11px]",
     style: {
       fontFamily: "'JetBrains Mono', monospace",
-      color: happy < 30 ? "#d48a86" : "#d4b87a"
+      color: happy < 30 ? "#e09a96" : "#e8cc8a",
+      fontWeight: 700
     }
-  }, Math.round(happy))), /*#__PURE__*/React.createElement("div", {
+  }, Math.round(happy), "%")), /*#__PURE__*/React.createElement("div", {
     style: {
-      height: '4px',
-      background: 'rgba(154, 135, 101, 0.15)',
-      borderRadius: '2px',
+      height: '6px',
+      background: 'rgba(154, 135, 101, 0.12)',
+      borderRadius: '3px',
       overflow: 'hidden'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       height: '100%',
       width: "".concat(happy, "%"),
-      background: happy < 30 ? '#d48a86' : 'linear-gradient(90deg, #d4b87a, #f5d98f)',
-      transition: 'width 0.3s'
+      background: happy < 30 ? 'linear-gradient(90deg, #d48a86, #e09a96)' : 'linear-gradient(90deg, #d4b87a, #f5d98f)',
+      transition: 'width 0.4s',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15)'
     }
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-1",
+    className: "px-3 py-2",
     style: {
-      background: "rgba(10, 6, 4, 0.4)",
-      border: "1px solid rgba(201, 169, 97, 0.2)",
-      borderRadius: "2px",
-      padding: "6px 8px"
+      background: "rgba(5, 3, 10, 0.55)",
+      border: "1px solid rgba(201, 169, 97, 0.18)",
+      borderRadius: "3px"
     }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between"
+    className: "flex items-center justify-between mb-1.5"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-[8px] tracking-[0.25em] uppercase",
+    className: "text-[9px] tracking-[0.2em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "#b09870",
+      fontWeight: 600
     }
   }, "Fed"), /*#__PURE__*/React.createElement("span", {
-    className: "text-[10px]",
+    className: "text-[11px]",
     style: {
       fontFamily: "'JetBrains Mono', monospace",
-      color: hunger < 30 ? "#d48a86" : "#d4b87a"
+      color: hunger < 30 ? "#e09a96" : "#e8cc8a",
+      fontWeight: 700
     }
-  }, Math.round(hunger))), /*#__PURE__*/React.createElement("div", {
+  }, Math.round(hunger), "%")), /*#__PURE__*/React.createElement("div", {
     style: {
-      height: '4px',
-      background: 'rgba(154, 135, 101, 0.15)',
-      borderRadius: '2px',
+      height: '6px',
+      background: 'rgba(154, 135, 101, 0.12)',
+      borderRadius: '3px',
       overflow: 'hidden'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       height: '100%',
       width: "".concat(hunger, "%"),
-      background: hunger < 30 ? '#d48a86' : 'linear-gradient(90deg, #8fbc8f, #b4d4a0)',
-      transition: 'width 0.3s'
+      background: hunger < 30 ? 'linear-gradient(90deg, #d48a86, #e09a96)' : 'linear-gradient(90deg, #8fbc8f, #b4d4a0)',
+      transition: 'width 0.4s',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15)'
     }
-  })))), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-2 gap-2 mb-3"
+  })))), flavour && /*#__PURE__*/React.createElement("p", {
+    className: "text-center text-sm italic mx-4 mb-3 px-3 py-2",
+    style: {
+      fontFamily: "'Crimson Pro', serif",
+      color: "#d4b87a",
+      lineHeight: 1.5,
+      background: 'rgba(5, 3, 10, 0.4)',
+      borderRadius: '3px',
+      borderLeft: "2px solid ".concat(coreData.symbol, "66")
+    }
+  }, flavour), /*#__PURE__*/React.createElement("div", {
+    className: "px-4 mb-3 grid grid-cols-2 gap-2.5"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: feedPet,
     disabled: !feedReady(pet),
-    className: "py-2.5 text-[10px] tracking-[0.25em] uppercase active:scale-95 transition-transform",
+    className: "py-3 text-[11px] tracking-[0.25em] uppercase active:scale-95 transition-all",
     style: {
       fontFamily: "'Cinzel', serif",
-      fontWeight: 600,
-      color: feedReady(pet) ? "#1a110a" : "#6a5a42",
-      background: feedReady(pet) ? "linear-gradient(180deg, #b4d4a0, #8fbc8f)" : "rgba(154, 135, 101, 0.1)",
-      border: "1px solid ".concat(feedReady(pet) ? "#8fbc8f" : "rgba(154, 135, 101, 0.2)"),
-      borderRadius: "2px"
+      fontWeight: 700,
+      color: feedReady(pet) ? "#0a0604" : "#6a5a42",
+      background: feedReady(pet) ? "linear-gradient(180deg, #b4d4a0, #8fbc8f)" : "rgba(154, 135, 101, 0.08)",
+      border: "1px solid ".concat(feedReady(pet) ? "#7faf7f" : "rgba(154, 135, 101, 0.18)"),
+      borderRadius: "3px",
+      boxShadow: feedReady(pet) ? "inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 8px rgba(143, 188, 143, 0.2)" : "none"
     }
-  }, /*#__PURE__*/React.createElement("div", null, "Feed"), /*#__PURE__*/React.createElement("div", {
-    className: "text-[8px] tracking-[0.15em] mt-0.5",
+  }, /*#__PURE__*/React.createElement("div", null, "\uD83C\uDF56 Feed"), /*#__PURE__*/React.createElement("div", {
+    className: "text-[8px] tracking-[0.15em] mt-1",
     style: {
-      opacity: 0.7
+      opacity: 0.75
     }
   }, fmtCd(feedCdMs))), /*#__PURE__*/React.createElement("button", {
     onClick: playWithPet,
     disabled: !playReady(pet),
-    className: "py-2.5 text-[10px] tracking-[0.25em] uppercase active:scale-95 transition-transform",
+    className: "py-3 text-[11px] tracking-[0.25em] uppercase active:scale-95 transition-all",
     style: {
       fontFamily: "'Cinzel', serif",
-      fontWeight: 600,
-      color: playReady(pet) ? "#1a110a" : "#6a5a42",
-      background: playReady(pet) ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "rgba(154, 135, 101, 0.1)",
-      border: "1px solid ".concat(playReady(pet) ? "#c9a961" : "rgba(154, 135, 101, 0.2)"),
-      borderRadius: "2px"
+      fontWeight: 700,
+      color: playReady(pet) ? "#0a0604" : "#6a5a42",
+      background: playReady(pet) ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "rgba(154, 135, 101, 0.08)",
+      border: "1px solid ".concat(playReady(pet) ? "#b09850" : "rgba(154, 135, 101, 0.18)"),
+      borderRadius: "3px",
+      boxShadow: playReady(pet) ? "inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 8px rgba(201, 169, 97, 0.25)" : "none"
     }
-  }, /*#__PURE__*/React.createElement("div", null, "Play"), /*#__PURE__*/React.createElement("div", {
-    className: "text-[8px] tracking-[0.15em] mt-0.5",
+  }, /*#__PURE__*/React.createElement("div", null, "\u2728 Play"), /*#__PURE__*/React.createElement("div", {
+    className: "text-[8px] tracking-[0.15em] mt-1",
     style: {
-      opacity: 0.7
+      opacity: 0.75
     }
   }, fmtCd(playCdMs)))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between gap-2 mt-2 pt-2",
+    className: "px-4 py-2.5 flex items-center justify-between",
     style: {
-      borderTop: "1px solid rgba(201, 169, 97, 0.15)"
+      borderTop: "1px solid ".concat(coreData.symbol, "22"),
+      background: 'rgba(5, 3, 10, 0.4)'
     }
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[9px] tracking-[0.2em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#6a5a42"
+      color: "#8a7555"
     }
-  }, ageDays >= 1 ? "".concat(ageDays, "d") : "".concat(ageHours, "h"), " old . stage ", stage + 1, "/3"), /*#__PURE__*/React.createElement("button", {
+  }, ageDays >= 1 ? "".concat(ageDays, " day").concat(ageDays === 1 ? '' : 's') : "".concat(ageHours, "h"), " . stage ", stage + 1, "/3"), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return setShowAdvanced(!showAdvanced);
     },
-    className: "text-[9px] tracking-[0.2em] uppercase",
+    className: "text-[9px] tracking-[0.2em] uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#6a5a42",
+      color: coreData.symbol,
       background: 'transparent',
       border: 'none',
-      padding: 0,
-      cursor: 'pointer'
+      padding: '4px 8px',
+      cursor: 'pointer',
+      borderRadius: '2px'
     }
-  }, showAdvanced ? '-- hide' : '+ more')), showAdvanced && /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 pt-2 space-y-2",
+  }, showAdvanced ? '— hide' : '+ details')), showAdvanced && /*#__PURE__*/React.createElement("div", {
+    className: "px-4 py-3 space-y-2.5",
     style: {
-      borderTop: "1px dashed rgba(201, 169, 97, 0.15)"
+      borderTop: "1px dashed rgba(201, 169, 97, 0.18)",
+      background: 'rgba(5, 3, 10, 0.5)'
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: onRename,
-    className: "flex-1 py-1.5 text-[9px] tracking-[0.2em] uppercase active:scale-95",
+    className: "flex-1 py-2 text-[9px] tracking-[0.2em] uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
       color: "#c9a961",
-      background: "transparent",
+      background: "rgba(201, 169, 97, 0.06)",
       border: "1px solid rgba(201, 169, 97, 0.3)",
-      borderRadius: "2px"
+      borderRadius: "3px"
     }
   }, "Rename"), /*#__PURE__*/React.createElement("button", {
     onClick: onReset,
-    className: "flex-1 py-1.5 text-[9px] tracking-[0.2em] uppercase active:scale-95",
+    className: "flex-1 py-2 text-[9px] tracking-[0.2em] uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
       color: "#d48a86",
-      background: "transparent",
+      background: "rgba(160, 48, 44, 0.06)",
       border: "1px solid rgba(160, 48, 44, 0.3)",
-      borderRadius: "2px"
+      borderRadius: "3px"
     }
   }, "Reset")), /*#__PURE__*/React.createElement("div", {
     className: "pt-2",
@@ -2556,7 +2591,7 @@ var MemoryGame = function MemoryGame(_ref16) {
   };
   var cols = pairCount === 4 ? 4 : pairCount === 8 ? 4 : 6;
   return /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[70] flex flex-col",
+    className: "fixed inset-0 z-[120] flex flex-col",
     style: {
       background: "radial-gradient(ellipse at top, #1a110a 0%, #05030a 100%)"
     }
@@ -4082,7 +4117,7 @@ var FlappyDragon = function FlappyDragon(_ref18) {
     getAudio().sfxJump();
   }, [haptic, startLoop]);
   return /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[70] flex flex-col",
+    className: "fixed inset-0 z-[120] flex flex-col",
     style: {
       background: '#0a0614',
       touchAction: 'none',
@@ -7706,70 +7741,6 @@ function TokenTracker() {
       }
     })));
   }))), /*#__PURE__*/React.createElement("section", {
-    className: "mb-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mb-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "w-1 h-4",
-    style: {
-      background: "linear-gradient(180deg, #c9a961, transparent)"
-    }
-  }), /*#__PURE__*/React.createElement("h3", {
-    className: "text-[10px] tracking-[0.3em] uppercase",
-    style: {
-      fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
-      fontWeight: 600
-    }
-  }, "Quick Tokens")), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-3 gap-2"
-  }, PRESET_TOKENS.map(function (preset) {
-    return /*#__PURE__*/React.createElement("button", {
-      key: preset.id,
-      onClick: function onClick() {
-        var token = {
-          id: "".concat(preset.id, "-").concat(Date.now()),
-          name: preset.name,
-          type: preset.type,
-          colors: preset.colors,
-          pt: preset.pt,
-          text: preset.text,
-          originalId: preset.id,
-          powerMod: 0,
-          toughnessMod: 0,
-          tapped: false,
-          counters: {
-            plusOne: 0,
-            minusOne: 0
-          }
-        };
-        setBattlefield(function (prev) {
-          pushUndo(prev);
-          return [token].concat(_toConsumableArray(prev));
-        });
-        haptic(20);
-        showToast("".concat(preset.name, " added"));
-      },
-      className: "flex flex-col items-center gap-1 py-3 rounded active:scale-95",
-      style: {
-        background: 'linear-gradient(180deg, rgba(20, 14, 8, 0.8), rgba(10, 6, 4, 0.6))',
-        border: '1px solid rgba(201, 169, 97, 0.3)',
-        boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.03)'
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: '1.5rem'
-      }
-    }, preset.emoji), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontFamily: "'Cinzel', serif",
-        fontSize: '0.65rem',
-        color: '#c9a961',
-        fontWeight: 600,
-        letterSpacing: '0.05em'
-      }
-    }, preset.name.toUpperCase()));
-  }))), /*#__PURE__*/React.createElement("section", {
     className: "mb-5"
   }, /*#__PURE__*/React.createElement("div", {
     className: "relative",
@@ -8861,9 +8832,11 @@ function TokenTracker() {
       }
     }, n);
   }))), showResetConfirm && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-50 flex items-center justify-center px-4",
+    className: "fixed inset-0 z-[100] flex items-center justify-center px-4",
     style: {
-      background: 'rgba(0, 0, 0, 0.85)'
+      background: 'rgba(5, 3, 10, 0.97)',
+      backdropFilter: 'blur(12px) saturate(120%)',
+      WebkitBackdropFilter: 'blur(12px) saturate(120%)'
     },
     onClick: function onClick() {
       return setShowResetConfirm(false);
@@ -8923,9 +8896,11 @@ function TokenTracker() {
       letterSpacing: '0.05em'
     }
   }, "RESET")))), showNewGameMenu && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-50 flex items-center justify-center px-4",
+    className: "fixed inset-0 z-[100] flex items-center justify-center px-4",
     style: {
-      background: 'rgba(0, 0, 0, 0.85)'
+      background: 'rgba(5, 3, 10, 0.97)',
+      backdropFilter: 'blur(12px) saturate(120%)',
+      WebkitBackdropFilter: 'blur(12px) saturate(120%)'
     },
     onClick: function onClick() {
       return setShowNewGameMenu(false);
@@ -9581,7 +9556,7 @@ function TokenTracker() {
       lineHeight: 1.5
     }
   }, "Card data & art via Scryfall. Saved locally between sessions.", /*#__PURE__*/React.createElement("br", null), "Not affiliated with Wizards of the Coast.")))), copyOpen && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-50 flex items-start justify-center overflow-y-auto",
+    className: "fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto",
     style: {
       background: "rgba(5, 3, 10, 0.85)",
       backdropFilter: "blur(6px)",
@@ -9968,7 +9943,7 @@ function TokenTracker() {
       boxShadow: "0 2px 8px rgba(160, 48, 44, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)"
     }
   }, "Wipe"))))), sanctumOpen && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto",
+    className: "fixed inset-0 z-[110] flex items-start justify-center overflow-y-auto",
     style: {
       background: "radial-gradient(ellipse at top, rgba(40, 25, 60, 0.95) 0%, rgba(5, 3, 10, 0.98) 70%)",
       backdropFilter: "blur(10px)",
@@ -10741,7 +10716,7 @@ function TokenTracker() {
     setPet: setPet,
     haptic: haptic
   }), hatchingOpen && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[65] flex items-start justify-center overflow-y-auto p-3",
+    className: "fixed inset-0 z-[110] flex items-start justify-center overflow-y-auto p-3",
     style: {
       background: "radial-gradient(ellipse at top, rgba(40, 30, 60, 0.97) 0%, rgba(5, 3, 10, 0.99) 70%)",
       backdropFilter: "blur(12px)",
