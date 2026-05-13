@@ -58,6 +58,20 @@
     .tq-font-large { font-size: 18px; }
     /* FAB entry animation */
     @keyframes fabIn { from { opacity: 0; transform: translateY(8px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    /* Dice result bounce */
+    @keyframes diceResultIn { 0% { opacity: 0; transform: scale(0.5) rotate(-10deg); } 60% { opacity: 1; transform: scale(1.15) rotate(2deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
+    /* Subtle hover lift on cards (desktop) */
+    @media (hover: hover) { .tq-card:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.4); } }
+    /* Skeleton shimmer (for loading states) */
+    .tq-skeleton { background: linear-gradient(90deg, rgba(154,135,101,0.05) 0%, rgba(154,135,101,0.15) 50%, rgba(154,135,101,0.05) 100%); background-size: 200% 100%; animation: shimmer 1.6s ease-in-out infinite; }
+    /* Iconography sizing helper */
+    .tq-icon-sm { width: 0.85rem; height: 0.85rem; display: inline-flex; align-items: center; justify-content: center; }
+    /* Token card entry */
+    @keyframes tokenIn { from { opacity: 0; transform: translateY(6px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .tq-token-card { animation: tokenIn 0.25s ease-out; }
+    /* Pulse for needs-attention indicators */
+    @keyframes attention { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+    .tq-attention { animation: attention 1.6s ease-in-out infinite; }
   </style>
   <link rel="stylesheet" href="tailwind.css">
 </head>

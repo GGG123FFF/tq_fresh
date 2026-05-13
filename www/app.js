@@ -1909,14 +1909,33 @@ var PetPanel = function PetPanel(_ref10) {
       color: "#8a7555",
       opacity: 0.7
     }
-  }, "unnamed companion"), /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] mt-1 tracking-[0.25em] uppercase",
+  }, "unnamed companion"), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-center gap-2 mt-1"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-[10px] tracking-[0.25em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
       color: coreData.symbol,
       fontWeight: 500
     }
-  }, stageName, " . ", petTypeName), /*#__PURE__*/React.createElement("p", {
+  }, stageName, " . ", petTypeName), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 3
+    }
+  }, [0, 1, 2].map(function (i) {
+    return /*#__PURE__*/React.createElement("span", {
+      key: i,
+      style: {
+        width: 5,
+        height: 5,
+        borderRadius: '50%',
+        background: i <= stage ? coreData.symbol : 'rgba(154, 135, 101, 0.2)',
+        boxShadow: i === stage ? "0 0 4px ".concat(coreData.glow) : 'none',
+        transition: 'all 0.3s'
+      }
+    });
+  }))), /*#__PURE__*/React.createElement("p", {
     className: "text-[9px] mt-0.5 italic",
     style: {
       fontFamily: "'Crimson Pro', serif",
@@ -6152,7 +6171,17 @@ function TokenTracker() {
     setSettingsOpen = _useState62[1];
   var _useState63 = useState(function () {
       var seen = storage.get('onboardingSeen');
-      return seen ? -1 : 0;
+      if (seen) return -1;
+      // Only show onboarding for truly new users (no battlefield, no players, no pet)
+      var hasBattlefield = (storage.get('battlefield') || []).length > 0;
+      var hasPet = !!storage.get('tq_pet_v1');
+      var hasGameState = !!storage.get('lifeTotals');
+      if (hasBattlefield || hasPet || hasGameState) {
+        // Returning user - mark onboarding seen silently
+        storage.set('onboardingSeen', true);
+        return -1;
+      }
+      return 0;
     }),
     _useState64 = _slicedToArray(_useState63, 2),
     onboardingStep = _useState64[0],
@@ -8318,7 +8347,7 @@ function TokenTracker() {
     var compact = battlefield.length > 4;
     return /*#__PURE__*/React.createElement("div", {
       key: t.id,
-      className: "relative flex flex-col",
+      className: "relative flex flex-col tq-token-card",
       style: {
         background: "rgba(20, 14, 8, 0.8)",
         border: "1px solid rgba(201, 169, 97, 0.3)",
@@ -9664,6 +9693,23 @@ function TokenTracker() {
       fontWeight: 600
     }
   }, players[activePlayerIndex].name))), /*#__PURE__*/React.createElement("div", {
+    className: "mb-1 px-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 2,
+      background: "rgba(201, 169, 97, 0.12)",
+      borderRadius: 1,
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: '100%',
+      width: "".concat((phaseIndex + 1) / PHASES.length * 100, "%"),
+      background: 'linear-gradient(90deg, #c9a961, #f5d98f)',
+      transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      boxShadow: '0 0 6px rgba(245, 217, 143, 0.4)'
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1 mb-3 overflow-x-auto no-scrollbar pb-1"
   }, PHASES.map(function (phase, idx) {
     var isCurrent = idx === phaseIndex;
@@ -9674,16 +9720,16 @@ function TokenTracker() {
         haptic(15);
         setPhaseIndex(idx);
       },
-      className: "flex-shrink-0 px-2 py-1.5 text-[9px] tracking-widest uppercase transition-all active:scale-95",
+      className: "flex-shrink-0 px-2.5 py-1.5 text-[9px] tracking-widest uppercase transition-all active:scale-95",
       style: {
         fontFamily: "'Cinzel', serif",
-        fontWeight: isCurrent ? 600 : 500,
+        fontWeight: isCurrent ? 700 : 500,
         color: isCurrent ? "#1a110a" : isPast ? "#8a7555" : "#c9a961",
         background: isCurrent ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
         border: "1px solid ".concat(isCurrent ? "#c9a961" : "rgba(201, 169, 97, 0.3)"),
         borderRadius: "2px",
-        boxShadow: isCurrent ? "0 2px 8px rgba(201, 169, 97, 0.3)" : "none",
-        opacity: isPast ? 0.6 : 1
+        boxShadow: isCurrent ? "0 2px 10px rgba(245, 217, 143, 0.35), inset 0 1px 0 rgba(255,255,255,0.2)" : "none",
+        opacity: isPast ? 0.5 : 1
       }
     }, phase);
   })), /*#__PURE__*/React.createElement("div", {
@@ -9832,16 +9878,23 @@ function TokenTracker() {
     className: "text-[9px] tracking-[0.3em] uppercase mb-1",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "#b09870",
+      fontWeight: 600
     }
   }, diceRolls[0].sides === 'coin' ? 'Coin flip' : diceRolls[0].sides === 'player' ? 'Random pick' : "d".concat(diceRolls[0].sides)), /*#__PURE__*/React.createElement("div", {
+    key: diceRolls[0].id,
     style: {
       fontFamily: diceRolls[0].sides === 'player' || diceRolls[0].sides === 'coin' ? "'Cinzel', serif" : "'JetBrains Mono', monospace",
-      fontSize: diceRolls[0].sides === 'player' ? "1.5rem" : "3rem",
-      fontWeight: 700,
-      color: "#d4b87a",
-      textShadow: "0 0 20px rgba(212, 184, 122, 0.4)",
-      lineHeight: 1.1
+      fontSize: diceRolls[0].sides === 'player' ? "1.5rem" : "3.25rem",
+      fontWeight: 800,
+      color: "#f5d98f",
+      background: "linear-gradient(180deg, #f5d98f 0%, #d4b87a 50%, #8a6f3a 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      filter: "drop-shadow(0 0 12px rgba(245, 217, 143, 0.4))",
+      lineHeight: 1.1,
+      animation: 'diceResultIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)'
     }
   }, diceRolls[0].result))), diceRolls.length > 1 && /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1.5 overflow-x-auto no-scrollbar pb-1"
