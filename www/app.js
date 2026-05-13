@@ -8360,7 +8360,94 @@ function TokenTracker() {
       src: t.smallImage,
       alt: t.name,
       className: "w-full h-auto block pointer-events-none"
-    }) : /*#__PURE__*/React.createElement("div", {
+    }) : t.isCounter ? function () {
+      var cc = t.counterColor || '#c9a961';
+      return /*#__PURE__*/React.createElement("div", {
+        className: "aspect-[5/7] relative flex flex-col items-center justify-center p-2 text-center pointer-events-none overflow-hidden",
+        style: {
+          background: "radial-gradient(ellipse at center top, ".concat(cc, "33 0%, rgba(10, 6, 4, 0.95) 70%), linear-gradient(180deg, rgba(20, 14, 8, 0.95), rgba(5, 3, 10, 0.95))"),
+          border: "1px solid ".concat(cc, "55")
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        "aria-hidden": true,
+        style: {
+          position: 'absolute',
+          top: 4,
+          left: 4,
+          width: 6,
+          height: 6,
+          borderTop: "1px solid ".concat(cc),
+          borderLeft: "1px solid ".concat(cc)
+        }
+      }), /*#__PURE__*/React.createElement("span", {
+        "aria-hidden": true,
+        style: {
+          position: 'absolute',
+          top: 4,
+          right: 4,
+          width: 6,
+          height: 6,
+          borderTop: "1px solid ".concat(cc),
+          borderRight: "1px solid ".concat(cc)
+        }
+      }), /*#__PURE__*/React.createElement("span", {
+        "aria-hidden": true,
+        style: {
+          position: 'absolute',
+          bottom: 4,
+          left: 4,
+          width: 6,
+          height: 6,
+          borderBottom: "1px solid ".concat(cc),
+          borderLeft: "1px solid ".concat(cc)
+        }
+      }), /*#__PURE__*/React.createElement("span", {
+        "aria-hidden": true,
+        style: {
+          position: 'absolute',
+          bottom: 4,
+          right: 4,
+          width: 6,
+          height: 6,
+          borderBottom: "1px solid ".concat(cc),
+          borderRight: "1px solid ".concat(cc)
+        }
+      }), /*#__PURE__*/React.createElement("div", {
+        style: {
+          width: '46%',
+          aspectRatio: '1 / 1',
+          borderRadius: '50%',
+          background: "radial-gradient(circle at 30% 30%, ".concat(cc, ", ").concat(cc, "88)"),
+          boxShadow: "inset 0 -2px 4px rgba(0,0,0,0.4), 0 0 16px ".concat(cc, "55"),
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#0a0604',
+          fontFamily: "'Cinzel', serif",
+          fontWeight: 800,
+          fontSize: compact ? '0.65rem' : '0.85rem',
+          letterSpacing: '0.05em'
+        }
+      }, (t.name || '?').slice(0, 3).toUpperCase()), /*#__PURE__*/React.createElement("p", {
+        style: {
+          marginTop: 6,
+          fontFamily: "'Cinzel', serif",
+          color: cc,
+          fontSize: compact ? '0.55rem' : '0.7rem',
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          fontWeight: 600
+        }
+      }, t.name), /*#__PURE__*/React.createElement("p", {
+        style: {
+          marginTop: 2,
+          fontFamily: "'Crimson Pro', serif",
+          color: '#9a8765',
+          fontSize: compact ? '0.5rem' : '0.6rem',
+          fontStyle: 'italic'
+        }
+      }, "counter"));
+    }() : /*#__PURE__*/React.createElement("div", {
       className: "aspect-[5/7] flex items-center justify-center text-xs p-2 text-center pointer-events-none",
       style: {
         background: "#2a1f14",
@@ -10160,7 +10247,7 @@ function TokenTracker() {
     var keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "0", "back"];
     var displayVal = numpadValue === "" ? String(target.count) : numpadValue;
     return /*#__PURE__*/React.createElement("div", {
-      className: "fixed inset-0 z-50 flex items-end justify-center",
+      className: "fixed inset-0 z-[105] flex items-end justify-center",
       style: {
         background: "rgba(5, 3, 10, 0.75)",
         backdropFilter: "blur(4px)",
@@ -10197,17 +10284,21 @@ function TokenTracker() {
       }
     }, target.name), /*#__PURE__*/React.createElement("button", {
       onClick: function onClick() {
+        haptic(15);
         setNumpadFor(null);
         setNumpadValue("");
       },
-      className: "w-7 h-7 flex items-center justify-center active:scale-90",
+      className: "w-10 h-10 flex items-center justify-center active:scale-90",
       style: {
-        color: "#9a8765"
+        color: "#c9a961",
+        background: "rgba(20, 14, 8, 0.6)",
+        border: "1px solid rgba(201, 169, 97, 0.35)",
+        borderRadius: "3px"
       },
       "aria-label": "Close"
     }, /*#__PURE__*/React.createElement(XIcon, {
       style: {
-        fontSize: '0.875rem'
+        fontSize: '1rem'
       }
     }))), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 px-4 pt-3 pb-2"
@@ -10277,7 +10368,7 @@ function TokenTracker() {
       }
     }, "Set to ", displayVal))));
   }(), wipeConfirmOpen && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-50 flex items-center justify-center p-4",
+    className: "fixed inset-0 z-[105] flex items-center justify-center p-4",
     style: {
       background: "rgba(5, 3, 10, 0.85)",
       backdropFilter: "blur(6px)",
@@ -11827,7 +11918,7 @@ function TokenTracker() {
     });
     if (!target) return null;
     return /*#__PURE__*/React.createElement("div", {
-      className: "fixed inset-0 z-50 flex items-center justify-center p-4",
+      className: "fixed inset-0 z-[105] flex items-center justify-center p-4",
       style: {
         background: "rgba(5, 3, 10, 0.85)",
         backdropFilter: "blur(6px)",
@@ -11912,7 +12003,7 @@ function TokenTracker() {
       }
     }, target.power, " / ", target.toughness))));
   }(), presetMenuOpen && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-50 flex items-start justify-center pt-12 p-4",
+    className: "fixed inset-0 z-[105] flex items-start justify-center pt-12 p-4",
     style: {
       background: "rgba(5, 3, 10, 0.85)",
       backdropFilter: "blur(6px)",
@@ -12039,7 +12130,7 @@ function TokenTracker() {
       fontSize: '0.875rem'
     }
   }), "Save current as preset")))), savePresetOpen && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-50 flex items-center justify-center p-4",
+    className: "fixed inset-0 z-[105] flex items-center justify-center p-4",
     style: {
       background: "rgba(5, 3, 10, 0.85)",
       backdropFilter: "blur(6px)",
@@ -12442,7 +12533,7 @@ function TokenTracker() {
       return p.id !== cmdrDamageFor;
     });
     return /*#__PURE__*/React.createElement("div", {
-      className: "fixed inset-0 z-50 flex items-center justify-center p-4",
+      className: "fixed inset-0 z-[105] flex items-center justify-center p-4",
       style: {
         background: "rgba(5, 3, 10, 0.85)",
         backdropFilter: "blur(6px)",
