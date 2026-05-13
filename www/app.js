@@ -12327,20 +12327,23 @@ function TokenTracker() {
       transform: 'translateY(-1px)'
     }
   }, "\u2191")), onboardingStep >= 0 && onboardingStep <= 3 && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[115] flex items-end justify-center",
+    className: "fixed inset-0 flex items-center justify-center px-4",
     style: {
-      background: "rgba(5, 3, 10, 0.7)",
-      backdropFilter: "blur(2px)",
-      WebkitBackdropFilter: "blur(2px)"
+      zIndex: 9999,
+      background: "rgba(5, 3, 10, 0.92)",
+      backdropFilter: "blur(8px)",
+      WebkitBackdropFilter: "blur(8px)",
+      pointerEvents: 'auto'
     }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-full max-w-md mx-3 mb-20 px-5 py-5",
+    className: "w-full max-w-md px-5 py-5",
     style: {
-      background: "linear-gradient(180deg, rgba(26, 17, 10, 0.98), rgba(10, 6, 4, 0.98))",
+      background: "linear-gradient(180deg, rgba(26, 17, 10, 0.99), rgba(10, 6, 4, 0.99))",
       border: "1px solid rgba(212, 184, 122, 0.5)",
       borderRadius: "4px",
-      boxShadow: "0 8px 40px rgba(0,0,0,0.7), 0 0 32px rgba(212, 184, 122, 0.15)",
-      animation: 'sanctumIn 0.3s ease-out'
+      boxShadow: "0 8px 40px rgba(0,0,0,0.8), 0 0 32px rgba(212, 184, 122, 0.18)",
+      animation: 'sanctumIn 0.3s ease-out',
+      pointerEvents: 'auto'
     }
   }, function () {
     var steps = [{
