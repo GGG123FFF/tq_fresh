@@ -4511,7 +4511,9 @@ var KeywordIndex = function KeywordIndex() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #c9a961, transparent)"
+      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      borderRadius: "1px",
+      boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
   }), /*#__PURE__*/React.createElement("h2", {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
@@ -7761,14 +7763,19 @@ function TokenTracker() {
     style: {
       fontSize: '0.85rem'
     }
-  })))))), activeTab === 'battlefield' && /*#__PURE__*/React.createElement(React.Fragment, null, favourites.length > 0 && /*#__PURE__*/React.createElement("section", {
+  })))))), activeTab === 'battlefield' && /*#__PURE__*/React.createElement("div", {
+    className: "tab-enter",
+    key: "battlefield"
+  }, favourites.length > 0 && /*#__PURE__*/React.createElement("section", {
     className: "mb-5"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #c9a961, transparent)"
+      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      borderRadius: "1px",
+      boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
   }), /*#__PURE__*/React.createElement("h2", {
     className: "text-[10px] tracking-[0.3em] uppercase flex items-center gap-1.5",
@@ -7821,9 +7828,10 @@ function TokenTracker() {
       className: "absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center active:scale-90",
       style: {
         background: "rgba(10, 6, 4, 0.95)",
-        border: "1px solid rgba(201, 169, 97, 0.6)",
+        border: "1px solid rgba(201, 169, 97, 0.7)",
         borderRadius: "50%",
-        color: "#9a8765"
+        color: "#c9a961",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
       },
       "aria-label": "Unfavourite ".concat(f.name)
     }, /*#__PURE__*/React.createElement(XIcon, {
@@ -7834,19 +7842,20 @@ function TokenTracker() {
   }))), /*#__PURE__*/React.createElement("section", {
     className: "mb-5"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "relative",
+    className: "relative tq-search-wrap",
     style: {
-      background: "linear-gradient(180deg, rgba(20, 14, 8, 0.8), rgba(10, 6, 4, 0.6))",
+      background: "linear-gradient(180deg, rgba(26, 17, 10, 0.85), rgba(10, 6, 4, 0.65))",
       border: "1px solid rgba(201, 169, 97, 0.3)",
-      borderRadius: "2px",
-      boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4), inset 0 0 20px rgba(201, 169, 97, 0.04)"
+      borderRadius: "3px",
+      boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4), inset 0 0 20px rgba(201, 169, 97, 0.04)",
+      transition: 'all 0.25s ease'
     }
   }, /*#__PURE__*/React.createElement(Search, {
     style: {
-      color: "#9a8765",
+      color: "#b09870",
       fontSize: '1rem',
       position: 'absolute',
-      left: '0.75rem',
+      left: '0.85rem',
       top: '50%',
       transform: 'translateY(-50%)'
     }
@@ -7863,7 +7872,9 @@ function TokenTracker() {
     placeholder: "Search tokens\u2026",
     className: "search-green w-full bg-transparent pl-10 pr-10 py-3 text-base outline-none",
     style: {
-      fontFamily: "'Crimson Pro', serif"
+      fontFamily: "'Crimson Pro', serif",
+      color: '#f5e9d0',
+      letterSpacing: '0.02em'
     }
   }), query && /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -7903,7 +7914,9 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #c9a961, transparent)"
+      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      borderRadius: "1px",
+      boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
   }), /*#__PURE__*/React.createElement("h3", {
     className: "text-[10px] tracking-[0.3em] uppercase",
@@ -7980,7 +7993,9 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #c9a961, transparent)"
+      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      borderRadius: "1px",
+      boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
   }), /*#__PURE__*/React.createElement("h2", {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
@@ -8076,7 +8091,9 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #c9a961, transparent)"
+      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      borderRadius: "1px",
+      boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
   }), /*#__PURE__*/React.createElement("h2", {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
@@ -8114,25 +8131,64 @@ function TokenTracker() {
       color: "#6a5a42"
     }
   }, "tap top . +1 \xA0.\xA0 tap bottom . -1 \xA0.\xA0 long-press . zoom"), battlefield.length === 0 ? /*#__PURE__*/React.createElement("div", {
-    className: "text-center py-16 px-6",
+    className: "text-center py-16 px-6 relative overflow-hidden",
     style: {
       border: "1px dashed rgba(201, 169, 97, 0.2)",
-      borderRadius: "2px",
-      background: "radial-gradient(ellipse at center, rgba(26, 17, 10, 0.4), transparent)"
+      borderRadius: "3px",
+      background: "radial-gradient(ellipse at center, rgba(26, 17, 10, 0.5), transparent)"
     }
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "italic text-sm mb-1",
+  }, /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": true,
     style: {
-      color: "#8a7555",
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: 180,
+      height: 180,
+      border: '1px solid rgba(201, 169, 97, 0.06)',
+      borderRadius: '50%'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": true,
+    style: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: 110,
+      height: 110,
+      border: '1px solid rgba(201, 169, 97, 0.08)',
+      borderRadius: '50%'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": true,
+    style: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: 50,
+      height: 50,
+      border: '1px solid rgba(201, 169, 97, 0.12)',
+      borderRadius: '50%'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "italic text-base mb-1.5",
+    style: {
+      color: "#b09870",
       fontFamily: "'Crimson Pro', serif"
     }
-  }, "No creatures stir."), /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] tracking-widest uppercase",
+  }, "The battlefield lies still."), /*#__PURE__*/React.createElement("p", {
+    className: "text-[10px] tracking-[0.3em] uppercase",
     style: {
-      color: "#6a5a42",
-      fontFamily: "'Cinzel', serif"
+      color: "#7a6a52",
+      fontFamily: "'Cinzel', serif",
+      fontWeight: 600
     }
-  }, "Summon from above")) : /*#__PURE__*/React.createElement("div", {
+  }, "Summon a token to begin"))) : /*#__PURE__*/React.createElement("div", {
     className: "grid gap-2 ".concat(battlefield.length <= 2 ? 'grid-cols-2' : battlefield.length <= 4 ? 'grid-cols-3' : battlefield.length <= 8 ? 'grid-cols-3' : 'grid-cols-4')
   }, battlefield.map(function (t) {
     var fav = isFavourite(t.id);
@@ -8588,7 +8644,8 @@ function TokenTracker() {
       })));
     })))));
   })))), activeTab === 'life' && /*#__PURE__*/React.createElement("section", {
-    className: "mb-6"
+    className: "mb-6 tab-enter",
+    key: "life"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between mb-4"
   }, /*#__PURE__*/React.createElement("div", {
@@ -8596,7 +8653,9 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #c9a961, transparent)"
+      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      borderRadius: "1px",
+      boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
   }), /*#__PURE__*/React.createElement("h2", {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
@@ -9180,13 +9239,16 @@ function TokenTracker() {
       letterSpacing: '0.05em'
     }
   }, "CANCEL"))), activeTab === 'tools' && /*#__PURE__*/React.createElement("div", {
-    className: "space-y-6 mb-6"
+    className: "space-y-6 mb-6 tab-enter",
+    key: "tools"
   }, /*#__PURE__*/React.createElement("section", null, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #c9a961, transparent)"
+      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      borderRadius: "1px",
+      boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
   }), /*#__PURE__*/React.createElement("h2", {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
@@ -9410,7 +9472,9 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #c9a961, transparent)"
+      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      borderRadius: "1px",
+      boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
   }), /*#__PURE__*/React.createElement("h2", {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
@@ -9546,7 +9610,9 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #c9a961, transparent)"
+      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      borderRadius: "1px",
+      boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
   }), /*#__PURE__*/React.createElement("h2", {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
@@ -10270,7 +10336,9 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-3",
     style: {
-      background: "linear-gradient(180deg, #c9a961, transparent)"
+      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      borderRadius: "1px",
+      boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-[9px] tracking-[0.3em] uppercase",
@@ -10368,7 +10436,9 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-3",
     style: {
-      background: "linear-gradient(180deg, #c9a961, transparent)"
+      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      borderRadius: "1px",
+      boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-[9px] tracking-[0.3em] uppercase",
@@ -10805,7 +10875,9 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-3",
     style: {
-      background: "linear-gradient(180deg, #c9a961, transparent)"
+      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      borderRadius: "1px",
+      boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-[9px] tracking-[0.3em] uppercase",
@@ -11814,18 +11886,20 @@ function TokenTracker() {
       borderRadius: "2px"
     }
   }, "Save"))))), toast && /*#__PURE__*/React.createElement("div", {
-    className: "fixed left-1/2 bottom-8 -translate-x-1/2 z-[60] pointer-events-none px-4 py-2",
+    className: "fixed left-1/2 -translate-x-1/2 z-[60] pointer-events-none px-5 py-2.5",
     style: {
+      bottom: 'calc(5.5rem + env(safe-area-inset-bottom))',
       fontFamily: "'Cinzel', serif",
-      fontSize: "0.75rem",
-      letterSpacing: "0.2em",
+      fontSize: "0.72rem",
+      letterSpacing: "0.22em",
       textTransform: "uppercase",
-      color: "#d4b87a",
-      background: "rgba(10, 6, 4, 0.95)",
-      border: "1px solid rgba(201, 169, 97, 0.4)",
-      borderRadius: "2px",
-      boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-      animation: "toastIn 0.2s ease-out"
+      fontWeight: 600,
+      color: "#f5d98f",
+      background: "linear-gradient(180deg, rgba(26, 17, 10, 0.98), rgba(10, 6, 4, 0.98))",
+      border: "1px solid rgba(212, 184, 122, 0.5)",
+      borderRadius: "3px",
+      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(212, 184, 122, 0.15), inset 0 1px 0 rgba(245, 217, 143, 0.1)",
+      animation: "toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
     }
   }, toast), cmdrDamageFor && function () {
     var target = players.find(function (p) {
@@ -11973,7 +12047,8 @@ function TokenTracker() {
       }
     }, "Damage also reduces life. 21+ from one commander = lethal."))));
   }(), activeTab === 'vault' && /*#__PURE__*/React.createElement("div", {
-    className: "min-h-screen",
+    className: "min-h-screen tab-enter",
+    key: "vault",
     style: {
       background: "#0d0d0f",
       paddingBottom: 80
@@ -12018,25 +12093,37 @@ function TokenTracker() {
           behavior: 'smooth'
         });
       },
-      className: "flex-1 flex flex-col items-center justify-center gap-0.5 py-2 active:scale-95 transition-all",
+      className: "relative flex-1 flex flex-col items-center justify-center gap-1 py-2.5 active:scale-95 transition-all",
       style: {
-        color: isActive ? "#d4b87a" : "#6a5a42",
-        background: isActive ? "linear-gradient(180deg, rgba(201, 169, 97, 0.1), transparent)" : "transparent",
-        borderTop: isActive ? "2px solid #c9a961" : "2px solid transparent",
-        paddingTop: "calc(0.5rem - 2px)"
+        color: isActive ? "#f5d98f" : "#7a6a52",
+        background: isActive ? "linear-gradient(180deg, rgba(212, 184, 122, 0.14) 0%, rgba(201, 169, 97, 0.04) 60%, transparent 100%)" : "transparent"
       },
       "aria-label": tab.label,
       "aria-pressed": isActive
-    }, /*#__PURE__*/React.createElement(tab.Icon, {
+    }, isActive && /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": true,
       style: {
-        fontSize: isActive ? '1.1rem' : '1rem',
-        filter: isActive ? 'drop-shadow(0 0 6px rgba(212, 184, 122, 0.4))' : 'none'
+        position: 'absolute',
+        top: 0,
+        left: '20%',
+        right: '20%',
+        height: 2,
+        background: 'linear-gradient(90deg, transparent, #d4b87a 50%, transparent)',
+        boxShadow: '0 0 8px rgba(212, 184, 122, 0.6)'
+      }
+    }), /*#__PURE__*/React.createElement(tab.Icon, {
+      style: {
+        fontSize: isActive ? '1.15rem' : '1.05rem',
+        filter: isActive ? 'drop-shadow(0 0 8px rgba(245, 217, 143, 0.5))' : 'none',
+        transition: 'all 0.2s ease'
       }
     }), /*#__PURE__*/React.createElement("span", {
-      className: "text-[9px] tracking-widest uppercase",
+      className: "text-[9px] tracking-[0.18em] uppercase",
       style: {
         fontFamily: "'Cinzel', serif",
-        fontWeight: isActive ? 600 : 500
+        fontWeight: isActive ? 700 : 500,
+        letterSpacing: isActive ? '0.22em' : '0.18em',
+        transition: 'letter-spacing 0.2s ease'
       }
     }, tab.label));
   }))), /*#__PURE__*/React.createElement("div", {
