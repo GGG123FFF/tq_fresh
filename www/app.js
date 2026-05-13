@@ -571,6 +571,16 @@ var COLOR_LORE = {
   }
 };
 
+// Pet name suggestions by colour identity - thematically appropriate
+var PET_NAMES_BY_COLOR = {
+  W: ['Selene', 'Lyra', 'Astoria', 'Caelum', 'Vespera', 'Solenne', 'Mirabel', 'Aurelius', 'Pious', 'Halcyon'],
+  U: ['Indigo', 'Nyx', 'Cassius', 'Mireille', 'Talon', 'Vesper', 'Coralis', 'Septima', 'Echo', 'Tessera'],
+  B: ['Mortis', 'Vex', 'Ravelin', 'Sable', 'Nyssara', 'Onyx', 'Erebos', 'Maleficent', 'Cinder', 'Velka'],
+  R: ['Ember', 'Pyrrha', 'Brimstone', 'Caldera', 'Flint', 'Ignis', 'Cinder', 'Vulcan', 'Rusalka', 'Drake'],
+  G: ['Mossa', 'Thorne', 'Verdant', 'Ivy', 'Bramble', 'Sylvane', 'Loam', 'Vine', 'Forsythia', 'Bryn'],
+  C: ['Null', 'Xerox', 'Voidwarden', 'Echo', 'Cipher', 'Hex', 'Quanta', 'Aether', 'Sigil', 'Wraith']
+};
+
 // -- Animated Egg --------------------------------------------------------------
 // -- Pet Response Bank --------------------------------------------------------
 // Indexed by [core][stage][mood] -> array of response strings
@@ -2414,43 +2424,49 @@ var storage = {
 
 // Haptic feedback -- uses native Capacitor Haptics plugin when available (reliable on all phones),
 // falls back to the web Vibration API when running in a browser.
-// Duration parameter is interpreted to pick an appropriate native intensity.
+// Reads tq_haptic_intensity from localStorage: 'off' | 'light' | 'normal' | 'strong'
+var getHapticIntensity = function getHapticIntensity() {
+  try {
+    var s = localStorage.getItem('settings');
+    if (s) {
+      var p = JSON.parse(s);
+      return p && p.hapticIntensity ? p.hapticIntensity : 'normal';
+    }
+  } catch (_unused3) {}
+  return 'normal';
+};
 var haptic = function haptic() {
   var duration = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 20;
+  var intensity = getHapticIntensity();
+  if (intensity === 'off') return;
+  // Scale duration based on intensity
+  var scale = intensity === 'light' ? 0.5 : intensity === 'strong' ? 1.5 : 1;
   try {
     var cap = typeof window !== 'undefined' ? window.Capacitor : null;
     var Haptics = cap && cap.Plugins && cap.Plugins.Haptics;
     if (Haptics && cap.isNativePlatform && cap.isNativePlatform()) {
-      // Native path -- map our duration buckets to impact styles
       if (Array.isArray(duration)) {
-        // Pattern vibrations (e.g. wipe confirm) -> use heavy impact repeated
+        var style = intensity === 'light' ? 'LIGHT' : intensity === 'strong' ? 'HEAVY' : 'MEDIUM';
         duration.forEach(function (_, i) {
           return setTimeout(function () {
             return Haptics.impact({
-              style: 'HEAVY'
+              style: style
             });
           }, i * 60);
         });
-      } else if (duration <= 15) {
-        Haptics.impact({
-          style: 'LIGHT'
-        });
-      } else if (duration <= 25) {
-        Haptics.impact({
-          style: 'MEDIUM'
-        });
       } else {
+        var d = duration * scale;
+        var _style = intensity === 'light' ? 'LIGHT' : d <= 15 ? 'LIGHT' : d <= 25 ? 'MEDIUM' : 'HEAVY';
         Haptics.impact({
-          style: 'HEAVY'
+          style: _style
         });
       }
       return;
     }
-    // Web fallback
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(duration);
+      navigator.vibrate(Array.isArray(duration) ? duration : Math.round(duration * scale));
     }
-  } catch (_unused3) {}
+  } catch (_unused4) {}
 };
 
 // useLongPress -- returns handlers for both touch and mouse that fire onLongPress after 500ms
@@ -4974,7 +4990,7 @@ function CommanderVault() {
       try {
         var saved = localStorage.getItem('tq_vault_decks');
         return saved ? JSON.parse(saved) : INITIAL_DECKS;
-      } catch (_unused4) {
+      } catch (_unused5) {
         return INITIAL_DECKS;
       }
     }),
@@ -5258,7 +5274,33 @@ function CommanderVault() {
       cursor: "pointer",
       whiteSpace: "nowrap"
     }
-  }, "+ Add Deck")), /*#__PURE__*/React.createElement("div", {
+  }, "+ Add Deck"), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      var lines = filtered.map(function (d) {
+        var colors = d.colors.join('');
+        var tags = [d.theme, d.power && "Power ".concat(d.power), d.budget].filter(Boolean).join(' · ');
+        return "\u2022 ".concat(d.commander, "  [").concat(colors || 'C', "]  \u2014 ").concat(tags);
+      });
+      var text = "=== TOKEN QUEEN \u2014 COMMANDER VAULT ===\n".concat(filtered.length, " deck").concat(filtered.length === 1 ? '' : 's', "\n\n") + lines.join('\n');
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        navigator.clipboard.writeText(text).catch(function () {});
+      }
+      alert('Deck list copied to clipboard');
+    },
+    title: "Export deck list",
+    style: {
+      padding: "10px 14px",
+      borderRadius: 8,
+      background: SURFACE,
+      border: "1px solid ".concat(ACCENT, "66"),
+      color: ACCENT,
+      fontFamily: "inherit",
+      fontSize: 13,
+      fontWeight: 600,
+      cursor: "pointer",
+      whiteSpace: "nowrap"
+    }
+  }, "\u2B07 Export")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -6090,6 +6132,59 @@ function TokenTracker() {
     activeTab = _useState58[0],
     setActiveTab = _useState58[1]; // 'battlefield' | 'life' | 'tools'
 
+  // ===== New state for settings, onboarding, FAB, sanctum tabs =====
+  var _useState59 = useState(function () {
+      return storage.get('settings') || {
+        hapticIntensity: 'normal',
+        // 'off' | 'light' | 'normal' | 'strong'
+        fontSize: 'normal',
+        // 'small' | 'normal' | 'large'
+        showScrollTop: true,
+        showOnboarding: true
+      };
+    }),
+    _useState60 = _slicedToArray(_useState59, 2),
+    settings = _useState60[0],
+    setSettings = _useState60[1];
+  var _useState61 = useState(false),
+    _useState62 = _slicedToArray(_useState61, 2),
+    settingsOpen = _useState62[0],
+    setSettingsOpen = _useState62[1];
+  var _useState63 = useState(function () {
+      var seen = storage.get('onboardingSeen');
+      return seen ? -1 : 0;
+    }),
+    _useState64 = _slicedToArray(_useState63, 2),
+    onboardingStep = _useState64[0],
+    setOnboardingStep = _useState64[1];
+  var _useState65 = useState(false),
+    _useState66 = _slicedToArray(_useState65, 2),
+    showScrollTop = _useState66[0],
+    setShowScrollTop = _useState66[1];
+  var _useState67 = useState('companion'),
+    _useState68 = _slicedToArray(_useState67, 2),
+    sanctumTab = _useState68[0],
+    setSanctumTab = _useState68[1]; // 'companion' | 'games' | 'stats'
+  // Save settings whenever changed
+  useEffect(function () {
+    storage.set('settings', settings);
+  }, [settings]);
+  useEffect(function () {
+    if (onboardingStep === -1) storage.set('onboardingSeen', true);
+  }, [onboardingStep]);
+  // Track scroll position for FAB visibility
+  useEffect(function () {
+    var onScroll = function onScroll() {
+      return setShowScrollTop(window.scrollY > 500);
+    };
+    window.addEventListener('scroll', onScroll, {
+      passive: true
+    });
+    return function () {
+      return window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
+
   // Batch 2: life tracker state
   var defaultPlayers = function defaultPlayers(n) {
     return Array.from({
@@ -6107,123 +6202,123 @@ function TokenTracker() {
       };
     });
   };
-  var _useState59 = useState(function () {
+  var _useState69 = useState(function () {
       return storage.get('players') || defaultPlayers(4);
     }),
-    _useState60 = _slicedToArray(_useState59, 2),
-    players = _useState60[0],
-    setPlayers = _useState60[1];
-  var _useState61 = useState(function () {
+    _useState70 = _slicedToArray(_useState69, 2),
+    players = _useState70[0],
+    setPlayers = _useState70[1];
+  var _useState71 = useState(function () {
       return storage.get('player_flipped') || [false, false, false, false];
     }),
-    _useState62 = _slicedToArray(_useState61, 2),
-    playerFlipped = _useState62[0],
-    setPlayerFlipped = _useState62[1];
-  var _useState63 = useState([]),
-    _useState64 = _slicedToArray(_useState63, 2),
-    lifeHistory = _useState64[0],
-    setLifeHistory = _useState64[1]; // last 5 life changes for undo
-  var _useState65 = useState(false),
-    _useState66 = _slicedToArray(_useState65, 2),
-    showResetConfirm = _useState66[0],
-    setShowResetConfirm = _useState66[1]; // confirmation modal for reset
-  var _useState67 = useState(false),
-    _useState68 = _slicedToArray(_useState67, 2),
-    showNewGameMenu = _useState68[0],
-    setShowNewGameMenu = _useState68[1]; // new game setup menu
+    _useState72 = _slicedToArray(_useState71, 2),
+    playerFlipped = _useState72[0],
+    setPlayerFlipped = _useState72[1];
+  var _useState73 = useState([]),
+    _useState74 = _slicedToArray(_useState73, 2),
+    lifeHistory = _useState74[0],
+    setLifeHistory = _useState74[1]; // last 5 life changes for undo
+  var _useState75 = useState(false),
+    _useState76 = _slicedToArray(_useState75, 2),
+    showResetConfirm = _useState76[0],
+    setShowResetConfirm = _useState76[1]; // confirmation modal for reset
+  var _useState77 = useState(false),
+    _useState78 = _slicedToArray(_useState77, 2),
+    showNewGameMenu = _useState78[0],
+    setShowNewGameMenu = _useState78[1]; // new game setup menu
   // Life delta tally -- { [playerId]: { delta: number, timer: timeoutId } }
-  var _useState69 = useState({}),
-    _useState70 = _slicedToArray(_useState69, 2),
-    lifeDelta = _useState70[0],
-    setLifeDelta = _useState70[1];
+  var _useState79 = useState({}),
+    _useState80 = _slicedToArray(_useState79, 2),
+    lifeDelta = _useState80[0],
+    setLifeDelta = _useState80[1];
   var lifeDeltaTimers = useRef({});
   // commanderDamage[dealtToId][dealtByPlayerId] = amount
-  var _useState71 = useState(function () {
+  var _useState81 = useState(function () {
       return storage.get('commanderDamage') || {};
     }),
-    _useState72 = _slicedToArray(_useState71, 2),
-    commanderDamage = _useState72[0],
-    setCommanderDamage = _useState72[1];
-  var _useState73 = useState(null),
-    _useState74 = _slicedToArray(_useState73, 2),
-    cmdrDamageFor = _useState74[0],
-    setCmdrDamageFor = _useState74[1]; // which player's CD grid is open
-  var _useState75 = useState(null),
-    _useState76 = _slicedToArray(_useState75, 2),
-    editPlayerName = _useState76[0],
-    setEditPlayerName = _useState76[1];
-  var _useState77 = useState(""),
-    _useState78 = _slicedToArray(_useState77, 2),
-    editPlayerNameValue = _useState78[0],
-    setEditPlayerNameValue = _useState78[1];
+    _useState82 = _slicedToArray(_useState81, 2),
+    commanderDamage = _useState82[0],
+    setCommanderDamage = _useState82[1];
+  var _useState83 = useState(null),
+    _useState84 = _slicedToArray(_useState83, 2),
+    cmdrDamageFor = _useState84[0],
+    setCmdrDamageFor = _useState84[1]; // which player's CD grid is open
+  var _useState85 = useState(null),
+    _useState86 = _slicedToArray(_useState85, 2),
+    editPlayerName = _useState86[0],
+    setEditPlayerName = _useState86[1];
+  var _useState87 = useState(""),
+    _useState88 = _slicedToArray(_useState87, 2),
+    editPlayerNameValue = _useState88[0],
+    setEditPlayerNameValue = _useState88[1];
 
   // Batch 2: dice state
-  var _useState79 = useState([]),
-    _useState80 = _slicedToArray(_useState79, 2),
-    diceRolls = _useState80[0],
-    setDiceRolls = _useState80[1]; // rolling history (latest first, max 10)
-  var _useState81 = useState(null),
-    _useState82 = _slicedToArray(_useState81, 2),
-    rolling = _useState82[0],
-    setRolling = _useState82[1]; // sides currently animating
+  var _useState89 = useState([]),
+    _useState90 = _slicedToArray(_useState89, 2),
+    diceRolls = _useState90[0],
+    setDiceRolls = _useState90[1]; // rolling history (latest first, max 10)
+  var _useState91 = useState(null),
+    _useState92 = _slicedToArray(_useState91, 2),
+    rolling = _useState92[0],
+    setRolling = _useState92[1]; // sides currently animating
 
   // Batch 2: phase + turn
   var PHASES = ['Untap', 'Upkeep', 'Draw', 'Main 1', 'Combat', 'Main 2', 'End'];
-  var _useState83 = useState(function () {
+  var _useState93 = useState(function () {
       var _storage$get;
       return (_storage$get = storage.get('phaseIndex')) !== null && _storage$get !== void 0 ? _storage$get : 0;
     }),
-    _useState84 = _slicedToArray(_useState83, 2),
-    phaseIndex = _useState84[0],
-    setPhaseIndex = _useState84[1];
-  var _useState85 = useState(function () {
+    _useState94 = _slicedToArray(_useState93, 2),
+    phaseIndex = _useState94[0],
+    setPhaseIndex = _useState94[1];
+  var _useState95 = useState(function () {
       return storage.get('turnNumber') || 1;
     }),
-    _useState86 = _slicedToArray(_useState85, 2),
-    turnNumber = _useState86[0],
-    setTurnNumber = _useState86[1];
-  var _useState87 = useState(function () {
+    _useState96 = _slicedToArray(_useState95, 2),
+    turnNumber = _useState96[0],
+    setTurnNumber = _useState96[1];
+  var _useState97 = useState(function () {
       return storage.get('activePlayerIndex') || 0;
     }),
-    _useState88 = _slicedToArray(_useState87, 2),
-    activePlayerIndex = _useState88[0],
-    setActivePlayerIndex = _useState88[1];
+    _useState98 = _slicedToArray(_useState97, 2),
+    activePlayerIndex = _useState98[0],
+    setActivePlayerIndex = _useState98[1];
 
   // Batch 3 state
   // Day/Night: 'day' | 'night' | null (no daybound game)
-  var _useState89 = useState(function () {
+  var _useState99 = useState(function () {
       return storage.get('dayNight') || null;
     }),
-    _useState90 = _slicedToArray(_useState89, 2),
-    dayNight = _useState90[0],
-    setDayNight = _useState90[1];
+    _useState100 = _slicedToArray(_useState99, 2),
+    dayNight = _useState100[0],
+    setDayNight = _useState100[1];
   // Game state markers -- independent toggles per player
   // monarch: playerId | null
   // initiative: playerId | null
   // citysBlessing: array of playerIds
-  var _useState91 = useState(function () {
+  var _useState101 = useState(function () {
       return storage.get('monarch') || null;
     }),
-    _useState92 = _slicedToArray(_useState91, 2),
-    monarch = _useState92[0],
-    setMonarch = _useState92[1];
-  var _useState93 = useState(function () {
+    _useState102 = _slicedToArray(_useState101, 2),
+    monarch = _useState102[0],
+    setMonarch = _useState102[1];
+  var _useState103 = useState(function () {
       return storage.get('initiative') || null;
     }),
-    _useState94 = _slicedToArray(_useState93, 2),
-    initiative = _useState94[0],
-    setInitiative = _useState94[1];
-  var _useState95 = useState(function () {
+    _useState104 = _slicedToArray(_useState103, 2),
+    initiative = _useState104[0],
+    setInitiative = _useState104[1];
+  var _useState105 = useState(function () {
       return storage.get('citysBlessing') || [];
     }),
-    _useState96 = _slicedToArray(_useState95, 2),
-    citysBlessing = _useState96[0],
-    setCitysBlessing = _useState96[1];
-  var _useState97 = useState(0),
-    _useState98 = _slicedToArray(_useState97, 2),
-    stormCount = _useState98[0],
-    setStormCount = _useState98[1];
-  var _useState99 = useState({
+    _useState106 = _slicedToArray(_useState105, 2),
+    citysBlessing = _useState106[0],
+    setCitysBlessing = _useState106[1];
+  var _useState107 = useState(0),
+    _useState108 = _slicedToArray(_useState107, 2),
+    stormCount = _useState108[0],
+    setStormCount = _useState108[1];
+  var _useState109 = useState({
       W: 0,
       U: 0,
       B: 0,
@@ -6231,70 +6326,70 @@ function TokenTracker() {
       G: 0,
       C: 0
     }),
-    _useState100 = _slicedToArray(_useState99, 2),
-    manaPool = _useState100[0],
-    setManaPool = _useState100[1];
+    _useState110 = _slicedToArray(_useState109, 2),
+    manaPool = _useState110[0],
+    setManaPool = _useState110[1];
 
   // Deck presets -- { id, name, tokens: [token shape with id+name+image+pt+colors] }
-  var _useState101 = useState(function () {
+  var _useState111 = useState(function () {
       return storage.get('presets') || [];
     }),
-    _useState102 = _slicedToArray(_useState101, 2),
-    presets = _useState102[0],
-    setPresets = _useState102[1];
-  var _useState103 = useState(false),
-    _useState104 = _slicedToArray(_useState103, 2),
-    presetMenuOpen = _useState104[0],
-    setPresetMenuOpen = _useState104[1];
-  var _useState105 = useState(false),
-    _useState106 = _slicedToArray(_useState105, 2),
-    savePresetOpen = _useState106[0],
-    setSavePresetOpen = _useState106[1];
-  var _useState107 = useState(""),
-    _useState108 = _slicedToArray(_useState107, 2),
-    savePresetName = _useState108[0],
-    setSavePresetName = _useState108[1];
-
-  // Oracle text and zoom modals
-  var _useState109 = useState(null),
-    _useState110 = _slicedToArray(_useState109, 2),
-    oracleFor = _useState110[0],
-    setOracleFor = _useState110[1]; // token id
-  var _useState111 = useState(""),
     _useState112 = _slicedToArray(_useState111, 2),
-    oracleText = _useState112[0],
-    setOracleText = _useState112[1];
+    presets = _useState112[0],
+    setPresets = _useState112[1];
   var _useState113 = useState(false),
     _useState114 = _slicedToArray(_useState113, 2),
-    oracleLoading = _useState114[0],
-    setOracleLoading = _useState114[1];
-  var _useState115 = useState(null),
+    presetMenuOpen = _useState114[0],
+    setPresetMenuOpen = _useState114[1];
+  var _useState115 = useState(false),
     _useState116 = _slicedToArray(_useState115, 2),
-    zoomImage = _useState116[0],
-    setZoomImage = _useState116[1]; // { url, tokenId } or null
-
-  // Secret menu (The Sanctum) -- unlocked by 7 taps on the title within 3s
-  var _useState117 = useState(false),
+    savePresetOpen = _useState116[0],
+    setSavePresetOpen = _useState116[1];
+  var _useState117 = useState(""),
     _useState118 = _slicedToArray(_useState117, 2),
-    sanctumOpen = _useState118[0],
-    setSanctumOpen = _useState118[1];
-  var _useState119 = useState(false),
+    savePresetName = _useState118[0],
+    setSavePresetName = _useState118[1];
+
+  // Oracle text and zoom modals
+  var _useState119 = useState(null),
     _useState120 = _slicedToArray(_useState119, 2),
-    hatcheryDoorOpen = _useState120[0],
-    setHatcheryDoorOpen = _useState120[1];
-  // Games
-  var _useState121 = useState(false),
+    oracleFor = _useState120[0],
+    setOracleFor = _useState120[1]; // token id
+  var _useState121 = useState(""),
     _useState122 = _slicedToArray(_useState121, 2),
-    memoryOpen = _useState122[0],
-    setMemoryOpen = _useState122[1];
+    oracleText = _useState122[0],
+    setOracleText = _useState122[1];
   var _useState123 = useState(false),
     _useState124 = _slicedToArray(_useState123, 2),
-    dragonOpen = _useState124[0],
-    setDragonOpen = _useState124[1];
-  var _useState125 = useState(0),
+    oracleLoading = _useState124[0],
+    setOracleLoading = _useState124[1];
+  var _useState125 = useState(null),
     _useState126 = _slicedToArray(_useState125, 2),
-    titleTapCount = _useState126[0],
-    setTitleTapCount = _useState126[1];
+    zoomImage = _useState126[0],
+    setZoomImage = _useState126[1]; // { url, tokenId } or null
+
+  // Secret menu (The Sanctum) -- unlocked by 7 taps on the title within 3s
+  var _useState127 = useState(false),
+    _useState128 = _slicedToArray(_useState127, 2),
+    sanctumOpen = _useState128[0],
+    setSanctumOpen = _useState128[1];
+  var _useState129 = useState(false),
+    _useState130 = _slicedToArray(_useState129, 2),
+    hatcheryDoorOpen = _useState130[0],
+    setHatcheryDoorOpen = _useState130[1];
+  // Games
+  var _useState131 = useState(false),
+    _useState132 = _slicedToArray(_useState131, 2),
+    memoryOpen = _useState132[0],
+    setMemoryOpen = _useState132[1];
+  var _useState133 = useState(false),
+    _useState134 = _slicedToArray(_useState133, 2),
+    dragonOpen = _useState134[0],
+    setDragonOpen = _useState134[1];
+  var _useState135 = useState(0),
+    _useState136 = _slicedToArray(_useState135, 2),
+    titleTapCount = _useState136[0],
+    setTitleTapCount = _useState136[1];
   var titleTapResetRef = useRef(null);
 
   // --------- COMPANION PET SYSTEM ---------
@@ -6302,68 +6397,68 @@ function TokenTracker() {
   // Shape: { core: 'W'|'U'|'B'|'R'|'G', name: string, hatchedAt: number,
   //          xp: number, lastFedAt: number, lastPlayedAt: number,
   //          affinities: { W:n, U:n, B:n, R:n, G:n } }
-  var _useState127 = useState(function () {
+  var _useState137 = useState(function () {
       return storage.get('pet');
     }),
-    _useState128 = _slicedToArray(_useState127, 2),
-    pet = _useState128[0],
-    setPet = _useState128[1];
+    _useState138 = _slicedToArray(_useState137, 2),
+    pet = _useState138[0],
+    setPet = _useState138[1];
 
   // Discovery (Tier 2): WUBRG order puzzle inside Sanctum
   // unlockedOrbs is the array of correctly-tapped orb colours so far in current attempt
-  var _useState129 = useState([]),
-    _useState130 = _slicedToArray(_useState129, 2),
-    unlockedOrbs = _useState130[0],
-    setUnlockedOrbs = _useState130[1];
-  var _useState131 = useState(false),
-    _useState132 = _slicedToArray(_useState131, 2),
-    showDiscoveryHint = _useState132[0],
-    setShowDiscoveryHint = _useState132[1];
-  var _useState133 = useState(false),
-    _useState134 = _slicedToArray(_useState133, 2),
-    hatchingOpen = _useState134[0],
-    setHatchingOpen = _useState134[1];
-  var _useState135 = useState(null),
-    _useState136 = _slicedToArray(_useState135, 2),
-    chosenCore = _useState136[0],
-    setChosenCore = _useState136[1]; // during ceremony
-  var _useState137 = useState([]),
-    _useState138 = _slicedToArray(_useState137, 2),
-    ceremonyStarters = _useState138[0],
-    setCeremonyStarters = _useState138[1]; // 3 petType keys
-  var _useState139 = useState(null),
+  var _useState139 = useState([]),
     _useState140 = _slicedToArray(_useState139, 2),
-    chosenType = _useState140[0],
-    setChosenType = _useState140[1]; // chosen petType key
+    unlockedOrbs = _useState140[0],
+    setUnlockedOrbs = _useState140[1];
   var _useState141 = useState(false),
     _useState142 = _slicedToArray(_useState141, 2),
-    hatchAnimating = _useState142[0],
-    setHatchAnimating = _useState142[1];
-
-  // Pet UI -- open the pet view directly (sets sanctumOpen + scrolls to pet section)
+    showDiscoveryHint = _useState142[0],
+    setShowDiscoveryHint = _useState142[1];
   var _useState143 = useState(false),
     _useState144 = _slicedToArray(_useState143, 2),
-    petResetConfirmOpen = _useState144[0],
-    setPetResetConfirmOpen = _useState144[1];
-  var _useState145 = useState(false),
+    hatchingOpen = _useState144[0],
+    setHatchingOpen = _useState144[1];
+  var _useState145 = useState(null),
     _useState146 = _slicedToArray(_useState145, 2),
-    petRenameOpen = _useState146[0],
-    setPetRenameOpen = _useState146[1];
-  var _useState147 = useState(""),
+    chosenCore = _useState146[0],
+    setChosenCore = _useState146[1]; // during ceremony
+  var _useState147 = useState([]),
     _useState148 = _slicedToArray(_useState147, 2),
-    petNameInput = _useState148[0],
-    setPetNameInput = _useState148[1];
-  var _useState149 = useState(false),
+    ceremonyStarters = _useState148[0],
+    setCeremonyStarters = _useState148[1]; // 3 petType keys
+  var _useState149 = useState(null),
     _useState150 = _slicedToArray(_useState149, 2),
-    showPetAdvanced = _useState150[0],
-    setShowPetAdvanced = _useState150[1];
+    chosenType = _useState150[0],
+    setChosenType = _useState150[1]; // chosen petType key
+  var _useState151 = useState(false),
+    _useState152 = _slicedToArray(_useState151, 2),
+    hatchAnimating = _useState152[0],
+    setHatchAnimating = _useState152[1];
+
+  // Pet UI -- open the pet view directly (sets sanctumOpen + scrolls to pet section)
+  var _useState153 = useState(false),
+    _useState154 = _slicedToArray(_useState153, 2),
+    petResetConfirmOpen = _useState154[0],
+    setPetResetConfirmOpen = _useState154[1];
+  var _useState155 = useState(false),
+    _useState156 = _slicedToArray(_useState155, 2),
+    petRenameOpen = _useState156[0],
+    setPetRenameOpen = _useState156[1];
+  var _useState157 = useState(""),
+    _useState158 = _slicedToArray(_useState157, 2),
+    petNameInput = _useState158[0],
+    setPetNameInput = _useState158[1];
+  var _useState159 = useState(false),
+    _useState160 = _slicedToArray(_useState159, 2),
+    showPetAdvanced = _useState160[0],
+    setShowPetAdvanced = _useState160[1];
 
   // Pet hint timer ref
   var petHintTimerRef = useRef(null);
   // Force re-render every minute so age/hunger displays stay current
-  var _useState151 = useState(0),
-    _useState152 = _slicedToArray(_useState151, 2),
-    setPetTick = _useState152[1];
+  var _useState161 = useState(0),
+    _useState162 = _slicedToArray(_useState161, 2),
+    setPetTick = _useState162[1];
   useEffect(function () {
     var i = setInterval(function () {
       return setPetTick(function (t) {
@@ -6760,7 +6855,7 @@ function TokenTracker() {
       document.removeEventListener('visibilitychange', handleVisibility);
       try {
         wakeLockRef.current && wakeLockRef.current.release && wakeLockRef.current.release();
-      } catch (_unused6) {}
+      } catch (_unused7) {}
     };
   }, []);
 
@@ -6770,7 +6865,7 @@ function TokenTracker() {
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('portrait').catch(function () {});
       }
-    } catch (_unused7) {}
+    } catch (_unused8) {}
   }, []);
 
   // Inject global CSS (animations + search input colour)
@@ -7582,7 +7677,7 @@ function TokenTracker() {
   }, 0);
   var uniqueTypes = battlefield.length;
   return /*#__PURE__*/React.createElement("div", {
-    className: "min-h-screen w-full",
+    className: "min-h-screen w-full tq-font-".concat(settings.fontSize),
     style: {
       background: "radial-gradient(ellipse at top, #1a110a 0%, #0a0604 50%, #05030a 100%)"
     }
@@ -7763,7 +7858,26 @@ function TokenTracker() {
     style: {
       fontSize: '0.85rem'
     }
-  })))))), activeTab === 'battlefield' && /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      haptic(15);
+      setSettingsOpen(true);
+    },
+    className: "flex items-center justify-center w-8 h-8 active:scale-90 transition-all",
+    style: {
+      color: "#9a8765",
+      background: "linear-gradient(180deg, rgba(154, 135, 101, 0.08), rgba(154, 135, 101, 0.02))",
+      border: "1px solid rgba(154, 135, 101, 0.3)",
+      borderRadius: "2px"
+    },
+    "aria-label": "Settings",
+    title: "Settings"
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '1rem',
+      lineHeight: 1
+    }
+  }, "\u2699")))))), activeTab === 'battlefield' && /*#__PURE__*/React.createElement("div", {
     className: "tab-enter",
     key: "battlefield"
   }, favourites.length > 0 && /*#__PURE__*/React.createElement("section", {
@@ -7931,29 +8045,38 @@ function TokenTracker() {
     return /*#__PURE__*/React.createElement("button", {
       key: ctr.id,
       onClick: function onClick() {
-        var token = {
-          id: "".concat(ctr.id, "-").concat(Date.now()),
-          name: ctr.name,
-          type: 'Counter',
-          colors: [],
-          pt: null,
-          text: ctr.text,
-          originalId: ctr.id,
-          powerMod: 0,
-          toughnessMod: 0,
-          tapped: false,
-          counters: {
-            plusOne: 0,
-            minusOne: 0
-          },
-          isCounter: true,
-          counterColor: ctr.color
-        };
+        haptic(20);
+        var stableId = "counter:".concat(ctr.id);
         setBattlefield(function (prev) {
           pushUndo(prev);
-          return [token].concat(_toConsumableArray(prev));
+          var existing = prev.find(function (t) {
+            return t.id === stableId;
+          });
+          if (existing) return prev.map(function (t) {
+            return t.id === stableId ? _objectSpread(_objectSpread({}, t), {}, {
+              count: t.count + 1
+            }) : t;
+          });
+          return [{
+            id: stableId,
+            name: ctr.name,
+            type: 'Counter',
+            colors: [],
+            pt: null,
+            text: ctr.text,
+            originalId: ctr.id,
+            powerMod: 0,
+            toughnessMod: 0,
+            tapped: false,
+            counters: {
+              plusOne: 0,
+              minusOne: 0
+            },
+            isCounter: true,
+            counterColor: ctr.color,
+            count: 1
+          }].concat(_toConsumableArray(prev));
         });
-        haptic(20);
         showToast("".concat(ctr.name, " counter added"));
       },
       className: "flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 active:scale-95 transition-transform",
@@ -10283,6 +10406,41 @@ function TokenTracker() {
   }, "A hidden chamber, found by those who seek")), /*#__PURE__*/React.createElement("div", {
     className: "px-6 pb-6 space-y-5"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-1 p-1",
+    style: {
+      background: "rgba(5,3,10,0.5)",
+      border: "1px solid rgba(201,169,97,0.18)",
+      borderRadius: "3px"
+    }
+  }, [{
+    id: 'companion',
+    label: 'Companion'
+  }, {
+    id: 'games',
+    label: 'Games'
+  }, {
+    id: 'about',
+    label: 'About'
+  }].map(function (t) {
+    var active = sanctumTab === t.id;
+    return /*#__PURE__*/React.createElement("button", {
+      key: t.id,
+      onClick: function onClick() {
+        haptic(15);
+        setSanctumTab(t.id);
+      },
+      className: "flex-1 py-2 text-[9px] tracking-[0.2em] uppercase active:scale-95 transition-all",
+      style: {
+        fontFamily: "'Cinzel', serif",
+        fontWeight: active ? 700 : 500,
+        color: active ? "#0a0604" : "#b09870",
+        background: active ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
+        border: active ? "1px solid #c9a961" : "1px solid transparent",
+        borderRadius: "2px",
+        boxShadow: active ? "0 2px 6px rgba(201,169,97,0.25)" : "none"
+      }
+    }, t.label);
+  })), sanctumTab === 'about' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-center py-6 px-4",
     style: {
       background: "radial-gradient(ellipse at center, rgba(212, 184, 122, 0.08) 0%, transparent 70%)",
@@ -10431,7 +10589,7 @@ function TokenTracker() {
       color: "#6a5a42",
       fontFamily: "'Crimson Pro', serif"
     }
-  }, "Not affiliated with Wizards of the Coast.")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, "Not affiliated with Wizards of the Coast."))), sanctumTab === 'companion' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-3",
@@ -10870,7 +11028,7 @@ function TokenTracker() {
     onDevAdult: devSkipAdult,
     onDevFeed: devResetFeedCD,
     onDevPlay: devResetPlayCD
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }))), sanctumTab === 'games' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-3",
@@ -10949,7 +11107,7 @@ function TokenTracker() {
       fontSize: "0.6rem",
       fontStyle: "italic"
     }
-  }, "Dodge the pillars")))), /*#__PURE__*/React.createElement("button", {
+  }, "Dodge the pillars"))))), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       setSanctumOpen(false);
       setHatcheryDoorOpen(false);
@@ -11171,7 +11329,40 @@ function TokenTracker() {
       border: "1px solid rgba(201, 169, 97, 0.3)",
       borderRadius: "2px"
     }
-  }), /*#__PURE__*/React.createElement("div", {
+  }), pet && function () {
+    var names = PET_NAMES_BY_COLOR[pet.core] || PET_NAMES_BY_COLOR.G;
+    // Shuffle and take 6
+    var suggestions = _toConsumableArray(names).sort(function () {
+      return Math.random() - 0.5;
+    }).slice(0, 6);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "mb-3"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-[9px] tracking-[0.2em] uppercase mb-1.5",
+      style: {
+        fontFamily: "'Cinzel', serif",
+        color: "#8a7555"
+      }
+    }, "Suggestions"), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap gap-1.5"
+    }, suggestions.map(function (name) {
+      return /*#__PURE__*/React.createElement("button", {
+        key: name,
+        onClick: function onClick() {
+          haptic(15);
+          setPetNameInput(name);
+        },
+        className: "px-2.5 py-1 text-[10px] tracking-[0.05em] active:scale-95",
+        style: {
+          fontFamily: "'Crimson Pro', serif",
+          color: "#c9a961",
+          background: "rgba(201, 169, 97, 0.08)",
+          border: "1px solid rgba(201, 169, 97, 0.25)",
+          borderRadius: "2px"
+        }
+      }, name);
+    })));
+  }(), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -11885,7 +12076,292 @@ function TokenTracker() {
       border: "1px solid ".concat(!savePresetName.trim() ? "rgba(154, 135, 101, 0.2)" : "#c9a961"),
       borderRadius: "2px"
     }
-  }, "Save"))))), toast && /*#__PURE__*/React.createElement("div", {
+  }, "Save"))))), settingsOpen && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[110] flex items-center justify-center p-4",
+    style: {
+      background: "rgba(5, 3, 10, 0.97)",
+      backdropFilter: "blur(12px) saturate(120%)",
+      WebkitBackdropFilter: "blur(12px) saturate(120%)"
+    },
+    onClick: function onClick() {
+      return setSettingsOpen(false);
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "relative w-full max-w-sm",
+    onClick: function onClick(e) {
+      return e.stopPropagation();
+    },
+    style: {
+      background: "linear-gradient(180deg, rgba(26, 17, 10, 0.98), rgba(10, 6, 4, 0.98))",
+      border: "1px solid rgba(212, 184, 122, 0.4)",
+      borderRadius: "4px",
+      boxShadow: "0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(212, 184, 122, 0.1)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between px-5 py-4",
+    style: {
+      borderBottom: "1px solid rgba(212, 184, 122, 0.18)"
+    }
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-base tracking-[0.3em] uppercase",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: "#d4b87a",
+      fontWeight: 600
+    }
+  }, "Settings"), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      return setSettingsOpen(false);
+    },
+    className: "text-[#9a8765] text-xl active:scale-90",
+    style: {
+      background: 'transparent',
+      border: 'none',
+      cursor: 'pointer'
+    },
+    "aria-label": "Close"
+  }, "\u2715")), /*#__PURE__*/React.createElement("div", {
+    className: "px-5 py-4 space-y-5"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "text-[10px] tracking-[0.25em] uppercase mb-2",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: "#b09870",
+      fontWeight: 600
+    }
+  }, "Haptic Feedback"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-4 gap-1.5"
+  }, ['off', 'light', 'normal', 'strong'].map(function (opt) {
+    return /*#__PURE__*/React.createElement("button", {
+      key: opt,
+      onClick: function onClick() {
+        setSettings(function (s) {
+          return _objectSpread(_objectSpread({}, s), {}, {
+            hapticIntensity: opt
+          });
+        });
+        haptic(20);
+      },
+      className: "py-2 text-[9px] tracking-[0.15em] uppercase active:scale-95",
+      style: {
+        fontFamily: "'Cinzel', serif",
+        fontWeight: 600,
+        color: settings.hapticIntensity === opt ? "#0a0604" : "#c9a961",
+        background: settings.hapticIntensity === opt ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
+        border: "1px solid ".concat(settings.hapticIntensity === opt ? "#c9a961" : "rgba(201, 169, 97, 0.3)"),
+        borderRadius: "2px"
+      }
+    }, opt);
+  }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "text-[10px] tracking-[0.25em] uppercase mb-2",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: "#b09870",
+      fontWeight: 600
+    }
+  }, "Text Size"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-3 gap-1.5"
+  }, [['small', 'S'], ['normal', 'M'], ['large', 'L']].map(function (_ref30) {
+    var _ref31 = _slicedToArray(_ref30, 2),
+      opt = _ref31[0],
+      label = _ref31[1];
+    return /*#__PURE__*/React.createElement("button", {
+      key: opt,
+      onClick: function onClick() {
+        setSettings(function (s) {
+          return _objectSpread(_objectSpread({}, s), {}, {
+            fontSize: opt
+          });
+        });
+        haptic(15);
+      },
+      className: "py-2 active:scale-95",
+      style: {
+        fontFamily: "'Cinzel', serif",
+        fontWeight: 600,
+        fontSize: opt === 'small' ? '0.7rem' : opt === 'large' ? '0.9rem' : '0.8rem',
+        color: settings.fontSize === opt ? "#0a0604" : "#c9a961",
+        background: settings.fontSize === opt ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
+        border: "1px solid ".concat(settings.fontSize === opt ? "#c9a961" : "rgba(201, 169, 97, 0.3)"),
+        borderRadius: "2px"
+      }
+    }, label);
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "flex items-center justify-between py-2 cursor-pointer"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-[11px] tracking-[0.15em] uppercase",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: "#c9a961"
+    }
+  }, "Scroll-to-top button"), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      setSettings(function (s) {
+        return _objectSpread(_objectSpread({}, s), {}, {
+          showScrollTop: !s.showScrollTop
+        });
+      });
+      haptic(15);
+    },
+    style: {
+      width: 40,
+      height: 22,
+      borderRadius: 11,
+      background: settings.showScrollTop ? "#c9a961" : "rgba(154,135,101,0.2)",
+      border: "1px solid rgba(201,169,97,0.3)",
+      position: 'relative',
+      cursor: 'pointer',
+      transition: 'background 0.2s'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      position: 'absolute',
+      top: 2,
+      left: settings.showScrollTop ? 20 : 2,
+      width: 16,
+      height: 16,
+      borderRadius: '50%',
+      background: settings.showScrollTop ? "#0a0604" : "#9a8765",
+      transition: 'left 0.2s'
+    }
+  })))), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      storage.set('onboardingSeen', false);
+      setOnboardingStep(0);
+      setSettingsOpen(false);
+      haptic(20);
+    },
+    className: "w-full py-2.5 text-[10px] tracking-[0.2em] uppercase active:scale-95",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: "#9fc7e6",
+      background: "rgba(63,100,140,0.1)",
+      border: "1px solid rgba(63,100,140,0.35)",
+      borderRadius: "2px"
+    }
+  }, "Show Tour Again")))), showScrollTop && settings.showScrollTop && /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      haptic(15);
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    },
+    className: "fixed z-[55] active:scale-90 transition-all",
+    style: {
+      bottom: 'calc(5.5rem + env(safe-area-inset-bottom))',
+      right: '1rem',
+      width: 44,
+      height: 44,
+      borderRadius: '50%',
+      background: "linear-gradient(180deg, rgba(26, 17, 10, 0.95), rgba(10, 6, 4, 0.95))",
+      border: "1px solid rgba(212, 184, 122, 0.5)",
+      color: "#d4b87a",
+      boxShadow: "0 6px 20px rgba(0,0,0,0.6), 0 0 12px rgba(212, 184, 122, 0.15)",
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      animation: 'fabIn 0.25s ease-out'
+    },
+    "aria-label": "Scroll to top"
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '1.2rem',
+      lineHeight: 1,
+      transform: 'translateY(-1px)'
+    }
+  }, "\u2191")), onboardingStep >= 0 && onboardingStep <= 3 && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[115] flex items-end justify-center",
+    style: {
+      background: "rgba(5, 3, 10, 0.7)",
+      backdropFilter: "blur(2px)",
+      WebkitBackdropFilter: "blur(2px)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-full max-w-md mx-3 mb-20 px-5 py-5",
+    style: {
+      background: "linear-gradient(180deg, rgba(26, 17, 10, 0.98), rgba(10, 6, 4, 0.98))",
+      border: "1px solid rgba(212, 184, 122, 0.5)",
+      borderRadius: "4px",
+      boxShadow: "0 8px 40px rgba(0,0,0,0.7), 0 0 32px rgba(212, 184, 122, 0.15)",
+      animation: 'sanctumIn 0.3s ease-out'
+    }
+  }, function () {
+    var steps = [{
+      title: 'Welcome to Token Queen',
+      body: 'Your companion for Magic: the Gathering — tokens, life totals, and a hidden chamber for your companion. Let me show you around.'
+    }, {
+      title: 'The Battlefield',
+      body: 'Search Scryfall for any token, or tap the counter chips to add Energy, Poison, Experience and more. Tap a card to set its count, long-press to zoom.'
+    }, {
+      title: 'Life & Tools',
+      body: 'Track life totals up to 4 players with commander damage, poison, energy. Tools has turn phases, dice, monarch, mana pool, keyword index.'
+    }, {
+      title: 'The Sanctum',
+      body: 'Tap the title 7 times to find the secret chamber. Your companion lives there — feed it, play with it, and watch it grow.'
+    }];
+    var step = steps[onboardingStep];
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-1 mb-3"
+    }, [0, 1, 2, 3].map(function (i) {
+      return /*#__PURE__*/React.createElement("span", {
+        key: i,
+        style: {
+          width: i === onboardingStep ? 16 : 6,
+          height: 4,
+          borderRadius: 2,
+          background: i <= onboardingStep ? '#d4b87a' : 'rgba(201,169,97,0.2)',
+          transition: 'all 0.3s'
+        }
+      });
+    })), /*#__PURE__*/React.createElement("h3", {
+      className: "text-base tracking-[0.2em] uppercase mb-2",
+      style: {
+        fontFamily: "'Cinzel', serif",
+        color: '#f5d98f',
+        fontWeight: 600
+      }
+    }, step.title), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm leading-relaxed mb-4",
+      style: {
+        fontFamily: "'Crimson Pro', serif",
+        color: '#d4b87a'
+      }
+    }, step.body), /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: function onClick() {
+        haptic(15);
+        setOnboardingStep(-1);
+      },
+      className: "flex-1 py-2.5 text-[10px] tracking-[0.2em] uppercase active:scale-95",
+      style: {
+        fontFamily: "'Cinzel', serif",
+        color: '#9a8765',
+        background: 'transparent',
+        border: '1px solid rgba(154,135,101,0.3)',
+        borderRadius: '2px'
+      }
+    }, "Skip"), /*#__PURE__*/React.createElement("button", {
+      onClick: function onClick() {
+        haptic(20);
+        setOnboardingStep(onboardingStep === 3 ? -1 : onboardingStep + 1);
+      },
+      className: "flex-[2] py-2.5 text-[10px] tracking-[0.2em] uppercase active:scale-95",
+      style: {
+        fontFamily: "'Cinzel', serif",
+        fontWeight: 700,
+        color: '#0a0604',
+        background: 'linear-gradient(180deg, #f5d98f, #c9a961)',
+        border: '1px solid #c9a961',
+        borderRadius: '2px',
+        boxShadow: '0 2px 8px rgba(201,169,97,0.3)'
+      }
+    }, onboardingStep === 3 ? 'Begin' : 'Next')));
+  }())), toast && /*#__PURE__*/React.createElement("div", {
     className: "fixed left-1/2 -translate-x-1/2 z-[60] pointer-events-none px-5 py-2.5",
     style: {
       bottom: 'calc(5.5rem + env(safe-area-inset-bottom))',
