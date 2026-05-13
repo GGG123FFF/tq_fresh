@@ -1,47 +1,18 @@
-name: Build Token Queen APK
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Verify assets
-        run: npm run build
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: "21"
-
-      - name: Capacitor sync
-        run: npx cap sync android
-
-      - name: Build APK
-        run: |
-          chmod +x android/gradlew
-          cd android && ./gradlew assembleDebug --no-daemon
-
-      - name: Rename & upload APK
-        run: |
-          DATE=$(date +%Y%m%d-%H%M)
-          cp android/app/build/outputs/apk/debug/app-debug.apk token-queen-${DATE}.apk
-          echo "APK_NAME=token-queen-${DATE}.apk" >> $GITHUB_ENV
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.APK_NAME }}
-          path: ${{ env.APK_NAME }}
-          retention-days: 30
+#!/usr/bin/env node
+const fs = require("fs"), path = require("path");
+const www = path.join(__dirname, "www");
+const required = [
+  "index.html",
+  "app.js",
+  "tailwind.css",
+  "vendor/react.production.min.js",
+  "vendor/react-dom.production.min.js"
+];
+let ok = true;
+for (const f of required) {
+  const fp = path.join(www, f);
+  if (!fs.existsSync(fp)) { console.error(`❌ Missing: www/${f}`); ok = false; }
+  else console.log(`✅ www/${f} (${(fs.statSync(fp).size/1024).toFixed(0)} KB)`);
+}
+if (!ok) process.exit(1);
+console.log("\n✨ Build complete — www/ ready for Capacitor sync.");
