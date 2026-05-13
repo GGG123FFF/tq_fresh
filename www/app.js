@@ -3294,1079 +3294,1123 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     pet = _ref16.pet,
     setPet = _ref16.setPet,
     haptic = _ref16.haptic;
+  // ============================================================================
+  // FLAPPY DRAGON v2 - Pure canvas game, no React state during gameplay
+  // ============================================================================
+  // Architecture: single requestAnimationFrame loop, all game state in refs,
+  // React only renders the chrome (close button, score readout) and reacts to
+  // game-over events. Avoids React reconciliation freezes from per-frame setState.
+  // ============================================================================
+
   var canvasRef = React.useRef(null);
-  var ctxRef = React.useRef(null);
-  var stateRef = React.useRef(null);
+  var containerRef = React.useRef(null);
   var rafRef = React.useRef(null);
-  var _React$useState33 = React.useState(0),
-    _React$useState34 = _slicedToArray(_React$useState33, 2),
-    displayScore = _React$useState34[0],
-    setDisplayScore = _React$useState34[1];
-  var _React$useState35 = React.useState(parseInt(localStorage.getItem(DRAGON_HIGH_KEY) || '0', 10)),
-    _React$useState36 = _slicedToArray(_React$useState35, 2),
-    displayBest = _React$useState36[0],
-    setDisplayBest = _React$useState36[1];
-  var _React$useState37 = React.useState('idle'),
-    _React$useState38 = _slicedToArray(_React$useState37, 2),
-    gamePhase = _React$useState38[0],
-    setGamePhase = _React$useState38[1];
-  var _React$useState39 = React.useState('easy'),
-    _React$useState40 = _slicedToArray(_React$useState39, 2),
-    mode = _React$useState40[0],
-    setMode = _React$useState40[1];
-  var _React$useState41 = React.useState(function () {
-      return getAudio().isMuted();
-    }),
-    _React$useState42 = _slicedToArray(_React$useState41, 2),
-    muted = _React$useState42[0],
-    setMutedState = _React$useState42[1];
-  // Dragon colour selection
-  var _React$useState43 = React.useState(function () {
-      return localStorage.getItem('tq_dragon_colour') || 'red';
-    }),
-    _React$useState44 = _slicedToArray(_React$useState43, 2),
-    dragonColour = _React$useState44[0],
-    setDragonColour = _React$useState44[1];
-  var dragonColourRef = React.useRef(dragonColour);
-  // No sprite loading needed - dragon is drawn directly with canvas
+  var audioCtxRef = React.useRef(null);
+  var stateRef = React.useRef(null); // Mutable game state
 
-  // Persist colour choice
-  React.useEffect(function () {
-    dragonColourRef.current = dragonColour;
-    localStorage.setItem('tq_dragon_colour', dragonColour);
-  }, [dragonColour]);
-  var modeRef = React.useRef('easy');
-  var phaseRef = React.useRef('idle');
-  var wingFrame = React.useRef(0);
-  var lastWingTime = React.useRef(0);
+  var _useState = useState('menu'),
+    _useState2 = _slicedToArray(_useState, 2),
+    phase = _useState2[0],
+    setPhase = _useState2[1]; // 'menu' | 'playing' | 'gameover'
+  var _useState3 = useState(function () {
+      try {
+        return localStorage.getItem('tq_flappy_color') || 'red';
+      } catch (_unused5) {
+        return 'red';
+      }
+    }),
+    _useState4 = _slicedToArray(_useState3, 2),
+    dragonColor = _useState4[0],
+    setDragonColor = _useState4[1];
+  var _useState5 = useState(function () {
+      try {
+        return localStorage.getItem('tq_flappy_diff') || 'normal';
+      } catch (_unused6) {
+        return 'normal';
+      }
+    }),
+    _useState6 = _slicedToArray(_useState5, 2),
+    difficulty = _useState6[0],
+    setDifficulty = _useState6[1];
+  var _useState7 = useState(function () {
+      try {
+        return localStorage.getItem('tq_flappy_muted') === '1';
+      } catch (_unused7) {
+        return false;
+      }
+    }),
+    _useState8 = _slicedToArray(_useState7, 2),
+    muted = _useState8[0],
+    setMuted = _useState8[1];
+  var _useState9 = useState(0),
+    _useState0 = _slicedToArray(_useState9, 2),
+    finalScore = _useState0[0],
+    setFinalScore = _useState0[1];
+  var _useState1 = useState(function () {
+      try {
+        return parseInt(localStorage.getItem('tq_flappy_best_v2') || '0', 10);
+      } catch (_unused8) {
+        return 0;
+      }
+    }),
+    _useState10 = _slicedToArray(_useState1, 2),
+    bestScore = _useState10[0],
+    setBestScore = _useState10[1];
+  var _useState11 = useState(0),
+    _useState12 = _slicedToArray(_useState11, 2),
+    xpEarned = _useState12[0],
+    setXpEarned = _useState12[1];
 
-  // Start music when component mounts, stop when unmounts
-  React.useEffect(function () {
-    getAudio().start('dragon');
-    // music stops on exit via close button
-  }, []);
-  var toggleMute = function toggleMute() {
-    var audio = getAudio();
-    audio.setMuted(!audio.isMuted());
-    setMutedState(audio.isMuted());
+  // ============ Persist preferences ============
+  useEffect(function () {
+    try {
+      localStorage.setItem('tq_flappy_color', dragonColor);
+    } catch (_unused9) {}
+  }, [dragonColor]);
+  useEffect(function () {
+    try {
+      localStorage.setItem('tq_flappy_diff', difficulty);
+    } catch (_unused0) {}
+  }, [difficulty]);
+  useEffect(function () {
+    try {
+      localStorage.setItem('tq_flappy_muted', muted ? '1' : '0');
+    } catch (_unused1) {}
+  }, [muted]);
+
+  // ============ Difficulty presets ============
+  var DIFF = {
+    easy: {
+      gap: 200,
+      speed: 1.8,
+      gravity: 0.36,
+      jump: -6.4,
+      spawnGap: 280
+    },
+    normal: {
+      gap: 160,
+      speed: 2.3,
+      gravity: 0.42,
+      jump: -6.8,
+      spawnGap: 240
+    },
+    hard: {
+      gap: 130,
+      speed: 2.9,
+      gravity: 0.50,
+      jump: -7.4,
+      spawnGap: 210
+    }
   };
-  var initState = function initState(W, H) {
-    var mode = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'easy';
-    var hard = mode === 'hard';
-    return {
+
+  // ============ Dragon palette ============
+  var COLORS = {
+    white: {
+      body: '#f5e9d0',
+      wing: '#d4c39a',
+      eye: '#3a2d1a',
+      glow: 'rgba(245, 233, 208, 0.5)',
+      name: 'White'
+    },
+    blue: {
+      body: '#6a96c4',
+      wing: '#3f648c',
+      eye: '#0a1a30',
+      glow: 'rgba(106, 150, 196, 0.5)',
+      name: 'Blue'
+    },
+    shadow: {
+      body: '#6a4a8a',
+      wing: '#3d2a55',
+      eye: '#000',
+      glow: 'rgba(154, 108, 192, 0.5)',
+      name: 'Shadow'
+    },
+    red: {
+      body: '#c0453f',
+      wing: '#8a2d29',
+      eye: '#1a0606',
+      glow: 'rgba(192, 69, 63, 0.6)',
+      name: 'Red'
+    },
+    green: {
+      body: '#7faf4f',
+      wing: '#4f7530',
+      eye: '#0a1a06',
+      glow: 'rgba(127, 175, 79, 0.5)',
+      name: 'Green'
+    }
+  };
+
+  // ============ Audio (WebAudio - tiny synthesised tones) ============
+  var initAudio = function initAudio() {
+    if (audioCtxRef.current || muted) return;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtxRef.current = new AC();
+    } catch (_unused10) {}
+  };
+  var playBeep = function playBeep(freq, dur) {
+    var type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'square';
+    var vol = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0.05;
+    if (muted) return;
+    var ctx = audioCtxRef.current;
+    if (!ctx || ctx.state === 'closed') return;
+    try {
+      var o = ctx.createOscillator();
+      var g = ctx.createGain();
+      o.type = type;
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(vol, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+      o.connect(g).connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime + dur);
+    } catch (_unused11) {}
+  };
+  var playSweep = function playSweep(f1, f2, dur) {
+    var type = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'sawtooth';
+    var vol = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 0.08;
+    if (muted) return;
+    var ctx = audioCtxRef.current;
+    if (!ctx || ctx.state === 'closed') return;
+    try {
+      var o = ctx.createOscillator();
+      var g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f1, ctx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(f2, ctx.currentTime + dur);
+      g.gain.setValueAtTime(vol, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+      o.connect(g).connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime + dur);
+    } catch (_unused12) {}
+  };
+  var sfx = {
+    flap: function flap() {
+      return playBeep(420, 0.08, 'square', 0.06);
+    },
+    score: function score() {
+      playBeep(880, 0.06, 'triangle', 0.07);
+      setTimeout(function () {
+        return playBeep(1320, 0.08, 'triangle', 0.06);
+      }, 60);
+    },
+    coin: function coin() {
+      playBeep(1320, 0.05, 'sine', 0.08);
+      setTimeout(function () {
+        return playBeep(1760, 0.08, 'sine', 0.08);
+      }, 50);
+    },
+    hit: function hit() {
+      return playSweep(200, 50, 0.35, 'sawtooth', 0.12);
+    },
+    start: function start() {
+      playBeep(660, 0.08, 'triangle', 0.06);
+      setTimeout(function () {
+        return playBeep(880, 0.10, 'triangle', 0.06);
+      }, 80);
+    }
+  };
+
+  // ============ Resize canvas to container ============
+  var resizeCanvas = function resizeCanvas() {
+    var canvas = canvasRef.current;
+    var container = containerRef.current;
+    if (!canvas || !container) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var rect = container.getBoundingClientRect();
+    var w = Math.max(rect.width, 320);
+    var h = Math.max(rect.height, 400);
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (stateRef.current) {
+      stateRef.current.W = w;
+      stateRef.current.H = h;
+    }
+  };
+
+  // ============ Reset game state ============
+  var resetState = function resetState() {
+    var canvas = canvasRef.current;
+    if (!canvas) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = canvas.width / dpr;
+    var H = canvas.height / dpr;
+    var diff = DIFF[difficulty];
+    stateRef.current = {
       W: W,
       H: H,
-      mode: mode,
-      dragonX: W * 0.2,
-      dragonY: H * 0.45,
-      dy: 0,
-      gravity: hard ? H * 0.00072 : H * 0.00040,
-      flapForce: hard ? -(H * 0.014) : -(H * 0.011),
-      terminalVel: hard ? H * 0.020 : H * 0.015,
-      pipeSpeed: hard ? W * 0.007 : W * 0.0048,
-      pipeW: W * 0.14,
-      gap: hard ? H * 0.27 : H * 0.38,
-      // easy: very forgiving gap
-      pipes: [{
-        x: W * 1.1,
-        gapY: H * 0.25 + Math.random() * H * 0.35,
-        passed: false,
-        id: 0
-      }, {
-        x: W * 1.7,
-        gapY: H * 0.25 + Math.random() * H * 0.35,
-        passed: false,
-        id: 1
-      }],
-      nextPipeId: 2,
+      diff: diff,
+      dragon: {
+        x: W * 0.28,
+        y: H * 0.45,
+        vy: 0,
+        rot: 0,
+        flapT: 0
+      },
+      pipes: [],
+      coins: [],
+      particles: [],
+      stars: Array.from({
+        length: 40
+      }, function () {
+        return {
+          x: Math.random() * W,
+          y: Math.random() * H * 0.7,
+          s: 0.5 + Math.random() * 1.2,
+          twinkle: Math.random() * Math.PI * 2
+        };
+      }),
       score: 0,
-      alive: true,
-      started: false,
-      groundY: H * 0.88,
-      frameCount: 0
+      coinsCollected: 0,
+      groundOffset: 0,
+      cloudOffset: 0,
+      spawnTimer: 0,
+      flashAlpha: 0,
+      shakeAmount: 0,
+      tick: 0,
+      dead: false
     };
   };
 
-  // Draw dragon using canvas 2D - fully drawn, no sprite loading needed
-  var drawDragon = function drawDragon(ctx, x, y, dy, dead, frame) {
-    var DW = 80,
-      DH = 53; // Fixed dimensions
-    var tilt = dead ? 75 : Math.max(-28, Math.min(45, dy * 3.2));
-    var col = dragonColourRef.current || 'red';
-    var frameIdx = dead ? 2 : frame % 5;
-    ctx.save();
-    ctx.translate(x + DW / 2, y + DH / 2);
-    ctx.rotate(tilt * Math.PI / 180);
+  // ============ Game loop ============
+  var _loop = function loop() {
+    var s = stateRef.current;
+    var canvas = canvasRef.current;
+    if (!s || !canvas) {
+      rafRef.current = null;
+      return;
+    }
+    var ctx = canvas.getContext('2d');
+    var W = s.W,
+      H = s.H,
+      diff = s.diff;
+    s.tick++;
 
-    // Draw a stylized dragon
-    var colors = {
-      'red': {
-        body: '#c0453f',
-        belly: '#e86f5f',
-        wing: '#a03530',
-        eye: '#ff8800'
-      },
-      'blue': {
-        body: '#4a85c7',
-        belly: '#6ba5e7',
-        wing: '#2d5f9f',
-        eye: '#ffffff'
-      },
-      'green': {
-        body: '#5fa865',
-        belly: '#7fc88a',
-        wing: '#3f8845',
-        eye: '#ffee00'
-      },
-      'white': {
-        body: '#e8dcc4',
-        belly: '#f5f0e8',
-        wing: '#c8b8a0',
-        eye: '#4da6ff'
-      },
-      'black': {
-        body: '#4a3f38',
-        belly: '#6a5f58',
-        wing: '#2a1f18',
-        eye: '#ff4040'
+    // ====== Physics ======
+    if (!s.dead) {
+      s.dragon.vy += diff.gravity;
+      // Terminal velocity cap
+      if (s.dragon.vy > 10) s.dragon.vy = 10;
+      s.dragon.y += s.dragon.vy;
+      // Rotation based on vy
+      var targetRot = Math.max(-0.5, Math.min(1.0, s.dragon.vy * 0.10));
+      s.dragon.rot += (targetRot - s.dragon.rot) * 0.18;
+      s.dragon.flapT = Math.max(0, s.dragon.flapT - 1);
+
+      // Spawn pipes
+      s.spawnTimer -= diff.speed;
+      if (s.spawnTimer <= 0) {
+        s.spawnTimer = diff.spawnGap;
+        var minTop = 60;
+        var maxTop = H - 100 - diff.gap;
+        var topH = minTop + Math.random() * (maxTop - minTop);
+        s.pipes.push({
+          x: W + 30,
+          topH: topH,
+          bottomY: topH + diff.gap,
+          scored: false
+        });
+        // 35% chance: spawn a coin in the middle of the gap
+        if (Math.random() < 0.35) {
+          s.coins.push({
+            x: W + 30 + 60,
+            y: topH + diff.gap / 2,
+            taken: false,
+            t: 0
+          });
+        }
       }
-    };
-    var c = colors[col] || colors['red'];
 
-    // Tail (draw first so it's behind)
-    ctx.strokeStyle = c.body;
-    ctx.lineWidth = 7;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
+      // Move pipes
+      for (var i = s.pipes.length - 1; i >= 0; i--) {
+        var p = s.pipes[i];
+        p.x -= diff.speed;
+        // Scoring (when dragon passes a pipe's center)
+        if (!p.scored && p.x + 30 < s.dragon.x) {
+          p.scored = true;
+          s.score++;
+          sfx.score();
+          // Spawn score sparkle
+          for (var k = 0; k < 6; k++) {
+            s.particles.push({
+              x: s.dragon.x + 16,
+              y: s.dragon.y,
+              vx: (Math.random() - 0.5) * 2.5,
+              vy: -Math.random() * 2 - 1,
+              life: 30,
+              max: 30,
+              color: '#f5d98f',
+              size: 2 + Math.random() * 2
+            });
+          }
+        }
+        if (p.x < -80) s.pipes.splice(i, 1);
+      }
+
+      // Move coins
+      for (var _i = s.coins.length - 1; _i >= 0; _i--) {
+        var c = s.coins[_i];
+        c.x -= diff.speed;
+        c.t += 0.1;
+        var _dx = s.dragon.x - c.x;
+        var _dy = s.dragon.y - c.y;
+        if (!c.taken && Math.sqrt(_dx * _dx + _dy * _dy) < 22) {
+          c.taken = true;
+          s.coinsCollected++;
+          sfx.coin();
+          // Burst of gold particles
+          for (var _k = 0; _k < 8; _k++) {
+            s.particles.push({
+              x: c.x,
+              y: c.y,
+              vx: (Math.random() - 0.5) * 3.5,
+              vy: (Math.random() - 0.5) * 3.5,
+              life: 25,
+              max: 25,
+              color: '#f5d98f',
+              size: 2 + Math.random() * 2
+            });
+          }
+        }
+        if (c.x < -40 || c.taken) s.coins.splice(_i, 1);
+      }
+
+      // Collision detection
+      var dr = 14; // dragon hit radius
+      var dx = s.dragon.x;
+      var dy = s.dragon.y;
+      // Ground / ceiling
+      if (dy + dr > H - 40 || dy - dr < 0) {
+        die();
+      }
+      // Pipe collision
+      var _iterator = _createForOfIteratorHelper(s.pipes),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var _p = _step.value;
+          if (dx + dr > _p.x && dx - dr < _p.x + 60) {
+            if (dy - dr < _p.topH || dy + dr > _p.bottomY) {
+              die();
+              break;
+            }
+          }
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+    }
+
+    // ====== Update visual scrolling ======
+    s.groundOffset = (s.groundOffset + diff.speed) % 40;
+    s.cloudOffset = (s.cloudOffset + diff.speed * 0.3) % W;
+    var _iterator2 = _createForOfIteratorHelper(s.stars),
+      _step2;
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var star = _step2.value;
+        star.twinkle += 0.04;
+      }
+
+      // Update particles
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
+    }
+    for (var _i2 = s.particles.length - 1; _i2 >= 0; _i2--) {
+      var _p2 = s.particles[_i2];
+      _p2.x += _p2.vx;
+      _p2.y += _p2.vy;
+      _p2.vy += 0.15;
+      _p2.life--;
+      if (_p2.life <= 0) s.particles.splice(_i2, 1);
+    }
+
+    // Decay shake & flash
+    if (s.shakeAmount > 0) s.shakeAmount *= 0.85;
+    if (s.flashAlpha > 0) s.flashAlpha -= 0.08;
+
+    // ====== Render ======
+    render(ctx, s);
+
+    // If dragon is dead and has fallen off-screen, end the game
+    if (s.dead && s.dragon.y > H + 50) {
+      finishGame(s.score, s.coinsCollected);
+      return;
+    }
+
+    // Continue gravity even after death (rag-doll fall)
+    if (s.dead) {
+      s.dragon.vy += diff.gravity;
+      s.dragon.y += s.dragon.vy;
+      s.dragon.rot += 0.05;
+    }
+    rafRef.current = requestAnimationFrame(_loop);
+  };
+
+  // ============ Render ============
+  var render = function render(ctx, s) {
+    var W = s.W,
+      H = s.H;
+    var color = COLORS[dragonColor];
+
+    // Shake
+    var sx = (Math.random() - 0.5) * s.shakeAmount;
+    var sy = (Math.random() - 0.5) * s.shakeAmount;
+    ctx.save();
+    ctx.translate(sx, sy);
+
+    // ====== Background gradient ======
+    var grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#1a0f2a');
+    grad.addColorStop(0.5, '#2d1840');
+    grad.addColorStop(1, '#1a0a25');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // ====== Stars ======
+    var _iterator3 = _createForOfIteratorHelper(s.stars),
+      _step3;
+    try {
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var star = _step3.value;
+        var t = 0.5 + 0.5 * Math.sin(star.twinkle);
+        ctx.fillStyle = "rgba(245, 233, 208, ".concat(0.3 + t * 0.5, ")");
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.s * (0.7 + t * 0.5), 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // ====== Mountains (parallax silhouettes) ======
+    } catch (err) {
+      _iterator3.e(err);
+    } finally {
+      _iterator3.f();
+    }
+    ctx.fillStyle = 'rgba(20, 10, 30, 0.7)';
+    var baseY = H - 60;
     ctx.beginPath();
-    ctx.moveTo(-DW * 0.35, DH * 0.05);
-    var tailWag = dead ? 0 : Math.sin(frameIdx * 0.3) * 8;
-    ctx.quadraticCurveTo(-DW * 0.6, DH * 0.28 + tailWag, -DW * 0.8, DH * 0.2 + tailWag * 0.5);
-    ctx.stroke();
-    // Tail tip (spade shape)
-    ctx.fillStyle = c.wing;
-    ctx.beginPath();
-    ctx.moveTo(-DW * 0.8, DH * 0.2 + tailWag * 0.5);
-    ctx.lineTo(-DW * 0.88, DH * 0.12 + tailWag * 0.3);
-    ctx.lineTo(-DW * 0.84, DH * 0.24 + tailWag * 0.5);
-    ctx.lineTo(-DW * 0.8, DH * 0.2 + tailWag * 0.5);
+    ctx.moveTo(0, baseY);
+    for (var x = 0; x <= W; x += 40) {
+      var off = (x + s.cloudOffset * 0.5) % (W + 80);
+      var hh = 30 + Math.sin(off * 0.02) * 20 + Math.sin(off * 0.05) * 10;
+      ctx.lineTo(x, baseY - hh);
+    }
+    ctx.lineTo(W, baseY);
     ctx.closePath();
     ctx.fill();
 
-    // Wings (behind body)
-    ctx.fillStyle = c.wing;
-    var wingBeat = dead ? 0 : Math.sin(frameIdx * 0.8) * 8;
-    // Left wing (back)
-    ctx.beginPath();
-    ctx.moveTo(-DW * 0.22, -DH * 0.05);
-    ctx.lineTo(-DW * 0.58, -DH * 0.4 + wingBeat);
-    ctx.lineTo(-DW * 0.32, DH * 0.18);
-    ctx.closePath();
-    ctx.fill();
-    // Right wing (front) - slightly different angle
-    ctx.beginPath();
-    ctx.moveTo(-DW * 0.12, -DH * 0.08);
-    ctx.lineTo(-DW * 0.48, -DH * 0.45 - wingBeat);
-    ctx.lineTo(-DW * 0.22, DH * 0.15);
-    ctx.closePath();
-    ctx.fill();
+    // ====== Pipes (rendered as crystal columns) ======
+    var _iterator4 = _createForOfIteratorHelper(s.pipes),
+      _step4;
+    try {
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var p = _step4.value;
+        drawPipe(ctx, p.x, 0, 60, p.topH, color, true);
+        drawPipe(ctx, p.x, p.bottomY, 60, H - 40 - p.bottomY, color, false);
+      }
 
-    // Body (main oval)
-    ctx.fillStyle = c.body;
-    ctx.beginPath();
-    ctx.ellipse(-DW * 0.05, 0, DW * 0.38, DH * 0.32, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Belly highlight
-    ctx.fillStyle = c.belly;
-    ctx.beginPath();
-    ctx.ellipse(-DW * 0.03, DH * 0.08, DW * 0.22, DH * 0.18, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Neck
-    ctx.fillStyle = c.body;
-    ctx.beginPath();
-    ctx.ellipse(DW * 0.18, -DH * 0.08, DW * 0.15, DH * 0.22, 0.3, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Head (elongated for snout)
-    ctx.fillStyle = c.body;
-    ctx.beginPath();
-    ctx.ellipse(DW * 0.35, -DH * 0.15, DW * 0.22, DH * 0.15, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Snout/nose
-    ctx.fillStyle = c.wing;
-    ctx.beginPath();
-    ctx.ellipse(DW * 0.50, -DH * 0.15, DW * 0.08, DH * 0.08, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Nostrils
-    ctx.fillStyle = '#1a110a';
-    ctx.beginPath();
-    ctx.arc(DW * 0.52, -DH * 0.18, 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(DW * 0.52, -DH * 0.12, 2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Eye
-    if (!dead) {
-      // Eye white
-      ctx.fillStyle = c.eye;
-      ctx.beginPath();
-      ctx.ellipse(DW * 0.38, -DH * 0.20, 5, 6, 0, 0, Math.PI * 2);
-      ctx.fill();
-      // Pupil
-      ctx.fillStyle = '#1a110a';
-      ctx.beginPath();
-      ctx.arc(DW * 0.39, -DH * 0.19, 3, 0, Math.PI * 2);
-      ctx.fill();
-      // Highlight
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(DW * 0.40, -DH * 0.21, 1.5, 0, Math.PI * 2);
-      ctx.fill();
+      // ====== Coins ======
+    } catch (err) {
+      _iterator4.e(err);
+    } finally {
+      _iterator4.f();
     }
+    var _iterator5 = _createForOfIteratorHelper(s.coins),
+      _step5;
+    try {
+      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+        var c = _step5.value;
+        if (c.taken) continue;
+        var pulse = 1 + Math.sin(c.t) * 0.15;
+        var r = 10 * pulse;
+        // Outer glow
+        var cg = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, r + 6);
+        cg.addColorStop(0, 'rgba(245, 217, 143, 0.6)');
+        cg.addColorStop(1, 'rgba(245, 217, 143, 0)');
+        ctx.fillStyle = cg;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, r + 6, 0, Math.PI * 2);
+        ctx.fill();
+        // Coin body
+        ctx.fillStyle = '#f5d98f';
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#8a6f3a';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        // Star symbol
+        ctx.fillStyle = '#8a6f3a';
+        ctx.font = "".concat(Math.floor(r * 1.2), "px serif");
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✦', c.x, c.y);
+      }
 
-    // Horns/ridges
-    ctx.strokeStyle = c.wing;
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
+      // ====== Ground ======
+    } catch (err) {
+      _iterator5.e(err);
+    } finally {
+      _iterator5.f();
+    }
+    ctx.fillStyle = '#1a0a06';
+    ctx.fillRect(0, H - 40, W, 40);
+    ctx.strokeStyle = 'rgba(201, 169, 97, 0.4)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(DW * 0.28, -DH * 0.28);
-    ctx.lineTo(DW * 0.26, -DH * 0.42);
+    ctx.moveTo(0, H - 40);
+    ctx.lineTo(W, H - 40);
     ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(DW * 0.36, -DH * 0.30);
-    ctx.lineTo(DW * 0.38, -DH * 0.44);
-    ctx.stroke();
-
-    // Spine ridges on back
-    ctx.lineWidth = 2;
-    for (var i = 0; i < 3; i++) {
-      var sx = -DW * 0.15 - i * DW * 0.1;
-      var sy = -DH * 0.2 + i * DH * 0.08;
+    // Ground hash marks
+    ctx.strokeStyle = 'rgba(154, 135, 101, 0.3)';
+    for (var _x = -s.groundOffset; _x < W; _x += 40) {
       ctx.beginPath();
-      ctx.moveTo(sx, sy);
-      ctx.lineTo(sx - 4, sy - 8);
+      ctx.moveTo(_x, H - 40);
+      ctx.lineTo(_x + 12, H - 30);
       ctx.stroke();
     }
 
-    // Flame breath on strong flap — overlaid on sprite
-    if (!dead && dy < -4) {
-      var flameX = DW / 2 + 4;
-      ctx.globalAlpha = 0.8;
-      var grad = ctx.createRadialGradient(flameX, 0, 0, flameX, 0, 18 + Math.random() * 6);
-      grad.addColorStop(0, '#fff8e4');
-      grad.addColorStop(0.4, '#f5a030');
-      grad.addColorStop(1, 'rgba(200,60,20,0)');
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.ellipse(flameX + 8, 0, 16 + Math.random() * 4, 6, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
+    // ====== Particles ======
+    var _iterator6 = _createForOfIteratorHelper(s.particles),
+      _step6;
+    try {
+      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+        var _p3 = _step6.value;
+        var alpha = _p3.life / _p3.max;
+        ctx.fillStyle = _p3.color.replace(/[\d.]+\)$/, "".concat(alpha, ")")).replace('#', 'rgba(') || "rgba(245, 217, 143, ".concat(alpha, ")");
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = _p3.color;
+        ctx.beginPath();
+        ctx.arc(_p3.x, _p3.y, _p3.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      // ====== Dragon ======
+    } catch (err) {
+      _iterator6.e(err);
+    } finally {
+      _iterator6.f();
+    }
+    drawDragon(ctx, s.dragon, color, s.dead);
+
+    // ====== Score ======
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.font = "bold 56px 'Cinzel', serif";
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(String(s.score), W / 2 + 2, 32);
+    ctx.fillStyle = '#f5d98f';
+    ctx.fillText(String(s.score), W / 2, 30);
+
+    // ====== Coin counter (top-left) ======
+    if (s.coinsCollected > 0) {
+      ctx.fillStyle = '#f5d98f';
+      ctx.font = "bold 18px 'JetBrains Mono', monospace";
+      ctx.textAlign = 'left';
+      ctx.fillText('✦ ' + s.coinsCollected, 14, 14);
     }
 
-    // Dead X eyes overlay
-    if (dead) {
-      ctx.strokeStyle = '#ff4040';
-      ctx.lineWidth = 2.5;
-      var ex = DW * 0.28,
-        ey = -DH * 0.18,
-        es = 5;
-      ctx.beginPath();
-      ctx.moveTo(ex - es, ey - es);
-      ctx.lineTo(ex + es, ey + es);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(ex + es, ey - es);
-      ctx.lineTo(ex - es, ey + es);
-      ctx.stroke();
+    // ====== Flash overlay ======
+    if (s.flashAlpha > 0) {
+      ctx.fillStyle = "rgba(255, 100, 100, ".concat(s.flashAlpha, ")");
+      ctx.fillRect(0, 0, W, H);
     }
     ctx.restore();
   };
-  var drawObstacle = function drawObstacle(ctx, pipe, pipeW, gap, W, H, groundY) {
-    var type = Math.floor(pipe.id * 1.7) % 3;
-    var col = pipe.passed ? 'rgba(154,135,101,0.4)' : '#c9a961';
-    var dark = pipe.passed ? 'rgba(30,18,8,0.5)' : '#2a1a0a';
-    var topH = pipe.gapY;
-    var botY = pipe.gapY + gap;
-    var botH = groundY - botY;
-    var x = pipe.x;
-    if (type === 0) {
-      // Castle walls
-      ctx.fillStyle = dark;
-      ctx.fillRect(x, 0, pipeW, topH);
-      ctx.fillRect(x, botY, pipeW, botH);
-      ctx.strokeStyle = col;
-      ctx.lineWidth = 1.5;
-      ctx.strokeRect(x, 0, pipeW, topH);
-      ctx.strokeRect(x, botY, pipeW, botH);
-      // Battlements
-      var mW = 10,
-        mH = 16,
-        count = Math.floor(pipeW / 14);
-      ctx.fillStyle = dark;
-      for (var i = 0; i < count; i++) {
-        ctx.fillRect(x + i * 14 + 1, topH - mH, mW, mH);
-        ctx.strokeRect(x + i * 14 + 1, topH - mH, mW, mH);
-        ctx.fillRect(x + i * 14 + 1, botY, mW, mH);
-        ctx.strokeRect(x + i * 14 + 1, botY, mW, mH);
-      }
-      // Arrow slit
-      ctx.fillStyle = col;
-      ctx.globalAlpha = 0.5;
-      ctx.fillRect(x + pipeW / 2 - 2, topH * 0.3, 4, 12);
-      ctx.fillRect(x + pipeW / 2 - 2, botY + botH * 0.3, 4, 12);
-      ctx.globalAlpha = 1;
-    } else if (type === 1) {
-      // Sword pillars
-      ctx.fillStyle = dark;
-      ctx.fillRect(x, 0, pipeW, topH);
-      ctx.fillRect(x, botY, pipeW, botH);
-      ctx.strokeStyle = col;
-      ctx.lineWidth = 1.5;
-      ctx.strokeRect(x, 0, pipeW, topH);
-      ctx.strokeRect(x, botY, pipeW, botH);
-      // Sword tips
-      ctx.fillStyle = col;
-      ctx.beginPath();
-      ctx.moveTo(x + pipeW / 2 - 6, topH - 2);
-      ctx.lineTo(x + pipeW / 2 + 6, topH - 2);
-      ctx.lineTo(x + pipeW / 2, topH + 14);
-      ctx.closePath();
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(x + pipeW / 2 - 6, botY + 2);
-      ctx.lineTo(x + pipeW / 2 + 6, botY + 2);
-      ctx.lineTo(x + pipeW / 2, botY - 14);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillRect(x + pipeW / 2 - 9, topH - 22, 18, 7);
-      ctx.fillRect(x + pipeW / 2 - 9, botY + 15, 18, 7);
-    } else {
-      // Spell pillars
-      ctx.fillStyle = dark;
-      var rnd = 4;
-      ctx.beginPath();
-      rr(ctx, x + 3, 0, pipeW - 6, topH, [0, 0, rnd, rnd]);
-      ctx.fill();
-      ctx.beginPath();
-      rr(ctx, x + 3, botY, pipeW - 6, botH, [rnd, rnd, 0, 0]);
-      ctx.fill();
-      ctx.strokeStyle = col;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      rr(ctx, x + 3, 0, pipeW - 6, topH, [0, 0, rnd, rnd]);
-      ctx.stroke();
-      ctx.beginPath();
-      rr(ctx, x + 3, botY, pipeW - 6, botH, [rnd, rnd, 0, 0]);
-      ctx.stroke();
-      // Mana orbs
-      var orbs = ['#9fc7e6', '#f5d98f', '#8fbc8f'];
-      [topH * 0.2, topH * 0.5, topH * 0.78].forEach(function (oy, i) {
-        ctx.fillStyle = orbs[i];
-        ctx.globalAlpha = 0.75;
-        ctx.beginPath();
-        ctx.arc(x + pipeW / 2, oy, 6, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      var orbs2 = ['#d48a86', '#c9a961', '#9fc7e6'];
-      [botY + botH * 0.2, botY + botH * 0.5, botY + botH * 0.78].forEach(function (oy, i) {
-        ctx.fillStyle = orbs2[i];
-        ctx.globalAlpha = 0.75;
-        ctx.beginPath();
-        ctx.arc(x + pipeW / 2, oy, 6, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      ctx.globalAlpha = 1;
-      // Gap orbs
-      ctx.fillStyle = col;
-      ctx.globalAlpha = 0.65;
-      ctx.beginPath();
-      ctx.arc(x + pipeW / 2, topH, 9, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x + pipeW / 2, botY, 9, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-    }
-  };
-  var render = React.useCallback(function (ctx, s) {
-    var W = s.W,
-      H = s.H,
-      groundY = s.groundY;
-    // Sky gradient — deeper twilight with horizon glow
-    var sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, '#04020e');
-    sky.addColorStop(0.35, '#0c0520');
-    sky.addColorStop(0.7, '#1e0c32');
-    sky.addColorStop(0.88, '#2d1248');
-    sky.addColorStop(1, '#3a1855');
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, W, H);
 
-    // Nebula/aurora wash behind mountains
-    var nebulaGrad = ctx.createLinearGradient(0, groundY * 0.4, 0, groundY);
-    nebulaGrad.addColorStop(0, 'transparent');
-    nebulaGrad.addColorStop(0.5, 'rgba(100,30,140,0.08)');
-    nebulaGrad.addColorStop(1, 'rgba(180,80,40,0.06)');
-    ctx.fillStyle = nebulaGrad;
-    ctx.fillRect(0, groundY * 0.4, W, groundY * 0.6);
-
-    // Moon
-    var moonX = W * 0.82,
-      moonY = H * 0.12,
-      moonR = W * 0.038;
-    var moonGlow = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonR * 3.5);
-    moonGlow.addColorStop(0, 'rgba(245,220,160,0.18)');
-    moonGlow.addColorStop(1, 'transparent');
-    ctx.fillStyle = moonGlow;
-    ctx.fillRect(moonX - moonR * 3.5, moonY - moonR * 3.5, moonR * 7, moonR * 7);
-    var moonFace = ctx.createRadialGradient(moonX - moonR * 0.2, moonY - moonR * 0.2, 0, moonX, moonY, moonR);
-    moonFace.addColorStop(0, '#fff8e4');
-    moonFace.addColorStop(0.7, '#f5e090');
-    moonFace.addColorStop(1, '#c8a840');
-    ctx.fillStyle = moonFace;
+  // ====== Draw a crystal pipe (top or bottom) ======
+  var drawPipe = function drawPipe(ctx, x, y, w, h, color, isTop) {
+    if (h <= 0) return;
+    // Body gradient
+    var g = ctx.createLinearGradient(x, 0, x + w, 0);
+    g.addColorStop(0, '#3a2840');
+    g.addColorStop(0.5, '#5d3d6e');
+    g.addColorStop(1, '#3a2840');
+    ctx.fillStyle = g;
+    ctx.fillRect(x, y, w, h);
+    // Edge highlight
+    ctx.fillStyle = 'rgba(201, 169, 97, 0.25)';
+    ctx.fillRect(x + 4, y, 4, h);
+    // Cap at the end facing the gap
+    var capH = 16;
+    var capY = isTop ? y + h - capH : y;
+    var cg = ctx.createLinearGradient(x, capY, x, capY + capH);
+    cg.addColorStop(0, '#7a5290');
+    cg.addColorStop(1, '#4a2f60');
+    ctx.fillStyle = cg;
+    ctx.fillRect(x - 4, capY, w + 8, capH);
+    ctx.strokeStyle = 'rgba(212, 184, 122, 0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x - 4, capY, w + 8, capH);
+    // Inner crystal facets
+    ctx.strokeStyle = 'rgba(201, 169, 97, 0.15)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.arc(moonX, moonY, moonR, 0, Math.PI * 2);
+    ctx.moveTo(x + 18, y);
+    ctx.lineTo(x + 18, y + h);
+    ctx.moveTo(x + 42, y);
+    ctx.lineTo(x + 42, y + h);
+    ctx.stroke();
+  };
+
+  // ====== Draw the dragon (procedural) ======
+  var drawDragon = function drawDragon(ctx, d, color, dead) {
+    ctx.save();
+    ctx.translate(d.x, d.y);
+    ctx.rotate(d.rot);
+
+    // Glow
+    var glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 28);
+    glow.addColorStop(0, color.glow);
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(-28, -28, 56, 56);
+
+    // Tail
+    ctx.fillStyle = color.wing;
+    ctx.beginPath();
+    ctx.moveTo(-12, 0);
+    ctx.quadraticCurveTo(-22, -2, -28, -8);
+    ctx.lineTo(-26, 0);
+    ctx.quadraticCurveTo(-22, 4, -12, 4);
+    ctx.closePath();
     ctx.fill();
-    // Crater shadows
-    ctx.fillStyle = 'rgba(80,50,10,0.18)';
-    [[0.3, 0.2, 0.18], [-0.25, 0.35, 0.12], [0.1, -0.3, 0.15]].forEach(function (_ref17) {
-      var _ref18 = _slicedToArray(_ref17, 3),
-        dx = _ref18[0],
-        dy = _ref18[1],
-        r = _ref18[2];
+
+    // Body
+    ctx.fillStyle = color.body;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 16, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = color.wing;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Belly highlight
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+    ctx.beginPath();
+    ctx.ellipse(-2, 3, 9, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Wing (flapping animation)
+    var flapPhase = Math.sin((d.flapT > 0 ? d.flapT : Date.now() / 120) * 0.5);
+    var wingY = -6 - flapPhase * 6;
+    ctx.fillStyle = color.wing;
+    ctx.beginPath();
+    ctx.moveTo(-2, -4);
+    ctx.quadraticCurveTo(0, wingY - 4, 10, wingY);
+    ctx.quadraticCurveTo(4, wingY + 6, -2, 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Head
+    ctx.fillStyle = color.body;
+    ctx.beginPath();
+    ctx.ellipse(12, -2, 8, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = color.wing;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Horn
+    ctx.fillStyle = color.wing;
+    ctx.beginPath();
+    ctx.moveTo(11, -7);
+    ctx.lineTo(13, -13);
+    ctx.lineTo(15, -7);
+    ctx.closePath();
+    ctx.fill();
+
+    // Eye
+    ctx.fillStyle = color.eye;
+    ctx.beginPath();
+    ctx.arc(15, -3, 1.6, 0, Math.PI * 2);
+    ctx.fill();
+    if (!dead) {
+      ctx.fillStyle = '#fff';
       ctx.beginPath();
-      ctx.arc(moonX + dx * moonR, moonY + dy * moonR, r * moonR, 0, Math.PI * 2);
+      ctx.arc(15.5, -3.5, 0.6, 0, Math.PI * 2);
       ctx.fill();
-    });
-
-    // Stars — varied sizes, twinkle
-    for (var i = 0; i < 48; i++) {
-      var sx = ((i * 73 + s.frameCount * 0.08) % W + W) % W;
-      var sy = i * 47 % (groundY * 0.72);
-      var sz = 0.5 + i % 4 * 0.45;
-      var twinkle = 0.18 + 0.22 * Math.sin(s.frameCount * 0.04 + i * 1.7);
-      ctx.fillStyle = i % 7 === 0 ? "rgba(200,160,255,".concat(twinkle + 0.1, ")") : "rgba(245,217,143,".concat(twinkle, ")");
-      ctx.beginPath();
-      ctx.arc(sx, sy, sz, 0, Math.PI * 2);
-      ctx.fill();
-      // Cross sparkle on brighter stars
-      if (i % 9 === 0 && sz > 0.9) {
-        ctx.strokeStyle = "rgba(245,217,143,".concat(twinkle * 0.5, ")");
-        ctx.lineWidth = 0.6;
-        ctx.beginPath();
-        ctx.moveTo(sx - sz * 2.5, sy);
-        ctx.lineTo(sx + sz * 2.5, sy);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(sx, sy - sz * 2.5);
-        ctx.lineTo(sx, sy + sz * 2.5);
-        ctx.stroke();
-      }
-    }
-
-    // Clouds — slow parallax, semi-transparent wisps
-    for (var ci = 0; ci < 4; ci++) {
-      var cSpeed = 0.018 + ci * 0.008;
-      var cx = ((-s.frameCount * cSpeed * (s.pipeSpeed / 2.6) + ci * W * 0.28) % (W + 180) + W + 180) % (W + 180);
-      var cy = groundY * (0.08 + ci * 0.07);
-      var cW = W * (0.12 + ci % 3 * 0.07),
-        cH = cW * 0.28;
-      var cAlpha = 0.05 + ci % 2 * 0.04;
-      ctx.fillStyle = "rgba(180,140,220,".concat(cAlpha, ")");
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, cW, cH, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.ellipse(cx - cW * 0.3, cy + cH * 0.1, cW * 0.6, cH * 0.7, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.ellipse(cx + cW * 0.35, cy + cH * 0.15, cW * 0.5, cH * 0.65, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Mountains — 3 layers with improved silhouettes
-    for (var layer = 0; layer < 3; layer++) {
-      var speed = 0.04 + layer * 0.05;
-      var ox = (-s.frameCount * speed * (s.pipeSpeed / 2.6) % (W + 20) + W + 20) % (W + 20);
-      var baseAlpha = [0.18, 0.28, 0.38][layer];
-      var baseColor = ["rgba(40,15,70,".concat(baseAlpha, ")"), "rgba(55,20,80,".concat(baseAlpha, ")"), "rgba(35,12,55,".concat(baseAlpha, ")")][layer];
-      ctx.fillStyle = baseColor;
-      ctx.beginPath();
-      ctx.moveTo(-10, groundY - 30);
-      var peakCount = 5 + layer;
-      for (var _i = 0; _i <= peakCount; _i++) {
-        var mx = (ox + _i * (W * 0.35)) % (W * 2) - W * 0.15;
-        var baseH = (45 + (_i * 41 + layer * 31) % 65) * (H / 560) * (1.1 - layer * 0.15);
-        // smooth mountain shape
-        if (_i === 0) ctx.lineTo(mx - W * 0.18, groundY - 30);
-        ctx.quadraticCurveTo(mx + W * 0.09, groundY - 30 - baseH * 1.1, mx + W * 0.18, groundY - 30);
-      }
-      ctx.lineTo(W + 20, groundY - 30);
-      ctx.lineTo(W + 20, H);
-      ctx.lineTo(-10, H);
-      ctx.fill();
-      // Snow caps on far mountains
-      if (layer === 0) {
-        ctx.fillStyle = "rgba(220,200,255,0.07)";
-        ctx.beginPath();
-        for (var _i2 = 0; _i2 <= peakCount; _i2++) {
-          var _mx = (ox + _i2 * (W * 0.35)) % (W * 2) - W * 0.15;
-          var _baseH = (45 + _i2 * 41 % 65) * (H / 560);
-          ctx.moveTo(_mx + W * 0.09, groundY - 30 - _baseH * 1.1);
-          ctx.lineTo(_mx + W * 0.09 - W * 0.02, groundY - 30 - _baseH * 0.9);
-          ctx.lineTo(_mx + W * 0.09 + W * 0.02, groundY - 30 - _baseH * 0.9);
-        }
-        ctx.fill();
-      }
-    }
-
-    // Ground — rich mossy stone with glow edge
-    var gGrad = ctx.createLinearGradient(0, groundY, 0, H);
-    gGrad.addColorStop(0, '#1e1206');
-    gGrad.addColorStop(0.3, '#160e04');
-    gGrad.addColorStop(1, '#0a0602');
-    ctx.fillStyle = gGrad;
-    ctx.fillRect(0, groundY, W, H - groundY);
-    // Glowing edge
-    var edgeGrad = ctx.createLinearGradient(0, groundY - 2, 0, groundY + 6);
-    edgeGrad.addColorStop(0, 'rgba(201,169,97,0.7)');
-    edgeGrad.addColorStop(0.5, 'rgba(201,169,97,0.35)');
-    edgeGrad.addColorStop(1, 'transparent');
-    ctx.fillStyle = edgeGrad;
-    ctx.fillRect(0, groundY - 2, W, 8);
-    // Improved stone floor with alternating large/small slabs
-    var brickW = W * 0.09,
-      brickH = H * 0.024;
-    var bScroll = s.frameCount * s.pipeSpeed * 0.55 % (brickW + 3);
-    for (var row = 0; row < 3; row++) {
-      var rowY = groundY + 4 + row * (brickH + 2);
-      var darkening = row * 0.06;
-      ctx.fillStyle = "rgba(30,18,8,".concat(0.55 + darkening, ")");
-      ctx.strokeStyle = "rgba(80,55,20,".concat(0.5 - darkening, ")");
-      ctx.lineWidth = 0.7;
-      for (var _i3 = -1; _i3 < W / (brickW + 3) + 2; _i3++) {
-        var bx = _i3 * (brickW + 3) - bScroll + row % 2 * (brickW * 0.5);
-        var thisW = row === 1 ? brickW * 0.65 : brickW;
-        ctx.fillRect(bx, rowY, thisW, brickH);
-        ctx.strokeRect(bx, rowY, thisW, brickH);
-        // Occasional moss tint
-        if ((_i3 + row * 3) % 7 === 0) {
-          ctx.fillStyle = 'rgba(30,60,15,0.12)';
-          ctx.fillRect(bx + 2, rowY + 2, thisW - 4, brickH - 4);
-          ctx.fillStyle = "rgba(30,18,8,".concat(0.55 + darkening, ")");
-        }
-      }
-    }
-
-    // Obstacles
-    s.pipes.forEach(function (p) {
-      return drawObstacle(ctx, p, s.pipeW, s.gap, W, H, groundY);
-    });
-
-    // Dragon
-    var wf = wingFrame.current;
-    drawDragon(ctx, s.dragonX, s.dragonY, s.dy, !s.alive, wf);
-
-    // Overlay text
-    ctx.textAlign = 'center';
-    if (phaseRef.current === 'idle') {
-      var bw = W * 0.82,
-        bh = H * 0.42;
-      var _bx = W / 2 - bw / 2,
-        by = H / 2 - bh / 2;
-      // Background box
-      ctx.fillStyle = 'rgba(5,3,10,0.92)';
-      fdRoundRect(ctx, _bx, by, bw, bh, 5);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(201,169,97,0.55)';
+    } else {
+      // X eye
+      ctx.strokeStyle = color.eye;
       ctx.lineWidth = 1.5;
-      fdRoundRect(ctx, _bx, by, bw, bh, 5);
+      ctx.beginPath();
+      ctx.moveTo(13.5, -4.5);
+      ctx.lineTo(16.5, -1.5);
+      ctx.moveTo(16.5, -4.5);
+      ctx.lineTo(13.5, -1.5);
       ctx.stroke();
-      // Title
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#f5d98f';
-      ctx.font = "bold ".concat(Math.round(W * 0.052), "px Cinzel, serif");
-      ctx.fillText('FLAPPY DRAGON', W / 2, by + bh * 0.13);
-      ctx.fillStyle = '#c9a961';
-      ctx.font = "italic ".concat(Math.round(W * 0.036), "px \"Crimson Pro\", serif");
-      ctx.fillText('tap to begin', W / 2, by + bh * 0.24);
-
-      // Colour swatches row
-      var swatchColours = ['white', 'blue', 'black', 'red', 'green'];
-      var swatchLabels = {
-        white: 'White',
-        blue: 'Blue',
-        black: 'Shadow',
-        red: 'Red',
-        green: 'Green'
-      };
-      var swatchHex = {
-        white: '#e8e4d0',
-        blue: '#4a8ab4',
-        black: '#8a60aa',
-        red: '#c0453f',
-        green: '#5a9a3a'
-      };
-      var sw = bw * 0.15,
-        sh = bh * 0.18;
-      var swY = by + bh * 0.34;
-      var totalSW = sw * 5 + bw * 0.04;
-      var swStartX = W / 2 - totalSW / 2;
-      var curCol = dragonColourRef.current;
-      swatchColours.forEach(function (col, i) {
-        var sx = swStartX + i * (sw + bw * 0.01);
-        var isActive = col === curCol;
-        // Swatch bg
-        ctx.fillStyle = isActive ? swatchHex[col] + '55' : 'rgba(10,6,4,0.7)';
-        fdRoundRect(ctx, sx, swY, sw, sh, 3);
-        ctx.fill();
-        ctx.strokeStyle = isActive ? swatchHex[col] : 'rgba(154,135,101,0.3)';
-        ctx.lineWidth = isActive ? 2 : 1;
-        fdRoundRect(ctx, sx, swY, sw, sh, 3);
-        ctx.stroke();
-        // Colour dot
-        ctx.fillStyle = swatchHex[col];
-        ctx.beginPath();
-        ctx.arc(sx + sw / 2, swY + sh * 0.38, sw * 0.22, 0, Math.PI * 2);
-        ctx.fill();
-        if (isActive) {
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 1.2;
-          ctx.beginPath();
-          ctx.arc(sx + sw / 2, swY + sh * 0.38, sw * 0.22, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        // Label
-        ctx.fillStyle = isActive ? '#f5d98f' : '#6a5a42';
-        ctx.font = "".concat(Math.round(W * 0.022), "px Cinzel, serif");
-        ctx.textAlign = 'center';
-        ctx.fillText(swatchLabels[col], sx + sw / 2, swY + sh * 0.82);
-      });
-
-      // Mode buttons
-      var mEasy = modeRef.current === 'easy';
-      var btnW = bw * 0.38,
-        btnH = bh * 0.17;
-      var btnY = by + bh * 0.78;
-      var easyX = W / 2 - btnW - bw * 0.04;
-      var hardX = W / 2 + bw * 0.04;
-      ctx.fillStyle = mEasy ? 'rgba(107,142,90,0.4)' : 'rgba(20,14,8,0.5)';
-      fdRoundRect(ctx, easyX, btnY, btnW, btnH, 3);
-      ctx.fill();
-      ctx.strokeStyle = mEasy ? '#8fbc8f' : 'rgba(154,135,101,0.35)';
-      ctx.lineWidth = 1;
-      fdRoundRect(ctx, easyX, btnY, btnW, btnH, 3);
-      ctx.stroke();
-      ctx.fillStyle = mEasy ? '#8fbc8f' : '#6a5a42';
-      ctx.font = "".concat(Math.round(W * 0.030), "px Cinzel, serif");
-      ctx.textAlign = 'center';
-      ctx.fillText('EASY', easyX + btnW / 2, btnY + btnH * 0.68);
-      ctx.fillStyle = !mEasy ? 'rgba(160,48,44,0.4)' : 'rgba(20,14,8,0.5)';
-      fdRoundRect(ctx, hardX, btnY, btnW, btnH, 3);
-      ctx.fill();
-      ctx.strokeStyle = !mEasy ? '#d48a86' : 'rgba(154,135,101,0.35)';
-      ctx.lineWidth = 1;
-      fdRoundRect(ctx, hardX, btnY, btnW, btnH, 3);
-      ctx.stroke();
-      ctx.fillStyle = !mEasy ? '#d48a86' : '#6a5a42';
-      ctx.font = "".concat(Math.round(W * 0.030), "px Cinzel, serif");
-      ctx.fillText('HARD', hardX + btnW / 2, btnY + btnH * 0.68);
-    } else if (phaseRef.current === 'dead') {
-      var _bw = W * 0.65,
-        _bh = H * 0.22;
-      var _bx2 = W / 2 - _bw / 2,
-        _by = H / 2 - _bh / 2;
-      ctx.fillStyle = 'rgba(5,3,10,0.92)';
-      fdRoundRect(ctx, _bx2, _by, _bw, _bh, 5);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(160,48,44,0.6)';
-      ctx.lineWidth = 1.5;
-      fdRoundRect(ctx, _bx2, _by, _bw, _bh, 5);
-      ctx.stroke();
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#d48a86';
-      ctx.font = "bold ".concat(Math.round(W * 0.052), "px Cinzel, serif");
-      ctx.fillText('SLAIN', W / 2, _by + _bh * 0.3);
-      ctx.fillStyle = '#f5d98f';
-      ctx.font = "bold ".concat(Math.round(W * 0.13), "px \"JetBrains Mono\", monospace");
-      ctx.fillText(s.score, W / 2, _by + _bh * 0.68);
-      var key = s.mode === 'hard' ? DRAGON_HIGH_HARD_KEY : DRAGON_HIGH_KEY;
-      if (s.score > 0 && s.score >= parseInt(localStorage.getItem(key) || '0', 10)) {
-        ctx.fillStyle = '#c9a961';
-        ctx.font = "italic ".concat(Math.round(W * 0.038), "px \"Crimson Pro\", serif");
-        ctx.fillText('* New best! *', W / 2, _by + _bh * 0.88);
-      } else {
-        ctx.fillStyle = '#6a5a42';
-        ctx.font = "".concat(Math.round(W * 0.03), "px Cinzel, serif");
-        ctx.fillText('TAP TO TRY AGAIN', W / 2, _by + _bh * 0.88);
-      }
     }
-  }, []);
-  var die = React.useCallback(function (s) {
-    try {
-      s.alive = false;
-      phaseRef.current = 'dead';
-      setGamePhase('dead');
-      haptic([30, 50, 80]);
-      getAudio().sfxDeath();
-      var key = s.mode === 'hard' ? DRAGON_HIGH_HARD_KEY : DRAGON_HIGH_KEY;
-      var nb = Math.max(s.score, parseInt(localStorage.getItem(key) || '0', 10));
-      localStorage.setItem(key, String(nb));
-      setDisplayBest(nb);
-      if (pet && s.score >= 5) {
-        var xp = Math.min(s.score * 3, 60);
-        setPet(function (prev) {
-          return prev ? _objectSpread(_objectSpread({}, prev), {}, {
-            xp: (prev.xp || 0) + xp
-          }) : prev;
-        });
-      }
-    } catch (err) {
-      console.error('Dragon death error:', err);
-      // Still set to dead state even if something fails
-      s.alive = false;
-      phaseRef.current = 'dead';
-      setGamePhase('dead');
+
+    // Mouth (when flapping)
+    if (d.flapT > 0 && !dead) {
+      ctx.fillStyle = '#3a1a1a';
+      ctx.beginPath();
+      ctx.ellipse(18, 1, 2, 1.2, 0, 0, Math.PI * 2);
+      ctx.fill();
     }
-  }, [haptic, pet, setPet]);
-  var dieRef = React.useRef(die);
-  var hapticRef = React.useRef(haptic);
-  React.useEffect(function () {
-    dieRef.current = die;
-  }, [die]);
-  React.useEffect(function () {
-    hapticRef.current = haptic;
-  }, [haptic]);
-  var startLoop = React.useCallback(function (canvas) {
-    var ctx = ctxRef.current || canvas.getContext('2d');
-    ctxRef.current = ctx;
-    var W = parseInt(canvas.dataset.lw || canvas.width, 10);
-    var H = parseInt(canvas.dataset.lh || canvas.height, 10);
-    if (!stateRef.current || stateRef.current.W !== W) {
-      stateRef.current = initState(W, H, modeRef.current);
-    }
-    var _loop = function loop(timestamp) {
-      var s = stateRef.current;
+    ctx.restore();
+  };
 
-      // Wing animation cycling through all 5 sprite frames
-      if (timestamp - lastWingTime.current > 80) {
-        wingFrame.current = (wingFrame.current + 1) % 5;
-        lastWingTime.current = timestamp;
-      }
-      if (s.started && s.alive) {
-        s.frameCount++;
-        s.dy += s.gravity;
-        s.dy = Math.min(s.dy, s.terminalVel);
-        s.dragonY += s.dy;
-
-        // Move pipes
-        s.pipes = s.pipes.map(function (p) {
-          return _objectSpread(_objectSpread({}, p), {}, {
-            x: p.x - s.pipeSpeed
-          });
-        });
-
-        // Spawn pipes
-        var last = s.pipes[s.pipes.length - 1];
-        if (last && last.x < W * 0.62) {
-          s.pipes.push({
-            x: W * 1.05,
-            gapY: s.H * 0.22 + Math.random() * s.H * 0.4,
-            passed: false,
-            id: s.nextPipeId++
-          });
-        }
-        s.pipes = s.pipes.filter(function (p) {
-          return p.x > -s.pipeW - 10;
-        });
-
-        // Score
-        s.pipes.forEach(function (p) {
-          if (!p.passed && p.x + s.pipeW < s.dragonX) {
-            p.passed = true;
-            s.score++;
-            setDisplayScore(s.score);
-            hapticRef.current(8);
-            if (s.score % 5 === 0) getAudio().sfxMilestone();else getAudio().sfxScore();
-          }
-        });
-
-        // Floor/ceiling collision
-        var dragonW = W * 0.13;
-        var dragonH = W * 0.09;
-        if (s.dragonY < 0 || s.dragonY + dragonH > s.groundY) {
-          dieRef.current(s);
-          render(ctx, s);
-          return;
-        }
-
-        // Pipe collision -- with small margin so it feels fair
-        var margin = dragonW * 0.18;
-        var _iterator = _createForOfIteratorHelper(s.pipes),
-          _step;
-        try {
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var p = _step.value;
-            if (s.dragonX + dragonW - margin > p.x + margin && s.dragonX + margin < p.x + s.pipeW - margin) {
-              if (s.dragonY + margin < p.gapY || s.dragonY + dragonH - margin > p.gapY + s.gap) {
-                dieRef.current(s);
-                render(ctx, s);
-                return;
-              }
-            }
-          }
-        } catch (err) {
-          _iterator.e(err);
-        } finally {
-          _iterator.f();
-        }
-      } else if (!s.started) {
-        // Idle: gently bob the dragon above the start box
-        s.dragonY = s.H * 0.28 + Math.sin(Date.now() / 700) * 6;
-      }
-      render(ctx, s);
-      rafRef.current = requestAnimationFrame(_loop);
-    };
-    cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(_loop);
-  }, []); // stable loop - no deps
-
-  // Mount: size canvas to fill container, start loop
-  React.useEffect(function () {
-    var canvas = canvasRef.current;
-    if (!canvas) return;
-    var parent = canvas.parentElement;
-    var resize = function resize() {
-      var dpr = window.devicePixelRatio || 1;
-      var logicalW = parent.clientWidth;
-      var logicalH = parent.clientHeight;
-      canvas.width = logicalW * dpr;
-      canvas.height = logicalH * dpr;
-      canvas.style.width = logicalW + 'px';
-      canvas.style.height = logicalH + 'px';
-      canvas.dataset.lw = logicalW;
-      canvas.dataset.lh = logicalH;
-      var ctx2d = canvas.getContext('2d');
-      if (ctx2d) {
-        ctx2d.scale(dpr, dpr);
-        ctxRef.current = ctx2d;
-      }
-      stateRef.current = null; // force reinit on resize
-      startLoop(canvas);
-    };
-    resize();
-    return function () {
-      return cancelAnimationFrame(rafRef.current);
-    };
-  }, [startLoop]);
-  var handleTap = React.useCallback(function (clientX, clientY) {
-    var holdMs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+  // ============ Input handlers ============
+  var flap = function flap() {
     var s = stateRef.current;
-    if (!s) return;
+    if (!s || s.dead) return;
+    s.dragon.vy = s.diff.jump;
+    s.dragon.flapT = 6;
+    sfx.flap();
+    haptic(10);
+  };
+  var die = function die() {
+    var s = stateRef.current;
+    if (!s || s.dead) return;
+    s.dead = true;
+    s.flashAlpha = 0.7;
+    s.shakeAmount = 14;
+    sfx.hit();
+    haptic([0, 30, 50, 30]);
+  };
+  var finishGame = function finishGame(score, coinsCol) {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    var totalXp = score * 4 + coinsCol * 10;
+    setFinalScore(score);
+    setXpEarned(totalXp);
+    if (score > bestScore) {
+      setBestScore(score);
+      try {
+        localStorage.setItem('tq_flappy_best_v2', String(score));
+      } catch (_unused13) {}
+    }
+    if (pet && totalXp > 0) {
+      setPet(function (prev) {
+        return prev ? _objectSpread(_objectSpread({}, prev), {}, {
+          xp: (prev.xp || 0) + totalXp
+        }) : prev;
+      });
+    }
+    setPhase('gameover');
+  };
+  var startGame = function startGame() {
+    initAudio();
+    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume().catch(function () {});
+    }
+    resizeCanvas();
+    resetState();
+    setPhase('playing');
+    sfx.start();
+    haptic(15);
+    // Initial flap to kick things off
+    setTimeout(function () {
+      return flap();
+    }, 100);
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(_loop);
+  };
 
-    // On idle screen, check if tapping colour swatches or mode buttons
-    if (phaseRef.current === 'idle' && clientX !== undefined) {
-      var canvas = canvasRef.current;
-      if (canvas) {
-        var rect = canvas.getBoundingClientRect();
-        var cx = clientX - rect.left;
-        var cy = clientY - rect.top;
-        var W = parseInt(canvas.dataset.lw || canvas.clientWidth, 10);
-        var H = parseInt(canvas.dataset.lh || canvas.clientHeight, 10);
-        var bw = W * 0.82,
-          bh = H * 0.42;
-        var by = H / 2 - bh / 2;
-
-        // Colour swatches
-        var sw = bw * 0.15,
-          sh = bh * 0.18;
-        var swY = by + bh * 0.34;
-        var totalSW = sw * 5 + bw * 0.04;
-        var swStartX = W / 2 - totalSW / 2;
-        var swatchCols = ['white', 'blue', 'black', 'red', 'green'];
-        for (var i = 0; i < 5; i++) {
-          var sx = swStartX + i * (sw + bw * 0.01);
-          if (cx >= sx && cx <= sx + sw && cy >= swY && cy <= swY + sh) {
-            haptic(20);
-            setDragonColour(swatchCols[i]);
-            dragonColourRef.current = swatchCols[i];
-            localStorage.setItem('tq_dragon_colour', swatchCols[i]);
-            return;
-          }
-        }
-
-        // Mode buttons
-        var btnW = bw * 0.38,
-          btnH = bh * 0.17;
-        var btnY = by + bh * 0.78;
-        var easyX = W / 2 - btnW - bw * 0.04;
-        var hardX = W / 2 + bw * 0.04;
-        if (cx >= easyX && cx <= easyX + btnW && cy >= btnY && cy <= btnY + btnH) {
-          modeRef.current = 'easy';
-          setMode('easy');
-          setDisplayBest(parseInt(localStorage.getItem(DRAGON_HIGH_KEY) || '0', 10));
-          stateRef.current = initState(W, H, 'easy');
-          haptic(15);
-          return;
-        }
-        if (cx >= hardX && cx <= hardX + btnW && cy >= btnY && cy <= btnY + btnH) {
-          modeRef.current = 'hard';
-          setMode('hard');
-          setDisplayBest(parseInt(localStorage.getItem(DRAGON_HIGH_HARD_KEY) || '0', 10));
-          stateRef.current = initState(W, H, 'hard');
-          haptic(15);
-          return;
-        }
+  // ============ Effects ============
+  useEffect(function () {
+    resizeCanvas();
+    var onResize = function onResize() {
+      return resizeCanvas();
+    };
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    return function () {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (audioCtxRef.current) {
+        try {
+          audioCtxRef.current.close();
+        } catch (_unused14) {}
       }
-    }
-    if (phaseRef.current === 'dead') {
-      var _canvas = canvasRef.current;
-      if (!_canvas) return;
-      stateRef.current = initState(parseInt(_canvas.dataset.lw || _canvas.clientWidth, 10), parseInt(_canvas.dataset.lh || _canvas.clientHeight, 10), modeRef.current);
-      phaseRef.current = 'idle';
-      setGamePhase('idle');
-      setDisplayScore(0);
-      startLoop(_canvas);
-      return;
-    }
-    if (!s.alive) return;
-    if (!s.started) {
-      s.started = true;
-      phaseRef.current = 'playing';
-      setGamePhase('playing');
-    }
-    s.dy = s.flapForce;
-    haptic(18);
-    getAudio().sfxJump();
-  }, [haptic, startLoop]);
+    };
+  }, []);
+
+  // Tap handler on canvas
+  var onCanvasPointer = function onCanvasPointer(e) {
+    e.preventDefault();
+    if (phase === 'playing') flap();
+  };
   return /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[120] flex flex-col",
+    className: "fixed inset-0 flex flex-col",
     style: {
-      background: '#0a0614',
-      touchAction: 'none',
-      userSelect: 'none'
+      zIndex: 140,
+      background: 'radial-gradient(ellipse at top, #1a0f2a 0%, #050308 100%)',
+      animation: 'sanctumIn 0.3s ease-out'
     }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between flex-shrink-0",
+    className: "flex items-center justify-between px-4 py-3",
     style: {
-      background: 'rgba(5,3,10,0.85)',
-      borderBottom: '1px solid rgba(201,169,97,0.18)',
-      padding: '6px 12px'
-    },
-    onClick: function onClick(e) {
-      return e.stopPropagation();
+      borderBottom: '1px solid rgba(201, 169, 97, 0.2)',
+      background: 'rgba(10, 6, 4, 0.6)'
     }
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick(e) {
-      e.stopPropagation();
-      cancelAnimationFrame(rafRef.current);
-      getAudio().stop();
+    onClick: function onClick() {
+      haptic(15);
       onClose();
     },
+    className: "w-10 h-10 flex items-center justify-center active:scale-90",
     style: {
-      width: 30,
-      height: 30,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: '#9a8765',
-      border: '1px solid rgba(154,135,101,0.35)',
-      borderRadius: '2px',
-      flexShrink: 0
-    }
-  }, /*#__PURE__*/React.createElement(XIcon, {
-    style: {
-      fontSize: '0.8rem'
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: 'center',
-      flex: 1
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "'JetBrains Mono', monospace",
-      color: '#f5d98f',
-      fontSize: '1.8rem',
-      fontWeight: 700,
-      lineHeight: 1
-    }
-  }, displayScore), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "'Cinzel', serif",
-      color: '#6a5a42',
-      fontSize: '0.45rem',
-      letterSpacing: '0.25em'
-    }
-  }, "SCORE")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: 'center',
-      minWidth: 52
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "'JetBrains Mono', monospace",
+      background: 'rgba(10, 6, 4, 0.8)',
+      border: '1px solid rgba(201, 169, 97, 0.4)',
+      borderRadius: '3px',
       color: '#c9a961',
-      fontSize: '1.1rem',
-      fontWeight: 700,
-      lineHeight: 1
-    }
-  }, displayBest), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "'Cinzel', serif",
-      color: '#6a5a42',
-      fontSize: '0.45rem',
-      letterSpacing: '0.2em'
-    }
-  }, "BEST"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "'Cinzel', serif",
-      color: mode === 'hard' ? '#d48a86' : '#8fbc8f',
-      fontSize: '0.42rem',
-      fontWeight: 700,
-      letterSpacing: '0.1em',
-      marginTop: '1px'
-    }
-  }, mode.toUpperCase()), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick(e) {
-      e.stopPropagation();
-      toggleMute();
+      cursor: 'pointer'
     },
+    "aria-label": "Close"
+  }, "\u2715"), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-[8px] tracking-[0.25em] uppercase",
     style: {
-      marginTop: '3px',
-      fontSize: '0.75rem',
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      opacity: muted ? 0.4 : 0.8
+      fontFamily: "'Cinzel', serif",
+      color: '#8a7555'
     }
-  }, muted ? '🔇' : '🔊'))), function () {
-    return /*#__PURE__*/React.createElement("div", {
-      className: "flex-1 relative",
-      onTouchStart: function onTouchStart(e) {
-        e.preventDefault();
+  }, "Best"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontFamily: "'JetBrains Mono', monospace",
+      color: '#d4b87a',
+      fontSize: '1rem',
+      fontWeight: 700
+    }
+  }, bestScore))), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      haptic(10);
+      setMuted(function (m) {
+        return !m;
+      });
+    },
+    className: "w-10 h-10 flex items-center justify-center active:scale-90",
+    style: {
+      background: 'rgba(10, 6, 4, 0.8)',
+      border: '1px solid rgba(201, 169, 97, 0.4)',
+      borderRadius: '3px',
+      color: muted ? '#6a5a42' : '#c9a961',
+      cursor: 'pointer'
+    },
+    "aria-label": muted ? 'Unmute' : 'Mute'
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '1rem'
+    }
+  }, muted ? '♪̸' : '♪'))), /*#__PURE__*/React.createElement("div", {
+    ref: containerRef,
+    className: "relative flex-1 overflow-hidden",
+    style: {
+      touchAction: 'manipulation'
+    },
+    onMouseDown: onCanvasPointer,
+    onTouchStart: onCanvasPointer
+  }, /*#__PURE__*/React.createElement("canvas", {
+    ref: canvasRef,
+    style: {
+      display: 'block',
+      width: '100%',
+      height: '100%'
+    }
+  }), phase === 'menu' && /*#__PURE__*/React.createElement("div", {
+    className: "absolute inset-0 flex flex-col items-center justify-center px-6",
+    style: {
+      background: 'radial-gradient(ellipse at center, rgba(10, 6, 4, 0.5) 0%, rgba(10, 6, 4, 0.85) 100%)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-full max-w-xs px-5 py-6 text-center",
+    style: {
+      background: 'linear-gradient(180deg, rgba(26, 17, 10, 0.98), rgba(10, 6, 4, 0.98))',
+      border: '1px solid rgba(201, 169, 97, 0.5)',
+      borderRadius: '4px',
+      boxShadow: '0 0 40px rgba(212, 184, 122, 0.2), 0 20px 40px rgba(0,0,0,0.6)'
+    }
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-lg mb-1",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: '#f5d98f',
+      fontWeight: 700,
+      letterSpacing: '0.15em'
+    }
+  }, "FLAPPY DRAGON"), /*#__PURE__*/React.createElement("p", {
+    className: "text-[10px] italic mb-5",
+    style: {
+      fontFamily: "'Crimson Pro', serif",
+      color: '#8a7555'
+    }
+  }, "Soar through crystal pillars . Collect starlight"), /*#__PURE__*/React.createElement("p", {
+    className: "text-[9px] tracking-[0.2em] uppercase mb-2",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: '#b09870'
+    }
+  }, "Dragon"), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-center gap-1.5 mb-5"
+  }, Object.entries(COLORS).map(function (_ref17) {
+    var _ref18 = _slicedToArray(_ref17, 2),
+      key = _ref18[0],
+      c = _ref18[1];
+    return /*#__PURE__*/React.createElement("button", {
+      key: key,
+      onClick: function onClick() {
+        haptic(10);
+        setDragonColor(key);
       },
-      onTouchEnd: function onTouchEnd(e) {
-        e.preventDefault();
-        var t = e.changedTouches[0];
-        handleTap(t.clientX, t.clientY);
+      className: "w-10 h-10 active:scale-90",
+      style: {
+        background: dragonColor === key ? "radial-gradient(circle at 30% 30%, ".concat(c.body, ", ").concat(c.wing, ")") : c.body,
+        border: dragonColor === key ? '2px solid #f5d98f' : '1px solid rgba(201, 169, 97, 0.3)',
+        borderRadius: '50%',
+        boxShadow: dragonColor === key ? "0 0 16px ".concat(c.glow) : 'none',
+        cursor: 'pointer'
       },
-      onTouchCancel: function onTouchCancel() {},
+      "aria-label": c.name
+    });
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-[9px] tracking-[0.2em] uppercase mb-2",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: '#b09870'
+    }
+  }, "Difficulty"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-3 gap-1.5 mb-6"
+  }, ['easy', 'normal', 'hard'].map(function (d) {
+    var active = difficulty === d;
+    return /*#__PURE__*/React.createElement("button", {
+      key: d,
+      onClick: function onClick() {
+        haptic(10);
+        setDifficulty(d);
+      },
+      className: "py-2 text-[10px] tracking-[0.15em] uppercase active:scale-95",
       style: {
-        touchAction: 'none'
+        fontFamily: "'Cinzel', serif",
+        fontWeight: active ? 700 : 500,
+        color: active ? '#0a0604' : '#c9a961',
+        background: active ? 'linear-gradient(180deg, #f5d98f, #c9a961)' : 'transparent',
+        border: "1px solid ".concat(active ? '#c9a961' : 'rgba(201, 169, 97, 0.3)'),
+        borderRadius: '2px',
+        cursor: 'pointer'
       }
-    }, /*#__PURE__*/React.createElement("canvas", {
-      ref: canvasRef,
-      style: {
-        display: 'block',
-        width: '100%',
-        height: '100%'
-      }
-    }));
-  }());
+    }, d);
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: startGame,
+    className: "w-full py-3 text-[11px] tracking-[0.3em] uppercase active:scale-95",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      fontWeight: 700,
+      color: '#0a0604',
+      background: 'linear-gradient(180deg, #f5d98f, #c9a961)',
+      border: '1px solid #c9a961',
+      borderRadius: '3px',
+      boxShadow: '0 4px 12px rgba(201, 169, 97, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+      cursor: 'pointer'
+    }
+  }, "Begin Flight"))), phase === 'gameover' && /*#__PURE__*/React.createElement("div", {
+    className: "absolute inset-0 flex flex-col items-center justify-center px-6",
+    style: {
+      background: 'radial-gradient(ellipse at center, rgba(10, 6, 4, 0.6) 0%, rgba(10, 6, 4, 0.92) 100%)',
+      animation: 'sanctumIn 0.3s ease-out'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-full max-w-xs px-5 py-5 text-center",
+    style: {
+      background: 'linear-gradient(180deg, rgba(26, 17, 10, 0.98), rgba(10, 6, 4, 0.98))',
+      border: '1px solid rgba(201, 169, 97, 0.5)',
+      borderRadius: '4px',
+      boxShadow: '0 0 40px rgba(212, 184, 122, 0.2), 0 20px 40px rgba(0,0,0,0.6)'
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-[10px] tracking-[0.3em] uppercase mb-1",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: '#d48a86',
+      fontWeight: 600
+    }
+  }, finalScore > bestScore - 1 && finalScore >= bestScore ? '✦ New Best ✦' : 'The dragon falls'), /*#__PURE__*/React.createElement("p", {
+    className: "text-5xl mb-2",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: '#f5d98f',
+      fontWeight: 800,
+      letterSpacing: '0.05em'
+    }
+  }, finalScore), /*#__PURE__*/React.createElement("p", {
+    className: "text-[10px] tracking-[0.2em] uppercase mb-3",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: '#8a7555'
+    }
+  }, "Score"), xpEarned > 0 && pet && /*#__PURE__*/React.createElement("p", {
+    className: "text-xs mb-4",
+    style: {
+      fontFamily: "'Crimson Pro', serif",
+      color: '#b4d4a0',
+      fontStyle: 'italic'
+    }
+  }, "Your companion gained +", xpEarned, " XP"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      haptic(15);
+      setPhase('menu');
+    },
+    className: "py-3 text-[10px] tracking-[0.2em] uppercase active:scale-95",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      fontWeight: 600,
+      color: '#c9a961',
+      background: 'transparent',
+      border: '1px solid rgba(201, 169, 97, 0.4)',
+      borderRadius: '2px',
+      cursor: 'pointer'
+    }
+  }, "Menu"), /*#__PURE__*/React.createElement("button", {
+    onClick: startGame,
+    className: "py-3 text-[10px] tracking-[0.2em] uppercase active:scale-95",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      fontWeight: 700,
+      color: '#0a0604',
+      background: 'linear-gradient(180deg, #f5d98f, #c9a961)',
+      border: '1px solid #c9a961',
+      borderRadius: '2px',
+      boxShadow: '0 2px 8px rgba(201, 169, 97, 0.3)',
+      cursor: 'pointer'
+    }
+  }, "Fly Again"))))), phase === 'playing' && /*#__PURE__*/React.createElement("div", {
+    className: "absolute left-1/2 -translate-x-1/2 pointer-events-none",
+    style: {
+      bottom: 'calc(50% - 100px)',
+      opacity: stateRef.current && stateRef.current.tick < 60 ? 0.6 : 0,
+      transition: 'opacity 0.4s'
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-[10px] italic tracking-widest uppercase",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: '#c9a961'
+    }
+  }, "tap to flap")));
 };
 
 // ============ Zombie Jumper — Castlevania Platformer ============
@@ -4530,14 +4574,14 @@ var KEYWORDS = [{
   t: "Discard this card and pay the transmute cost to search your library for a card with the same mana value."
 }];
 var KeywordIndex = function KeywordIndex() {
-  var _React$useState45 = React.useState(""),
-    _React$useState46 = _slicedToArray(_React$useState45, 2),
-    search = _React$useState46[0],
-    setSearch = _React$useState46[1];
-  var _React$useState47 = React.useState(null),
-    _React$useState48 = _slicedToArray(_React$useState47, 2),
-    expanded = _React$useState48[0],
-    setExpanded = _React$useState48[1];
+  var _React$useState33 = React.useState(""),
+    _React$useState34 = _slicedToArray(_React$useState33, 2),
+    search = _React$useState34[0],
+    setSearch = _React$useState34[1];
+  var _React$useState35 = React.useState(null),
+    _React$useState36 = _slicedToArray(_React$useState35, 2),
+    expanded = _React$useState36[0],
+    setExpanded = _React$useState36[1];
   var filtered = search.trim() ? KEYWORDS.filter(function (k) {
     return k.k.toLowerCase().includes(search.toLowerCase());
   }) : KEYWORDS;
@@ -5005,17 +5049,17 @@ function VaultColorBar(_ref20) {
 // ─── Main App ─────────────────────────────────────────────────────────────────
 function CommanderVault() {
   // Load from localStorage, fall back to INITIAL_DECKS
-  var _useState = useState(function () {
+  var _useState13 = useState(function () {
       try {
         var saved = localStorage.getItem('tq_vault_decks');
         return saved ? JSON.parse(saved) : INITIAL_DECKS;
-      } catch (_unused5) {
+      } catch (_unused15) {
         return INITIAL_DECKS;
       }
     }),
-    _useState2 = _slicedToArray(_useState, 2),
-    decks = _useState2[0],
-    setDecks = _useState2[1];
+    _useState14 = _slicedToArray(_useState13, 2),
+    decks = _useState14[0],
+    setDecks = _useState14[1];
 
   // Save to localStorage whenever decks change
   useEffect(function () {
@@ -5025,38 +5069,38 @@ function CommanderVault() {
       console.warn('Failed to save vault decks:', e);
     }
   }, [decks]);
-  var _useState3 = useState("decks"),
-    _useState4 = _slicedToArray(_useState3, 2),
-    view = _useState4[0],
-    setView = _useState4[1];
-  var _useState5 = useState(false),
-    _useState6 = _slicedToArray(_useState5, 2),
-    showAdd = _useState6[0],
-    setShowAdd = _useState6[1];
-  var _useState7 = useState(null),
-    _useState8 = _slicedToArray(_useState7, 2),
-    editId = _useState8[0],
-    setEditId = _useState8[1];
-  var _useState9 = useState(""),
-    _useState0 = _slicedToArray(_useState9, 2),
-    search = _useState0[0],
-    setSearch = _useState0[1];
-  var _useState1 = useState(null),
-    _useState10 = _slicedToArray(_useState1, 2),
-    filterColor = _useState10[0],
-    setFilterColor = _useState10[1];
-  var _useState11 = useState(""),
-    _useState12 = _slicedToArray(_useState11, 2),
-    formCommander = _useState12[0],
-    setFormCommander = _useState12[1];
-  var _useState13 = useState([]),
-    _useState14 = _slicedToArray(_useState13, 2),
-    formColors = _useState14[0],
-    setFormColors = _useState14[1];
-  var _useState15 = useState(""),
+  var _useState15 = useState("decks"),
     _useState16 = _slicedToArray(_useState15, 2),
-    formTheme = _useState16[0],
-    setFormTheme = _useState16[1];
+    view = _useState16[0],
+    setView = _useState16[1];
+  var _useState17 = useState(false),
+    _useState18 = _slicedToArray(_useState17, 2),
+    showAdd = _useState18[0],
+    setShowAdd = _useState18[1];
+  var _useState19 = useState(null),
+    _useState20 = _slicedToArray(_useState19, 2),
+    editId = _useState20[0],
+    setEditId = _useState20[1];
+  var _useState21 = useState(""),
+    _useState22 = _slicedToArray(_useState21, 2),
+    search = _useState22[0],
+    setSearch = _useState22[1];
+  var _useState23 = useState(null),
+    _useState24 = _slicedToArray(_useState23, 2),
+    filterColor = _useState24[0],
+    setFilterColor = _useState24[1];
+  var _useState25 = useState(""),
+    _useState26 = _slicedToArray(_useState25, 2),
+    formCommander = _useState26[0],
+    setFormCommander = _useState26[1];
+  var _useState27 = useState([]),
+    _useState28 = _slicedToArray(_useState27, 2),
+    formColors = _useState28[0],
+    setFormColors = _useState28[1];
+  var _useState29 = useState(""),
+    _useState30 = _slicedToArray(_useState29, 2),
+    formTheme = _useState30[0],
+    setFormTheme = _useState30[1];
   var resetForm = function resetForm() {
     setFormCommander("");
     setFormColors([]);
@@ -5528,10 +5572,10 @@ function VaultDeckCard(_ref21) {
     ACCENT = _ref21.ACCENT,
     MUTED = _ref21.MUTED,
     TEXT = _ref21.TEXT;
-  var _useState17 = useState(false),
-    _useState18 = _slicedToArray(_useState17, 2),
-    expanded = _useState18[0],
-    setExpanded = _useState18[1];
+  var _useState31 = useState(false),
+    _useState32 = _slicedToArray(_useState31, 2),
+    expanded = _useState32[0],
+    setExpanded = _useState32[1];
   var borderColor = deck.colors.length === 1 ? COLORS[deck.colors[0]].border : ACCENT;
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -6060,99 +6104,99 @@ function TokenTracker() {
       alert("STARTUP ERROR: ".concat(e.message));
     }
   }, []);
-  var _useState19 = useState(""),
-    _useState20 = _slicedToArray(_useState19, 2),
-    query = _useState20[0],
-    setQuery = _useState20[1];
-  var _useState21 = useState([]),
-    _useState22 = _slicedToArray(_useState21, 2),
-    results = _useState22[0],
-    setResults = _useState22[1];
-  var _useState23 = useState(false),
-    _useState24 = _slicedToArray(_useState23, 2),
-    loading = _useState24[0],
-    setLoading = _useState24[1];
-  var _useState25 = useState(""),
-    _useState26 = _slicedToArray(_useState25, 2),
-    error = _useState26[0],
-    setError = _useState26[1];
-  var _useState27 = useState(function () {
+  var _useState33 = useState(""),
+    _useState34 = _slicedToArray(_useState33, 2),
+    query = _useState34[0],
+    setQuery = _useState34[1];
+  var _useState35 = useState([]),
+    _useState36 = _slicedToArray(_useState35, 2),
+    results = _useState36[0],
+    setResults = _useState36[1];
+  var _useState37 = useState(false),
+    _useState38 = _slicedToArray(_useState37, 2),
+    loading = _useState38[0],
+    setLoading = _useState38[1];
+  var _useState39 = useState(""),
+    _useState40 = _slicedToArray(_useState39, 2),
+    error = _useState40[0],
+    setError = _useState40[1];
+  var _useState41 = useState(function () {
       return storage.get('battlefield') || [];
     }),
-    _useState28 = _slicedToArray(_useState27, 2),
-    battlefield = _useState28[0],
-    setBattlefield = _useState28[1];
-  var _useState29 = useState(function () {
+    _useState42 = _slicedToArray(_useState41, 2),
+    battlefield = _useState42[0],
+    setBattlefield = _useState42[1];
+  var _useState43 = useState(function () {
       return storage.get('favourites') || [];
     }),
-    _useState30 = _slicedToArray(_useState29, 2),
-    favourites = _useState30[0],
-    setFavourites = _useState30[1];
-  var _useState31 = useState(""),
-    _useState32 = _slicedToArray(_useState31, 2),
-    activeSearch = _useState32[0],
-    setActiveSearch = _useState32[1];
-  var _useState33 = useState(true),
-    _useState34 = _slicedToArray(_useState33, 2),
-    showSearch = _useState34[0],
-    setShowSearch = _useState34[1];
-  // Copy-token modal state
-  var _useState35 = useState(false),
-    _useState36 = _slicedToArray(_useState35, 2),
-    copyOpen = _useState36[0],
-    setCopyOpen = _useState36[1];
-  var _useState37 = useState(""),
-    _useState38 = _slicedToArray(_useState37, 2),
-    copyQuery = _useState38[0],
-    setCopyQuery = _useState38[1];
-  var _useState39 = useState([]),
-    _useState40 = _slicedToArray(_useState39, 2),
-    copyResults = _useState40[0],
-    setCopyResults = _useState40[1];
-  var _useState41 = useState(false),
-    _useState42 = _slicedToArray(_useState41, 2),
-    copyLoading = _useState42[0],
-    setCopyLoading = _useState42[1];
-  var _useState43 = useState(""),
     _useState44 = _slicedToArray(_useState43, 2),
-    copyError = _useState44[0],
-    setCopyError = _useState44[1];
-  var _useState45 = useState("tokens"),
+    favourites = _useState44[0],
+    setFavourites = _useState44[1];
+  var _useState45 = useState(""),
     _useState46 = _slicedToArray(_useState45, 2),
-    copyScope = _useState46[0],
-    setCopyScope = _useState46[1]; // "tokens" | "creatures"
-  // Batch 1 additions
-  var _useState47 = useState(null),
+    activeSearch = _useState46[0],
+    setActiveSearch = _useState46[1];
+  var _useState47 = useState(true),
     _useState48 = _slicedToArray(_useState47, 2),
-    numpadFor = _useState48[0],
-    setNumpadFor = _useState48[1]; // token id being edited, or null
-  var _useState49 = useState(""),
+    showSearch = _useState48[0],
+    setShowSearch = _useState48[1];
+  // Copy-token modal state
+  var _useState49 = useState(false),
     _useState50 = _slicedToArray(_useState49, 2),
-    numpadValue = _useState50[0],
-    setNumpadValue = _useState50[1];
-  var _useState51 = useState(false),
+    copyOpen = _useState50[0],
+    setCopyOpen = _useState50[1];
+  var _useState51 = useState(""),
     _useState52 = _slicedToArray(_useState51, 2),
-    wipeConfirmOpen = _useState52[0],
-    setWipeConfirmOpen = _useState52[1];
+    copyQuery = _useState52[0],
+    setCopyQuery = _useState52[1];
   var _useState53 = useState([]),
     _useState54 = _slicedToArray(_useState53, 2),
-    undoStack = _useState54[0],
-    setUndoStack = _useState54[1]; // stack of previous battlefield snapshots
-  var _useState55 = useState(""),
+    copyResults = _useState54[0],
+    setCopyResults = _useState54[1];
+  var _useState55 = useState(false),
     _useState56 = _slicedToArray(_useState55, 2),
-    toast = _useState56[0],
-    setToast = _useState56[1]; // tiny ephemeral message
+    copyLoading = _useState56[0],
+    setCopyLoading = _useState56[1];
+  var _useState57 = useState(""),
+    _useState58 = _slicedToArray(_useState57, 2),
+    copyError = _useState58[0],
+    setCopyError = _useState58[1];
+  var _useState59 = useState("tokens"),
+    _useState60 = _slicedToArray(_useState59, 2),
+    copyScope = _useState60[0],
+    setCopyScope = _useState60[1]; // "tokens" | "creatures"
+  // Batch 1 additions
+  var _useState61 = useState(null),
+    _useState62 = _slicedToArray(_useState61, 2),
+    numpadFor = _useState62[0],
+    setNumpadFor = _useState62[1]; // token id being edited, or null
+  var _useState63 = useState(""),
+    _useState64 = _slicedToArray(_useState63, 2),
+    numpadValue = _useState64[0],
+    setNumpadValue = _useState64[1];
+  var _useState65 = useState(false),
+    _useState66 = _slicedToArray(_useState65, 2),
+    wipeConfirmOpen = _useState66[0],
+    setWipeConfirmOpen = _useState66[1];
+  var _useState67 = useState([]),
+    _useState68 = _slicedToArray(_useState67, 2),
+    undoStack = _useState68[0],
+    setUndoStack = _useState68[1]; // stack of previous battlefield snapshots
+  var _useState69 = useState(""),
+    _useState70 = _slicedToArray(_useState69, 2),
+    toast = _useState70[0],
+    setToast = _useState70[1]; // tiny ephemeral message
 
   // Batch 2: active tab
-  var _useState57 = useState(function () {
+  var _useState71 = useState(function () {
       return storage.get('activeTab') || 'battlefield';
     }),
-    _useState58 = _slicedToArray(_useState57, 2),
-    activeTab = _useState58[0],
-    setActiveTab = _useState58[1]; // 'battlefield' | 'life' | 'tools'
+    _useState72 = _slicedToArray(_useState71, 2),
+    activeTab = _useState72[0],
+    setActiveTab = _useState72[1]; // 'battlefield' | 'life' | 'tools'
 
   // ===== New state for settings, onboarding, FAB, sanctum tabs =====
-  var _useState59 = useState(function () {
+  var _useState73 = useState(function () {
       return storage.get('settings') || {
         hapticIntensity: 'normal',
         // 'off' | 'light' | 'normal' | 'strong'
@@ -6162,14 +6206,14 @@ function TokenTracker() {
         showOnboarding: true
       };
     }),
-    _useState60 = _slicedToArray(_useState59, 2),
-    settings = _useState60[0],
-    setSettings = _useState60[1];
-  var _useState61 = useState(false),
-    _useState62 = _slicedToArray(_useState61, 2),
-    settingsOpen = _useState62[0],
-    setSettingsOpen = _useState62[1];
-  var _useState63 = useState(function () {
+    _useState74 = _slicedToArray(_useState73, 2),
+    settings = _useState74[0],
+    setSettings = _useState74[1];
+  var _useState75 = useState(false),
+    _useState76 = _slicedToArray(_useState75, 2),
+    settingsOpen = _useState76[0],
+    setSettingsOpen = _useState76[1];
+  var _useState77 = useState(function () {
       var seen = storage.get('onboardingSeen');
       if (seen) return -1;
       // Only show onboarding for truly new users (no battlefield, no players, no pet)
@@ -6183,17 +6227,17 @@ function TokenTracker() {
       }
       return 0;
     }),
-    _useState64 = _slicedToArray(_useState63, 2),
-    onboardingStep = _useState64[0],
-    setOnboardingStep = _useState64[1];
-  var _useState65 = useState(false),
-    _useState66 = _slicedToArray(_useState65, 2),
-    showScrollTop = _useState66[0],
-    setShowScrollTop = _useState66[1];
-  var _useState67 = useState('companion'),
-    _useState68 = _slicedToArray(_useState67, 2),
-    sanctumTab = _useState68[0],
-    setSanctumTab = _useState68[1]; // 'companion' | 'games' | 'stats'
+    _useState78 = _slicedToArray(_useState77, 2),
+    onboardingStep = _useState78[0],
+    setOnboardingStep = _useState78[1];
+  var _useState79 = useState(false),
+    _useState80 = _slicedToArray(_useState79, 2),
+    showScrollTop = _useState80[0],
+    setShowScrollTop = _useState80[1];
+  var _useState81 = useState('companion'),
+    _useState82 = _slicedToArray(_useState81, 2),
+    sanctumTab = _useState82[0],
+    setSanctumTab = _useState82[1]; // 'companion' | 'games' | 'stats'
   // Save settings whenever changed
   useEffect(function () {
     storage.set('settings', settings);
@@ -6231,123 +6275,123 @@ function TokenTracker() {
       };
     });
   };
-  var _useState69 = useState(function () {
+  var _useState83 = useState(function () {
       return storage.get('players') || defaultPlayers(4);
     }),
-    _useState70 = _slicedToArray(_useState69, 2),
-    players = _useState70[0],
-    setPlayers = _useState70[1];
-  var _useState71 = useState(function () {
+    _useState84 = _slicedToArray(_useState83, 2),
+    players = _useState84[0],
+    setPlayers = _useState84[1];
+  var _useState85 = useState(function () {
       return storage.get('player_flipped') || [false, false, false, false];
     }),
-    _useState72 = _slicedToArray(_useState71, 2),
-    playerFlipped = _useState72[0],
-    setPlayerFlipped = _useState72[1];
-  var _useState73 = useState([]),
-    _useState74 = _slicedToArray(_useState73, 2),
-    lifeHistory = _useState74[0],
-    setLifeHistory = _useState74[1]; // last 5 life changes for undo
-  var _useState75 = useState(false),
-    _useState76 = _slicedToArray(_useState75, 2),
-    showResetConfirm = _useState76[0],
-    setShowResetConfirm = _useState76[1]; // confirmation modal for reset
-  var _useState77 = useState(false),
-    _useState78 = _slicedToArray(_useState77, 2),
-    showNewGameMenu = _useState78[0],
-    setShowNewGameMenu = _useState78[1]; // new game setup menu
+    _useState86 = _slicedToArray(_useState85, 2),
+    playerFlipped = _useState86[0],
+    setPlayerFlipped = _useState86[1];
+  var _useState87 = useState([]),
+    _useState88 = _slicedToArray(_useState87, 2),
+    lifeHistory = _useState88[0],
+    setLifeHistory = _useState88[1]; // last 5 life changes for undo
+  var _useState89 = useState(false),
+    _useState90 = _slicedToArray(_useState89, 2),
+    showResetConfirm = _useState90[0],
+    setShowResetConfirm = _useState90[1]; // confirmation modal for reset
+  var _useState91 = useState(false),
+    _useState92 = _slicedToArray(_useState91, 2),
+    showNewGameMenu = _useState92[0],
+    setShowNewGameMenu = _useState92[1]; // new game setup menu
   // Life delta tally -- { [playerId]: { delta: number, timer: timeoutId } }
-  var _useState79 = useState({}),
-    _useState80 = _slicedToArray(_useState79, 2),
-    lifeDelta = _useState80[0],
-    setLifeDelta = _useState80[1];
+  var _useState93 = useState({}),
+    _useState94 = _slicedToArray(_useState93, 2),
+    lifeDelta = _useState94[0],
+    setLifeDelta = _useState94[1];
   var lifeDeltaTimers = useRef({});
   // commanderDamage[dealtToId][dealtByPlayerId] = amount
-  var _useState81 = useState(function () {
+  var _useState95 = useState(function () {
       return storage.get('commanderDamage') || {};
     }),
-    _useState82 = _slicedToArray(_useState81, 2),
-    commanderDamage = _useState82[0],
-    setCommanderDamage = _useState82[1];
-  var _useState83 = useState(null),
-    _useState84 = _slicedToArray(_useState83, 2),
-    cmdrDamageFor = _useState84[0],
-    setCmdrDamageFor = _useState84[1]; // which player's CD grid is open
-  var _useState85 = useState(null),
-    _useState86 = _slicedToArray(_useState85, 2),
-    editPlayerName = _useState86[0],
-    setEditPlayerName = _useState86[1];
-  var _useState87 = useState(""),
-    _useState88 = _slicedToArray(_useState87, 2),
-    editPlayerNameValue = _useState88[0],
-    setEditPlayerNameValue = _useState88[1];
+    _useState96 = _slicedToArray(_useState95, 2),
+    commanderDamage = _useState96[0],
+    setCommanderDamage = _useState96[1];
+  var _useState97 = useState(null),
+    _useState98 = _slicedToArray(_useState97, 2),
+    cmdrDamageFor = _useState98[0],
+    setCmdrDamageFor = _useState98[1]; // which player's CD grid is open
+  var _useState99 = useState(null),
+    _useState100 = _slicedToArray(_useState99, 2),
+    editPlayerName = _useState100[0],
+    setEditPlayerName = _useState100[1];
+  var _useState101 = useState(""),
+    _useState102 = _slicedToArray(_useState101, 2),
+    editPlayerNameValue = _useState102[0],
+    setEditPlayerNameValue = _useState102[1];
 
   // Batch 2: dice state
-  var _useState89 = useState([]),
-    _useState90 = _slicedToArray(_useState89, 2),
-    diceRolls = _useState90[0],
-    setDiceRolls = _useState90[1]; // rolling history (latest first, max 10)
-  var _useState91 = useState(null),
-    _useState92 = _slicedToArray(_useState91, 2),
-    rolling = _useState92[0],
-    setRolling = _useState92[1]; // sides currently animating
+  var _useState103 = useState([]),
+    _useState104 = _slicedToArray(_useState103, 2),
+    diceRolls = _useState104[0],
+    setDiceRolls = _useState104[1]; // rolling history (latest first, max 10)
+  var _useState105 = useState(null),
+    _useState106 = _slicedToArray(_useState105, 2),
+    rolling = _useState106[0],
+    setRolling = _useState106[1]; // sides currently animating
 
   // Batch 2: phase + turn
   var PHASES = ['Untap', 'Upkeep', 'Draw', 'Main 1', 'Combat', 'Main 2', 'End'];
-  var _useState93 = useState(function () {
+  var _useState107 = useState(function () {
       var _storage$get;
       return (_storage$get = storage.get('phaseIndex')) !== null && _storage$get !== void 0 ? _storage$get : 0;
     }),
-    _useState94 = _slicedToArray(_useState93, 2),
-    phaseIndex = _useState94[0],
-    setPhaseIndex = _useState94[1];
-  var _useState95 = useState(function () {
+    _useState108 = _slicedToArray(_useState107, 2),
+    phaseIndex = _useState108[0],
+    setPhaseIndex = _useState108[1];
+  var _useState109 = useState(function () {
       return storage.get('turnNumber') || 1;
     }),
-    _useState96 = _slicedToArray(_useState95, 2),
-    turnNumber = _useState96[0],
-    setTurnNumber = _useState96[1];
-  var _useState97 = useState(function () {
+    _useState110 = _slicedToArray(_useState109, 2),
+    turnNumber = _useState110[0],
+    setTurnNumber = _useState110[1];
+  var _useState111 = useState(function () {
       return storage.get('activePlayerIndex') || 0;
     }),
-    _useState98 = _slicedToArray(_useState97, 2),
-    activePlayerIndex = _useState98[0],
-    setActivePlayerIndex = _useState98[1];
+    _useState112 = _slicedToArray(_useState111, 2),
+    activePlayerIndex = _useState112[0],
+    setActivePlayerIndex = _useState112[1];
 
   // Batch 3 state
   // Day/Night: 'day' | 'night' | null (no daybound game)
-  var _useState99 = useState(function () {
+  var _useState113 = useState(function () {
       return storage.get('dayNight') || null;
     }),
-    _useState100 = _slicedToArray(_useState99, 2),
-    dayNight = _useState100[0],
-    setDayNight = _useState100[1];
+    _useState114 = _slicedToArray(_useState113, 2),
+    dayNight = _useState114[0],
+    setDayNight = _useState114[1];
   // Game state markers -- independent toggles per player
   // monarch: playerId | null
   // initiative: playerId | null
   // citysBlessing: array of playerIds
-  var _useState101 = useState(function () {
+  var _useState115 = useState(function () {
       return storage.get('monarch') || null;
     }),
-    _useState102 = _slicedToArray(_useState101, 2),
-    monarch = _useState102[0],
-    setMonarch = _useState102[1];
-  var _useState103 = useState(function () {
+    _useState116 = _slicedToArray(_useState115, 2),
+    monarch = _useState116[0],
+    setMonarch = _useState116[1];
+  var _useState117 = useState(function () {
       return storage.get('initiative') || null;
     }),
-    _useState104 = _slicedToArray(_useState103, 2),
-    initiative = _useState104[0],
-    setInitiative = _useState104[1];
-  var _useState105 = useState(function () {
+    _useState118 = _slicedToArray(_useState117, 2),
+    initiative = _useState118[0],
+    setInitiative = _useState118[1];
+  var _useState119 = useState(function () {
       return storage.get('citysBlessing') || [];
     }),
-    _useState106 = _slicedToArray(_useState105, 2),
-    citysBlessing = _useState106[0],
-    setCitysBlessing = _useState106[1];
-  var _useState107 = useState(0),
-    _useState108 = _slicedToArray(_useState107, 2),
-    stormCount = _useState108[0],
-    setStormCount = _useState108[1];
-  var _useState109 = useState({
+    _useState120 = _slicedToArray(_useState119, 2),
+    citysBlessing = _useState120[0],
+    setCitysBlessing = _useState120[1];
+  var _useState121 = useState(0),
+    _useState122 = _slicedToArray(_useState121, 2),
+    stormCount = _useState122[0],
+    setStormCount = _useState122[1];
+  var _useState123 = useState({
       W: 0,
       U: 0,
       B: 0,
@@ -6355,70 +6399,70 @@ function TokenTracker() {
       G: 0,
       C: 0
     }),
-    _useState110 = _slicedToArray(_useState109, 2),
-    manaPool = _useState110[0],
-    setManaPool = _useState110[1];
+    _useState124 = _slicedToArray(_useState123, 2),
+    manaPool = _useState124[0],
+    setManaPool = _useState124[1];
 
   // Deck presets -- { id, name, tokens: [token shape with id+name+image+pt+colors] }
-  var _useState111 = useState(function () {
+  var _useState125 = useState(function () {
       return storage.get('presets') || [];
     }),
-    _useState112 = _slicedToArray(_useState111, 2),
-    presets = _useState112[0],
-    setPresets = _useState112[1];
-  var _useState113 = useState(false),
-    _useState114 = _slicedToArray(_useState113, 2),
-    presetMenuOpen = _useState114[0],
-    setPresetMenuOpen = _useState114[1];
-  var _useState115 = useState(false),
-    _useState116 = _slicedToArray(_useState115, 2),
-    savePresetOpen = _useState116[0],
-    setSavePresetOpen = _useState116[1];
-  var _useState117 = useState(""),
-    _useState118 = _slicedToArray(_useState117, 2),
-    savePresetName = _useState118[0],
-    setSavePresetName = _useState118[1];
-
-  // Oracle text and zoom modals
-  var _useState119 = useState(null),
-    _useState120 = _slicedToArray(_useState119, 2),
-    oracleFor = _useState120[0],
-    setOracleFor = _useState120[1]; // token id
-  var _useState121 = useState(""),
-    _useState122 = _slicedToArray(_useState121, 2),
-    oracleText = _useState122[0],
-    setOracleText = _useState122[1];
-  var _useState123 = useState(false),
-    _useState124 = _slicedToArray(_useState123, 2),
-    oracleLoading = _useState124[0],
-    setOracleLoading = _useState124[1];
-  var _useState125 = useState(null),
     _useState126 = _slicedToArray(_useState125, 2),
-    zoomImage = _useState126[0],
-    setZoomImage = _useState126[1]; // { url, tokenId } or null
-
-  // Secret menu (The Sanctum) -- unlocked by 7 taps on the title within 3s
+    presets = _useState126[0],
+    setPresets = _useState126[1];
   var _useState127 = useState(false),
     _useState128 = _slicedToArray(_useState127, 2),
-    sanctumOpen = _useState128[0],
-    setSanctumOpen = _useState128[1];
+    presetMenuOpen = _useState128[0],
+    setPresetMenuOpen = _useState128[1];
   var _useState129 = useState(false),
     _useState130 = _slicedToArray(_useState129, 2),
-    hatcheryDoorOpen = _useState130[0],
-    setHatcheryDoorOpen = _useState130[1];
-  // Games
-  var _useState131 = useState(false),
+    savePresetOpen = _useState130[0],
+    setSavePresetOpen = _useState130[1];
+  var _useState131 = useState(""),
     _useState132 = _slicedToArray(_useState131, 2),
-    memoryOpen = _useState132[0],
-    setMemoryOpen = _useState132[1];
-  var _useState133 = useState(false),
+    savePresetName = _useState132[0],
+    setSavePresetName = _useState132[1];
+
+  // Oracle text and zoom modals
+  var _useState133 = useState(null),
     _useState134 = _slicedToArray(_useState133, 2),
-    dragonOpen = _useState134[0],
-    setDragonOpen = _useState134[1];
-  var _useState135 = useState(0),
+    oracleFor = _useState134[0],
+    setOracleFor = _useState134[1]; // token id
+  var _useState135 = useState(""),
     _useState136 = _slicedToArray(_useState135, 2),
-    titleTapCount = _useState136[0],
-    setTitleTapCount = _useState136[1];
+    oracleText = _useState136[0],
+    setOracleText = _useState136[1];
+  var _useState137 = useState(false),
+    _useState138 = _slicedToArray(_useState137, 2),
+    oracleLoading = _useState138[0],
+    setOracleLoading = _useState138[1];
+  var _useState139 = useState(null),
+    _useState140 = _slicedToArray(_useState139, 2),
+    zoomImage = _useState140[0],
+    setZoomImage = _useState140[1]; // { url, tokenId } or null
+
+  // Secret menu (The Sanctum) -- unlocked by 7 taps on the title within 3s
+  var _useState141 = useState(false),
+    _useState142 = _slicedToArray(_useState141, 2),
+    sanctumOpen = _useState142[0],
+    setSanctumOpen = _useState142[1];
+  var _useState143 = useState(false),
+    _useState144 = _slicedToArray(_useState143, 2),
+    hatcheryDoorOpen = _useState144[0],
+    setHatcheryDoorOpen = _useState144[1];
+  // Games
+  var _useState145 = useState(false),
+    _useState146 = _slicedToArray(_useState145, 2),
+    memoryOpen = _useState146[0],
+    setMemoryOpen = _useState146[1];
+  var _useState147 = useState(false),
+    _useState148 = _slicedToArray(_useState147, 2),
+    dragonOpen = _useState148[0],
+    setDragonOpen = _useState148[1];
+  var _useState149 = useState(0),
+    _useState150 = _slicedToArray(_useState149, 2),
+    titleTapCount = _useState150[0],
+    setTitleTapCount = _useState150[1];
   var titleTapResetRef = useRef(null);
 
   // --------- COMPANION PET SYSTEM ---------
@@ -6426,68 +6470,68 @@ function TokenTracker() {
   // Shape: { core: 'W'|'U'|'B'|'R'|'G', name: string, hatchedAt: number,
   //          xp: number, lastFedAt: number, lastPlayedAt: number,
   //          affinities: { W:n, U:n, B:n, R:n, G:n } }
-  var _useState137 = useState(function () {
+  var _useState151 = useState(function () {
       return storage.get('pet');
     }),
-    _useState138 = _slicedToArray(_useState137, 2),
-    pet = _useState138[0],
-    setPet = _useState138[1];
+    _useState152 = _slicedToArray(_useState151, 2),
+    pet = _useState152[0],
+    setPet = _useState152[1];
 
   // Discovery (Tier 2): WUBRG order puzzle inside Sanctum
   // unlockedOrbs is the array of correctly-tapped orb colours so far in current attempt
-  var _useState139 = useState([]),
-    _useState140 = _slicedToArray(_useState139, 2),
-    unlockedOrbs = _useState140[0],
-    setUnlockedOrbs = _useState140[1];
-  var _useState141 = useState(false),
-    _useState142 = _slicedToArray(_useState141, 2),
-    showDiscoveryHint = _useState142[0],
-    setShowDiscoveryHint = _useState142[1];
-  var _useState143 = useState(false),
-    _useState144 = _slicedToArray(_useState143, 2),
-    hatchingOpen = _useState144[0],
-    setHatchingOpen = _useState144[1];
-  var _useState145 = useState(null),
-    _useState146 = _slicedToArray(_useState145, 2),
-    chosenCore = _useState146[0],
-    setChosenCore = _useState146[1]; // during ceremony
-  var _useState147 = useState([]),
-    _useState148 = _slicedToArray(_useState147, 2),
-    ceremonyStarters = _useState148[0],
-    setCeremonyStarters = _useState148[1]; // 3 petType keys
-  var _useState149 = useState(null),
-    _useState150 = _slicedToArray(_useState149, 2),
-    chosenType = _useState150[0],
-    setChosenType = _useState150[1]; // chosen petType key
-  var _useState151 = useState(false),
-    _useState152 = _slicedToArray(_useState151, 2),
-    hatchAnimating = _useState152[0],
-    setHatchAnimating = _useState152[1];
-
-  // Pet UI -- open the pet view directly (sets sanctumOpen + scrolls to pet section)
-  var _useState153 = useState(false),
+  var _useState153 = useState([]),
     _useState154 = _slicedToArray(_useState153, 2),
-    petResetConfirmOpen = _useState154[0],
-    setPetResetConfirmOpen = _useState154[1];
+    unlockedOrbs = _useState154[0],
+    setUnlockedOrbs = _useState154[1];
   var _useState155 = useState(false),
     _useState156 = _slicedToArray(_useState155, 2),
-    petRenameOpen = _useState156[0],
-    setPetRenameOpen = _useState156[1];
-  var _useState157 = useState(""),
+    showDiscoveryHint = _useState156[0],
+    setShowDiscoveryHint = _useState156[1];
+  var _useState157 = useState(false),
     _useState158 = _slicedToArray(_useState157, 2),
-    petNameInput = _useState158[0],
-    setPetNameInput = _useState158[1];
-  var _useState159 = useState(false),
+    hatchingOpen = _useState158[0],
+    setHatchingOpen = _useState158[1];
+  var _useState159 = useState(null),
     _useState160 = _slicedToArray(_useState159, 2),
-    showPetAdvanced = _useState160[0],
-    setShowPetAdvanced = _useState160[1];
+    chosenCore = _useState160[0],
+    setChosenCore = _useState160[1]; // during ceremony
+  var _useState161 = useState([]),
+    _useState162 = _slicedToArray(_useState161, 2),
+    ceremonyStarters = _useState162[0],
+    setCeremonyStarters = _useState162[1]; // 3 petType keys
+  var _useState163 = useState(null),
+    _useState164 = _slicedToArray(_useState163, 2),
+    chosenType = _useState164[0],
+    setChosenType = _useState164[1]; // chosen petType key
+  var _useState165 = useState(false),
+    _useState166 = _slicedToArray(_useState165, 2),
+    hatchAnimating = _useState166[0],
+    setHatchAnimating = _useState166[1];
+
+  // Pet UI -- open the pet view directly (sets sanctumOpen + scrolls to pet section)
+  var _useState167 = useState(false),
+    _useState168 = _slicedToArray(_useState167, 2),
+    petResetConfirmOpen = _useState168[0],
+    setPetResetConfirmOpen = _useState168[1];
+  var _useState169 = useState(false),
+    _useState170 = _slicedToArray(_useState169, 2),
+    petRenameOpen = _useState170[0],
+    setPetRenameOpen = _useState170[1];
+  var _useState171 = useState(""),
+    _useState172 = _slicedToArray(_useState171, 2),
+    petNameInput = _useState172[0],
+    setPetNameInput = _useState172[1];
+  var _useState173 = useState(false),
+    _useState174 = _slicedToArray(_useState173, 2),
+    showPetAdvanced = _useState174[0],
+    setShowPetAdvanced = _useState174[1];
 
   // Pet hint timer ref
   var petHintTimerRef = useRef(null);
   // Force re-render every minute so age/hunger displays stay current
-  var _useState161 = useState(0),
-    _useState162 = _slicedToArray(_useState161, 2),
-    setPetTick = _useState162[1];
+  var _useState175 = useState(0),
+    _useState176 = _slicedToArray(_useState175, 2),
+    setPetTick = _useState176[1];
   useEffect(function () {
     var i = setInterval(function () {
       return setPetTick(function (t) {
@@ -6884,7 +6928,7 @@ function TokenTracker() {
       document.removeEventListener('visibilitychange', handleVisibility);
       try {
         wakeLockRef.current && wakeLockRef.current.release && wakeLockRef.current.release();
-      } catch (_unused7) {}
+      } catch (_unused17) {}
     };
   }, []);
 
@@ -6894,7 +6938,7 @@ function TokenTracker() {
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('portrait').catch(function () {});
       }
-    } catch (_unused8) {}
+    } catch (_unused18) {}
   }, []);
 
   // Inject global CSS (animations + search input colour)
@@ -6998,7 +7042,7 @@ function TokenTracker() {
         }
       }, _callee2, null, [[2, 7]]);
     }));
-    return function runSearch(_x) {
+    return function runSearch(_x2) {
       return _ref25.apply(this, arguments);
     };
   }();
@@ -7120,7 +7164,7 @@ function TokenTracker() {
         }
       }, _callee3, null, [[2, 7]]);
     }));
-    return function runCopySearch(_x2, _x3) {
+    return function runCopySearch(_x3, _x4) {
       return _ref26.apply(this, arguments);
     };
   }();
@@ -7606,7 +7650,7 @@ function TokenTracker() {
         }
       }, _callee4, null, [[2, 7]]);
     }));
-    return function showOracle(_x4) {
+    return function showOracle(_x5) {
       return _ref27.apply(this, arguments);
     };
   }();
