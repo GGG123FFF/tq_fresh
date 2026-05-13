@@ -407,80 +407,98 @@ var Sparkles = makeIcon(/*#__PURE__*/React.createElement(React.Fragment, null, /
 
 var WUBRG = ['W', 'U', 'B', 'R', 'G'];
 
-// ─── StarterCard: creature selection card in hatching ceremony ────────────────
-
-// ─── rr() polyfill: rounded rect for older Android WebViews ──────────────────
-var rr = function rr(ctx, x, y, w, h, radii) {
-  var _ref2 = Array.isArray(radii) ? radii : [radii, radii, radii, radii],
-    _ref3 = _slicedToArray(_ref2, 4),
-    tl = _ref3[0],
-    tr = _ref3[1],
-    br = _ref3[2],
-    bl = _ref3[3];
-  ctx.moveTo(x + tl, y);
-  ctx.lineTo(x + w - tr, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + tr);
-  ctx.lineTo(x + w, y + h - br);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
-  ctx.lineTo(x + bl, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - bl);
-  ctx.lineTo(x, y + tl);
-  ctx.quadraticCurveTo(x, y, x + tl, y);
-  ctx.closePath();
-};
-
 // ─── StarterCard: shown in hatching ceremony ──────────────────────────────────
-function StarterCard(_ref4) {
-  var typeKey = _ref4.typeKey,
-    selected = _ref4.selected,
-    onSelect = _ref4.onSelect;
+// Pure MTG aesthetic - mana pip + typography, no emoji
+function StarterCard(_ref2) {
+  var typeKey = _ref2.typeKey,
+    selected = _ref2.selected,
+    onSelect = _ref2.onSelect;
   var typeData = PET_TYPES[typeKey];
   if (!typeData) return null;
   var cd = COLOR_DATA[typeData.color] || COLOR_DATA['G'];
   return /*#__PURE__*/React.createElement("button", {
     onClick: onSelect,
-    className: "flex flex-col items-center gap-2 py-3 px-2 active:scale-95 transition-all",
+    className: "relative flex flex-col items-center gap-2 py-4 px-3 active:scale-95 transition-all overflow-hidden",
     style: {
-      background: selected ? "radial-gradient(ellipse at top, ".concat(cd.glow, " 0%, rgba(20,14,8,0.9) 100%)") : 'rgba(20,14,8,0.7)',
-      border: "1.5px solid ".concat(selected ? cd.symbol : cd.symbol + '44'),
+      background: selected ? "radial-gradient(ellipse at top, ".concat(cd.glow, " 0%, rgba(10, 6, 4, 0.95) 75%)") : 'linear-gradient(180deg, rgba(20,14,8,0.85) 0%, rgba(10,6,4,0.75) 100%)',
+      border: "1.5px solid ".concat(selected ? cd.symbol : cd.symbol + '33'),
       borderRadius: '3px',
-      boxShadow: selected ? "0 0 20px ".concat(cd.glow) : 'none',
-      transition: 'all 0.25s ease'
+      boxShadow: selected ? "0 0 28px ".concat(cd.glow, ", inset 0 1px 0 ").concat(cd.symbol, "44") : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+      minHeight: '120px'
     }
-  }, /*#__PURE__*/React.createElement("span", {
+  }, selected && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": true,
     style: {
-      fontSize: '1.8rem',
-      lineHeight: 1
+      position: 'absolute',
+      top: 4,
+      left: 4,
+      width: 8,
+      height: 8,
+      borderTop: "1px solid ".concat(cd.symbol),
+      borderLeft: "1px solid ".concat(cd.symbol)
     }
-  }, typeData.emoji), /*#__PURE__*/React.createElement("span", {
+  }), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": true,
     style: {
-      fontFamily: "'Cinzel', serif",
-      fontSize: '0.6rem',
-      fontWeight: 600,
-      letterSpacing: '0.12em',
-      textTransform: 'uppercase',
-      color: selected ? cd.symbol : '#c9a961'
+      position: 'absolute',
+      top: 4,
+      right: 4,
+      width: 8,
+      height: 8,
+      borderTop: "1px solid ".concat(cd.symbol),
+      borderRight: "1px solid ".concat(cd.symbol)
     }
-  }, typeData.name), /*#__PURE__*/React.createElement("span", {
+  }), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": true,
     style: {
-      fontFamily: "'Crimson Pro', serif",
-      fontSize: '0.65rem',
-      fontStyle: 'italic',
-      color: '#9a8765',
-      textAlign: 'center',
-      lineHeight: 1.3
+      position: 'absolute',
+      bottom: 4,
+      left: 4,
+      width: 8,
+      height: 8,
+      borderBottom: "1px solid ".concat(cd.symbol),
+      borderLeft: "1px solid ".concat(cd.symbol)
     }
-  }, typeData.flavor), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": true,
     style: {
-      display: 'flex',
-      gap: 3,
-      justifyContent: 'center',
+      position: 'absolute',
+      bottom: 4,
+      right: 4,
+      width: 8,
+      height: 8,
+      borderBottom: "1px solid ".concat(cd.symbol),
+      borderRight: "1px solid ".concat(cd.symbol)
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'relative',
       marginTop: 2
     }
   }, /*#__PURE__*/React.createElement(ManaPip, {
     color: typeData.color,
-    size: 18
-  })));
+    size: 32
+  })), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'Cinzel', serif",
+      fontSize: '0.72rem',
+      fontWeight: 700,
+      letterSpacing: '0.22em',
+      textTransform: 'uppercase',
+      color: selected ? cd.symbol : '#e8dcc4'
+    }
+  }, typeData.name), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'Crimson Pro', serif",
+      fontSize: '0.62rem',
+      fontStyle: 'italic',
+      color: selected ? '#d4b87a' : '#8a7555',
+      textAlign: 'center',
+      lineHeight: 1.35,
+      letterSpacing: '0.02em'
+    }
+  }, typeData.flavor));
 }
 var COLOR_DATA = {
   W: {
@@ -676,11 +694,11 @@ var getPetResponse = function getPetResponse(pet, petHunger, petHappiness) {
 
 // Egg candidates in priority order -- first one that resolves on Scryfall wins
 var EGG_CARD_NAMES = ["Summoner's Egg", "Darksteel Egg", "Dragon Egg"];
-var PetEgg = function PetEgg(_ref5) {
-  var _ref5$orbsLit = _ref5.orbsLit,
-    orbsLit = _ref5$orbsLit === void 0 ? 0 : _ref5$orbsLit,
-    _ref5$size = _ref5.size,
-    size = _ref5$size === void 0 ? 140 : _ref5$size;
+var PetEgg = function PetEgg(_ref3) {
+  var _ref3$orbsLit = _ref3.orbsLit,
+    orbsLit = _ref3$orbsLit === void 0 ? 0 : _ref3$orbsLit,
+    _ref3$size = _ref3.size,
+    size = _ref3$size === void 0 ? 140 : _ref3$size;
   var _React$useState = React.useState(PET_ART_CACHE['__egg__'] || null),
     _React$useState2 = _slicedToArray(_React$useState, 2),
     artUrl = _React$useState2[0],
@@ -1036,10 +1054,10 @@ var TYPES_BY_COLOR = {
   R: [],
   G: []
 };
-Object.entries(PET_TYPES).forEach(function (_ref6) {
-  var _ref7 = _slicedToArray(_ref6, 2),
-    key = _ref7[0],
-    t = _ref7[1];
+Object.entries(PET_TYPES).forEach(function (_ref4) {
+  var _ref5 = _slicedToArray(_ref4, 2),
+    key = _ref5[0],
+    t = _ref5[1];
   if (TYPES_BY_COLOR[t.color]) TYPES_BY_COLOR[t.color].push(key);
 });
 
@@ -1055,18 +1073,18 @@ var pickCeremonyStarters = function pickCeremonyStarters() {
 };
 
 // Legacy PET_CARDS kept for backward compat -- maps to PET_TYPES lookup
-var PET_CARDS = Object.fromEntries(Object.entries(PET_TYPES).map(function (_ref8) {
-  var _ref9 = _slicedToArray(_ref8, 2),
-    key = _ref9[0],
-    t = _ref9[1];
+var PET_CARDS = Object.fromEntries(Object.entries(PET_TYPES).map(function (_ref6) {
+  var _ref7 = _slicedToArray(_ref6, 2),
+    key = _ref7[0],
+    t = _ref7[1];
   return [key, t.cards];
 }));
 
 // Colour-specific particle overlay -- SVG layer over the art
-var PetParticles = function PetParticles(_ref0) {
-  var core = _ref0.core,
-    _ref0$mood = _ref0.mood,
-    mood = _ref0$mood === void 0 ? 80 : _ref0$mood;
+var PetParticles = function PetParticles(_ref8) {
+  var core = _ref8.core,
+    _ref8$mood = _ref8.mood,
+    mood = _ref8$mood === void 0 ? 80 : _ref8$mood;
   var opacity = 0.3 + mood * 0.005; // more visible when happy
   var count = mood < 30 ? 3 : mood < 60 ? 5 : 8;
   if (core === 'W') return /*#__PURE__*/React.createElement("svg", {
@@ -1269,16 +1287,16 @@ var PetParticles = function PetParticles(_ref0) {
 
 // PetCreature -- fetches real MTG art_crop from Scryfall, animates with float + Ken Burns + particles
 // Interactions: tap = reaction, swipe-up = feed, tap-hold 1s = play
-var PetCreature = function PetCreature(_ref1) {
+var PetCreature = function PetCreature(_ref9) {
   var _PET_CARDS$core, _PET_CARDS$G;
-  var pet = _ref1.pet,
-    _ref1$size = _ref1.size,
-    size = _ref1$size === void 0 ? 160 : _ref1$size,
-    petHunger = _ref1.petHunger,
-    petHappiness = _ref1.petHappiness,
-    onTap = _ref1.onTap,
-    onSwipeUp = _ref1.onSwipeUp,
-    onHold = _ref1.onHold;
+  var pet = _ref9.pet,
+    _ref9$size = _ref9.size,
+    size = _ref9$size === void 0 ? 160 : _ref9$size,
+    petHunger = _ref9.petHunger,
+    petHappiness = _ref9.petHappiness,
+    onTap = _ref9.onTap,
+    onSwipeUp = _ref9.onSwipeUp,
+    onHold = _ref9.onHold;
   if (!pet) return null;
   var stage = computeStage(pet);
   // Support both new petType system and legacy core colour system
@@ -1619,10 +1637,10 @@ var dailyFlavour = function dailyFlavour(pet) {
   var day = Math.floor((Date.now() - pet.hatchedAt) / (24 * 60 * 60 * 1000));
   return bank[(day % bank.length + bank.length) % bank.length];
 };
-var ManaSymbolPath = function ManaSymbolPath(_ref10) {
-  var color = _ref10.color,
-    _ref10$size = _ref10.size,
-    size = _ref10$size === void 0 ? 16 : _ref10$size;
+var ManaSymbolPath = function ManaSymbolPath(_ref0) {
+  var color = _ref0.color,
+    _ref0$size = _ref0.size,
+    size = _ref0$size === void 0 ? 16 : _ref0$size;
   var c = COLOR_DATA[color].symbol;
   if (color === 'W') return /*#__PURE__*/React.createElement("svg", {
     width: size,
@@ -1674,15 +1692,15 @@ var ManaSymbolPath = function ManaSymbolPath(_ref10) {
   }));
   return null;
 };
-var ManaPip = function ManaPip(_ref11) {
-  var color = _ref11.color,
-    _ref11$size = _ref11.size,
-    size = _ref11$size === void 0 ? 28 : _ref11$size,
-    _ref11$lit = _ref11.lit,
-    lit = _ref11$lit === void 0 ? false : _ref11$lit,
-    onClick = _ref11.onClick,
-    _ref11$style = _ref11.style,
-    style = _ref11$style === void 0 ? {} : _ref11$style;
+var ManaPip = function ManaPip(_ref1) {
+  var color = _ref1.color,
+    _ref1$size = _ref1.size,
+    size = _ref1$size === void 0 ? 28 : _ref1$size,
+    _ref1$lit = _ref1.lit,
+    lit = _ref1$lit === void 0 ? false : _ref1$lit,
+    onClick = _ref1.onClick,
+    _ref1$style = _ref1.style,
+    style = _ref1$style === void 0 ? {} : _ref1$style;
   var data = COLOR_DATA[color];
   return /*#__PURE__*/React.createElement("button", {
     onClick: onClick,
@@ -1710,29 +1728,29 @@ var ManaPip = function ManaPip(_ref11) {
 };
 
 // PetPanel -- the live pet display inside The Sanctum
-var PetPanel = function PetPanel(_ref12) {
-  var pet = _ref12.pet,
-    petHunger = _ref12.petHunger,
-    petHappiness = _ref12.petHappiness,
-    feedReady = _ref12.feedReady,
-    playReady = _ref12.playReady,
-    feedPet = _ref12.feedPet,
-    playWithPet = _ref12.playWithPet,
-    showAdvanced = _ref12.showAdvanced,
-    setShowAdvanced = _ref12.setShowAdvanced,
-    onRename = _ref12.onRename,
-    onReset = _ref12.onReset,
-    onDevJuvenile = _ref12.onDevJuvenile,
-    onDevAdult = _ref12.onDevAdult,
-    onDevFeed = _ref12.onDevFeed,
-    onDevPlay = _ref12.onDevPlay;
+var PetPanel = function PetPanel(_ref10) {
+  var pet = _ref10.pet,
+    petHunger = _ref10.petHunger,
+    petHappiness = _ref10.petHappiness,
+    feedReady = _ref10.feedReady,
+    playReady = _ref10.playReady,
+    feedPet = _ref10.feedPet,
+    playWithPet = _ref10.playWithPet,
+    showAdvanced = _ref10.showAdvanced,
+    setShowAdvanced = _ref10.setShowAdvanced,
+    onRename = _ref10.onRename,
+    onReset = _ref10.onReset,
+    onDevJuvenile = _ref10.onDevJuvenile,
+    onDevAdult = _ref10.onDevAdult,
+    onDevFeed = _ref10.onDevFeed,
+    onDevPlay = _ref10.onDevPlay;
   var stage = computeStage(pet);
   var ident = computeIdentity(pet);
   var coreData = COLOR_DATA[ident.core];
   var stageName = stage === 0 ? 'Hatchling' : stage === 1 ? 'Juvenile' : 'Adult';
   // Pet type display
   var petTypeData = pet.petType ? PET_TYPES[pet.petType] : null;
-  var petTypeName = petTypeData ? "".concat(petTypeData.emoji, " ").concat(petTypeData.name) : (coreData === null || coreData === void 0 ? void 0 : coreData.name) || '';
+  var petTypeName = petTypeData ? petTypeData.name : (coreData === null || coreData === void 0 ? void 0 : coreData.name) || '';
   var ageMs = Date.now() - pet.hatchedAt;
   var ageDays = Math.floor(ageMs / (24 * 60 * 60 * 1000));
   var ageHours = Math.floor(ageMs / (60 * 60 * 1000));
@@ -1997,7 +2015,7 @@ var PetPanel = function PetPanel(_ref12) {
       borderRadius: "3px",
       boxShadow: feedReady(pet) ? "inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 8px rgba(143, 188, 143, 0.2)" : "none"
     }
-  }, /*#__PURE__*/React.createElement("div", null, "\uD83C\uDF56 Feed"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", null, "FEED"), /*#__PURE__*/React.createElement("div", {
     className: "text-[8px] tracking-[0.15em] mt-1",
     style: {
       opacity: 0.75
@@ -2015,7 +2033,7 @@ var PetPanel = function PetPanel(_ref12) {
       borderRadius: "3px",
       boxShadow: playReady(pet) ? "inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 8px rgba(201, 169, 97, 0.25)" : "none"
     }
-  }, /*#__PURE__*/React.createElement("div", null, "\u2728 Play"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", null, "PLAY"), /*#__PURE__*/React.createElement("div", {
     className: "text-[8px] tracking-[0.15em] mt-1",
     style: {
       opacity: 0.75
@@ -2175,11 +2193,11 @@ var PetPanel = function PetPanel(_ref12) {
 };
 
 // Decorative flourish for header -- fleur-de-lis/arcane ornament
-var Ornament = function Ornament(_ref13) {
-  var _ref13$style = _ref13.style,
-    style = _ref13$style === void 0 ? {} : _ref13$style,
-    _ref13$flip = _ref13.flip,
-    flip = _ref13$flip === void 0 ? false : _ref13$flip;
+var Ornament = function Ornament(_ref11) {
+  var _ref11$style = _ref11.style,
+    style = _ref11$style === void 0 ? {} : _ref11$style,
+    _ref11$flip = _ref11.flip,
+    flip = _ref11$flip === void 0 ? false : _ref11$flip;
   return /*#__PURE__*/React.createElement("svg", {
     viewBox: "0 0 40 24",
     width: "40",
@@ -2229,7 +2247,7 @@ var COLOR_DOTS = {
   G: "#8fbc8f"
 };
 var normalizeCard = function normalizeCard(card) {
-  var _card$image_uris, _card$image_uris2, _card$card_faces, _card$image_uris3, _card$image_uris4, _card$card_faces2, _ref14, _card$power, _card$card_faces3, _ref15, _card$toughness, _card$card_faces4;
+  var _card$image_uris, _card$image_uris2, _card$card_faces, _card$image_uris3, _card$image_uris4, _card$card_faces2, _ref12, _card$power, _card$card_faces3, _ref13, _card$toughness, _card$card_faces4;
   if (card.smallImage !== undefined) return card;
   var smallImage = ((_card$image_uris = card.image_uris) === null || _card$image_uris === void 0 ? void 0 : _card$image_uris.small) || ((_card$image_uris2 = card.image_uris) === null || _card$image_uris2 === void 0 ? void 0 : _card$image_uris2.normal) || ((_card$card_faces = card.card_faces) === null || _card$card_faces === void 0 || (_card$card_faces = _card$card_faces[0]) === null || _card$card_faces === void 0 || (_card$card_faces = _card$card_faces.image_uris) === null || _card$card_faces === void 0 ? void 0 : _card$card_faces.small) || "";
   var normalImage = ((_card$image_uris3 = card.image_uris) === null || _card$image_uris3 === void 0 ? void 0 : _card$image_uris3.normal) || ((_card$image_uris4 = card.image_uris) === null || _card$image_uris4 === void 0 ? void 0 : _card$image_uris4.large) || ((_card$card_faces2 = card.card_faces) === null || _card$card_faces2 === void 0 || (_card$card_faces2 = _card$card_faces2[0]) === null || _card$card_faces2 === void 0 || (_card$card_faces2 = _card$card_faces2.image_uris) === null || _card$card_faces2 === void 0 ? void 0 : _card$card_faces2.normal) || smallImage;
@@ -2238,8 +2256,8 @@ var normalizeCard = function normalizeCard(card) {
     name: card.name,
     smallImage: smallImage,
     normalImage: normalImage,
-    power: (_ref14 = (_card$power = card.power) !== null && _card$power !== void 0 ? _card$power : (_card$card_faces3 = card.card_faces) === null || _card$card_faces3 === void 0 || (_card$card_faces3 = _card$card_faces3[0]) === null || _card$card_faces3 === void 0 ? void 0 : _card$card_faces3.power) !== null && _ref14 !== void 0 ? _ref14 : null,
-    toughness: (_ref15 = (_card$toughness = card.toughness) !== null && _card$toughness !== void 0 ? _card$toughness : (_card$card_faces4 = card.card_faces) === null || _card$card_faces4 === void 0 || (_card$card_faces4 = _card$card_faces4[0]) === null || _card$card_faces4 === void 0 ? void 0 : _card$card_faces4.toughness) !== null && _ref15 !== void 0 ? _ref15 : null,
+    power: (_ref12 = (_card$power = card.power) !== null && _card$power !== void 0 ? _card$power : (_card$card_faces3 = card.card_faces) === null || _card$card_faces3 === void 0 || (_card$card_faces3 = _card$card_faces3[0]) === null || _card$card_faces3 === void 0 ? void 0 : _card$card_faces3.power) !== null && _ref12 !== void 0 ? _ref12 : null,
+    toughness: (_ref13 = (_card$toughness = card.toughness) !== null && _card$toughness !== void 0 ? _card$toughness : (_card$card_faces4 = card.card_faces) === null || _card$card_faces4 === void 0 || (_card$card_faces4 = _card$card_faces4[0]) === null || _card$card_faces4 === void 0 ? void 0 : _card$card_faces4.toughness) !== null && _ref13 !== void 0 ? _ref13 : null,
     type_line: card.type_line || "",
     colors: card.colors || card.color_identity || []
   };
@@ -2295,6 +2313,79 @@ var PRESET_TOKENS = [{
   colors: [],
   pt: null,
   text: '{T}: Add {C}. This mana can\'t be spent to cast nonartifact spells.'
+}];
+
+// Standard MTG counters - tracked on players or as standalone trackers
+var STANDARD_COUNTERS = [{
+  id: 'energy',
+  name: 'Energy',
+  short: 'E',
+  color: '#d4b87a',
+  glow: 'rgba(212, 184, 122, 0.3)',
+  text: '{E}. Energy reserves. Pay {E} as costs of activated abilities or spells.'
+}, {
+  id: 'poison',
+  name: 'Poison',
+  short: 'P',
+  color: '#7faf4f',
+  glow: 'rgba(127, 175, 79, 0.3)',
+  text: 'A player with 10+ poison counters loses the game.'
+}, {
+  id: 'experience',
+  name: 'Experience',
+  short: 'XP',
+  color: '#9fc7e6',
+  glow: 'rgba(159, 199, 230, 0.3)',
+  text: 'Experience counters track a permanent benefit across the game.'
+}, {
+  id: 'oil',
+  name: 'Oil',
+  short: 'OIL',
+  color: '#3a3a4a',
+  glow: 'rgba(120, 120, 140, 0.3)',
+  text: 'Oil counters fuel Phyrexian artifacts and creatures.'
+}, {
+  id: 'stun',
+  name: 'Stun',
+  short: 'STN',
+  color: '#c9a9c9',
+  glow: 'rgba(201, 169, 201, 0.3)',
+  text: 'If a permanent with a stun counter would become untapped, remove a stun counter instead.'
+}, {
+  id: 'shield',
+  name: 'Shield',
+  short: 'SH',
+  color: '#e8cc8a',
+  glow: 'rgba(232, 204, 138, 0.3)',
+  text: 'If a permanent with a shield counter would be destroyed or dealt damage, remove a shield counter instead.'
+}, {
+  id: 'charge',
+  name: 'Charge',
+  short: 'CH',
+  color: '#9a8ad4',
+  glow: 'rgba(154, 138, 212, 0.3)',
+  text: 'Charge counters accumulate to power abilities like Coretapper or Power Conduit.'
+}, {
+  id: 'time',
+  name: 'Time',
+  short: 'T',
+  color: '#d4a87a',
+  glow: 'rgba(212, 168, 122, 0.3)',
+  text: 'Time counters track suspend, vanishing, and fading effects.'
+}, {
+  id: 'loyalty',
+  name: 'Loyalty',
+  short: 'L',
+  color: '#b89a6a',
+  glow: 'rgba(184, 154, 106, 0.3)',
+  text: 'Planeswalker loyalty. Plus abilities add, minus abilities remove.'
+}, {
+  id: 'wish',
+  name: 'Wish',
+  short: 'W',
+  color: '#f5d98f',
+  glow: 'rgba(245, 217, 143, 0.3)',
+  text: 'Wish counters and other tokens used for one-shot effects.'
 }];
 var COUNTER_TYPES = [{
   id: 'plusOne',
@@ -2405,12 +2496,12 @@ function useLongPress(onClick, onLongPress) {
 // ============ Memory Game ============
 var MEMORY_BEST_KEY = 'tq_memory_best';
 var CARD_BACK_COLOR = '#1a110a';
-var MemoryGame = function MemoryGame(_ref16) {
-  var onClose = _ref16.onClose,
-    pet = _ref16.pet,
-    setPet = _ref16.setPet,
-    showToast = _ref16.showToast,
-    haptic = _ref16.haptic;
+var MemoryGame = function MemoryGame(_ref14) {
+  var onClose = _ref14.onClose,
+    pet = _ref14.pet,
+    setPet = _ref14.setPet,
+    showToast = _ref14.showToast,
+    haptic = _ref14.haptic;
   var best = parseInt(localStorage.getItem(MEMORY_BEST_KEY) || '999999', 10);
   var pairCount = best < 45000 ? 12 : best < 90000 ? 8 : 4;
   var _React$useState15 = React.useState([]),
@@ -2518,9 +2609,9 @@ var MemoryGame = function MemoryGame(_ref16) {
     });
     for (var i = pairs.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
-      var _ref17 = [pairs[j], pairs[i]];
-      pairs[i] = _ref17[0];
-      pairs[j] = _ref17[1];
+      var _ref15 = [pairs[j], pairs[i]];
+      pairs[i] = _ref15[0];
+      pairs[j] = _ref15[1];
     }
     setCards(pairs);
     setLoading(false);
@@ -3163,11 +3254,11 @@ var fdRoundRect = function fdRoundRect(ctx, x, y, w, h, r) {
   ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
 };
-var FlappyDragon = function FlappyDragon(_ref18) {
-  var onClose = _ref18.onClose,
-    pet = _ref18.pet,
-    setPet = _ref18.setPet,
-    haptic = _ref18.haptic;
+var FlappyDragon = function FlappyDragon(_ref16) {
+  var onClose = _ref16.onClose,
+    pet = _ref16.pet,
+    setPet = _ref16.setPet,
+    haptic = _ref16.haptic;
   var canvasRef = React.useRef(null);
   var ctxRef = React.useRef(null);
   var stateRef = React.useRef(null);
@@ -3608,11 +3699,11 @@ var FlappyDragon = function FlappyDragon(_ref18) {
     ctx.fill();
     // Crater shadows
     ctx.fillStyle = 'rgba(80,50,10,0.18)';
-    [[0.3, 0.2, 0.18], [-0.25, 0.35, 0.12], [0.1, -0.3, 0.15]].forEach(function (_ref19) {
-      var _ref20 = _slicedToArray(_ref19, 3),
-        dx = _ref20[0],
-        dy = _ref20[1],
-        r = _ref20[2];
+    [[0.3, 0.2, 0.18], [-0.25, 0.35, 0.12], [0.1, -0.3, 0.15]].forEach(function (_ref17) {
+      var _ref18 = _slicedToArray(_ref17, 3),
+        dx = _ref18[0],
+        dy = _ref18[1],
+        r = _ref18[2];
       ctx.beginPath();
       ctx.arc(moonX + dx * moonR, moonY + dy * moonR, r * moonR, 0, Math.PI * 2);
       ctx.fill();
@@ -4835,10 +4926,10 @@ function exactColorMatch(deckColors, comboColors) {
 }
 
 // ─── Colour pip ───────────────────────────────────────────────────────────────
-function VaultColorPip(_ref21) {
-  var c = _ref21.c,
-    _ref21$size = _ref21.size,
-    size = _ref21$size === void 0 ? 22 : _ref21$size;
+function VaultColorPip(_ref19) {
+  var c = _ref19.c,
+    _ref19$size = _ref19.size,
+    size = _ref19$size === void 0 ? 22 : _ref19$size;
   var col = COLORS[c];
   return /*#__PURE__*/React.createElement("span", {
     style: {
@@ -4858,8 +4949,8 @@ function VaultColorPip(_ref21) {
     title: col.label
   }, col.symbol);
 }
-function VaultColorBar(_ref22) {
-  var colors = _ref22.colors;
+function VaultColorBar(_ref20) {
+  var colors = _ref20.colors;
   return /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
@@ -5365,15 +5456,15 @@ function CommanderVault() {
 }
 
 // ─── Deck card ────────────────────────────────────────────────────────────────
-function VaultDeckCard(_ref23) {
-  var deck = _ref23.deck,
-    onEdit = _ref23.onEdit,
-    onDelete = _ref23.onDelete,
-    SURFACE = _ref23.SURFACE,
-    SURFACE2 = _ref23.SURFACE2,
-    ACCENT = _ref23.ACCENT,
-    MUTED = _ref23.MUTED,
-    TEXT = _ref23.TEXT;
+function VaultDeckCard(_ref21) {
+  var deck = _ref21.deck,
+    onEdit = _ref21.onEdit,
+    onDelete = _ref21.onDelete,
+    SURFACE = _ref21.SURFACE,
+    SURFACE2 = _ref21.SURFACE2,
+    ACCENT = _ref21.ACCENT,
+    MUTED = _ref21.MUTED,
+    TEXT = _ref21.TEXT;
   var _useState17 = useState(false),
     _useState18 = _slicedToArray(_useState17, 2),
     expanded = _useState18[0],
@@ -5484,15 +5575,15 @@ function VaultDeckCard(_ref23) {
 }
 
 // ─── Coverage view ────────────────────────────────────────────────────────────
-function VaultCoverageView(_ref24) {
-  var decks = _ref24.decks,
-    coveredIds = _ref24.coveredIds,
-    SURFACE = _ref24.SURFACE,
-    SURFACE2 = _ref24.SURFACE2,
-    ACCENT = _ref24.ACCENT,
-    ACCENT2 = _ref24.ACCENT2,
-    MUTED = _ref24.MUTED,
-    TEXT = _ref24.TEXT;
+function VaultCoverageView(_ref22) {
+  var decks = _ref22.decks,
+    coveredIds = _ref22.coveredIds,
+    SURFACE = _ref22.SURFACE,
+    SURFACE2 = _ref22.SURFACE2,
+    ACCENT = _ref22.ACCENT,
+    ACCENT2 = _ref22.ACCENT2,
+    MUTED = _ref22.MUTED,
+    TEXT = _ref22.TEXT;
   var groups = [{
     label: "Mono-colour",
     ids: ["W", "U", "B", "R", "G", "C"]
@@ -5637,13 +5728,13 @@ function VaultCoverageView(_ref24) {
 }
 
 // ─── Strixhaven view ──────────────────────────────────────────────────────────
-function VaultStrixhavenView(_ref25) {
-  var decks = _ref25.decks,
-    SURFACE = _ref25.SURFACE,
-    SURFACE2 = _ref25.SURFACE2,
-    ACCENT = _ref25.ACCENT,
-    MUTED = _ref25.MUTED,
-    TEXT = _ref25.TEXT;
+function VaultStrixhavenView(_ref23) {
+  var decks = _ref23.decks,
+    SURFACE = _ref23.SURFACE,
+    SURFACE2 = _ref23.SURFACE2,
+    ACCENT = _ref23.ACCENT,
+    MUTED = _ref23.MUTED,
+    TEXT = _ref23.TEXT;
   var covered = STRIXHAVEN_SCHOOLS.filter(function (school) {
     return decks.some(function (d) {
       return exactColorMatch(d.colors, school.colors);
@@ -6628,7 +6719,7 @@ function TokenTracker() {
   useEffect(function () {
     var released = false;
     var acquire = /*#__PURE__*/function () {
-      var _ref26 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+      var _ref24 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
         var _t;
         return _regenerator().w(function (_context) {
           while (1) switch (_context.p = _context.n) {
@@ -6654,7 +6745,7 @@ function TokenTracker() {
         }, _callee, null, [[0, 3]]);
       }));
       return function acquire() {
-        return _ref26.apply(this, arguments);
+        return _ref24.apply(this, arguments);
       };
     }();
     acquire();
@@ -6725,7 +6816,7 @@ function TokenTracker() {
     storage.set('favourites', favourites);
   }, [favourites]);
   var runSearch = /*#__PURE__*/function () {
-    var _ref27 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(searchTerm) {
+    var _ref25 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(searchTerm) {
       var url, res, data, _t2;
       return _regenerator().w(function (_context2) {
         while (1) switch (_context2.p = _context2.n) {
@@ -6782,7 +6873,7 @@ function TokenTracker() {
       }, _callee2, null, [[2, 7]]);
     }));
     return function runSearch(_x) {
-      return _ref27.apply(this, arguments);
+      return _ref25.apply(this, arguments);
     };
   }();
   useEffect(function () {
@@ -6847,7 +6938,7 @@ function TokenTracker() {
     setCopyResults([]);
   };
   var runCopySearch = /*#__PURE__*/function () {
-    var _ref28 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(searchTerm, scope) {
+    var _ref26 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(searchTerm, scope) {
       var qParts, url, res, data, _t3;
       return _regenerator().w(function (_context3) {
         while (1) switch (_context3.p = _context3.n) {
@@ -6904,7 +6995,7 @@ function TokenTracker() {
       }, _callee3, null, [[2, 7]]);
     }));
     return function runCopySearch(_x2, _x3) {
-      return _ref28.apply(this, arguments);
+      return _ref26.apply(this, arguments);
     };
   }();
   useEffect(function () {
@@ -7342,7 +7433,7 @@ function TokenTracker() {
 
   // Oracle text fetch
   var showOracle = /*#__PURE__*/function () {
-    var _ref29 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(token) {
+    var _ref27 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(token) {
       var res, _data$card_faces3, data, _t4;
       return _regenerator().w(function (_context4) {
         while (1) switch (_context4.p = _context4.n) {
@@ -7390,7 +7481,7 @@ function TokenTracker() {
       }, _callee4, null, [[2, 7]]);
     }));
     return function showOracle(_x4) {
-      return _ref29.apply(this, arguments);
+      return _ref27.apply(this, arguments);
     };
   }();
 
@@ -7805,6 +7896,81 @@ function TokenTracker() {
         boxShadow: active ? "0 2px 8px rgba(201, 169, 97, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)" : "inset 0 1px 0 rgba(255, 255, 255, 0.03)"
       }
     }, term);
+  }))), /*#__PURE__*/React.createElement("section", {
+    className: "mb-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-1 h-4",
+    style: {
+      background: "linear-gradient(180deg, #c9a961, transparent)"
+    }
+  }), /*#__PURE__*/React.createElement("h3", {
+    className: "text-[10px] tracking-[0.3em] uppercase",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      color: "#c9a961",
+      fontWeight: 600
+    }
+  }, "Counters")), /*#__PURE__*/React.createElement("div", {
+    className: "no-scrollbar flex gap-2 overflow-x-auto pb-1"
+  }, STANDARD_COUNTERS.map(function (ctr) {
+    return /*#__PURE__*/React.createElement("button", {
+      key: ctr.id,
+      onClick: function onClick() {
+        var token = {
+          id: "".concat(ctr.id, "-").concat(Date.now()),
+          name: ctr.name,
+          type: 'Counter',
+          colors: [],
+          pt: null,
+          text: ctr.text,
+          originalId: ctr.id,
+          powerMod: 0,
+          toughnessMod: 0,
+          tapped: false,
+          counters: {
+            plusOne: 0,
+            minusOne: 0
+          },
+          isCounter: true,
+          counterColor: ctr.color
+        };
+        setBattlefield(function (prev) {
+          pushUndo(prev);
+          return [token].concat(_toConsumableArray(prev));
+        });
+        haptic(20);
+        showToast("".concat(ctr.name, " counter added"));
+      },
+      className: "flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 active:scale-95 transition-transform",
+      style: {
+        fontFamily: "'Cinzel', serif",
+        fontSize: '0.7rem',
+        fontWeight: 600,
+        letterSpacing: '0.15em',
+        textTransform: 'uppercase',
+        color: ctr.color,
+        background: "linear-gradient(180deg, ".concat(ctr.glow, ", rgba(10, 6, 4, 0.6))"),
+        border: "1px solid ".concat(ctr.color, "55"),
+        borderRadius: '2px',
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 4px ".concat(ctr.glow)
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 18,
+        height: 18,
+        borderRadius: '50%',
+        background: "radial-gradient(circle at 30% 30%, ".concat(ctr.color, ", ").concat(ctr.color, "88)"),
+        color: '#0a0604',
+        fontSize: '0.55rem',
+        fontWeight: 800,
+        boxShadow: "inset 0 -1px 1px rgba(0,0,0,0.3), 0 0 4px ".concat(ctr.glow)
+      }
+    }, ctr.short), ctr.name);
   }))), (loading || results.length > 0 || error) && showSearch && /*#__PURE__*/React.createElement("section", {
     className: "mb-6"
   }, /*#__PURE__*/React.createElement("div", {
@@ -9803,10 +9969,10 @@ function TokenTracker() {
       }
     }))), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 px-4 pt-3 pb-2"
-    }, [[-5, '-5'], [-1, '-1'], [1, '+1'], [5, '+5']].map(function (_ref30) {
-      var _ref31 = _slicedToArray(_ref30, 2),
-        d = _ref31[0],
-        label = _ref31[1];
+    }, [[-5, '-5'], [-1, '-1'], [1, '+1'], [5, '+5']].map(function (_ref28) {
+      var _ref29 = _slicedToArray(_ref28, 2),
+        d = _ref29[0],
+        label = _ref29[1];
       return /*#__PURE__*/React.createElement("button", {
         key: d,
         onClick: function onClick() {
@@ -9943,22 +10109,47 @@ function TokenTracker() {
       boxShadow: "0 2px 8px rgba(160, 48, 44, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)"
     }
   }, "Wipe"))))), sanctumOpen && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[110] flex items-start justify-center overflow-y-auto",
+    className: "fixed inset-0 z-[120]",
     style: {
-      background: "radial-gradient(ellipse at top, rgba(40, 25, 60, 0.95) 0%, rgba(5, 3, 10, 0.98) 70%)",
-      backdropFilter: "blur(10px)",
-      WebkitBackdropFilter: "blur(10px)",
-      animation: "sanctumIn 0.4s ease-out"
-    },
+      background: "radial-gradient(ellipse at top, rgba(40, 25, 60, 0.98) 0%, rgba(5, 3, 10, 0.99) 70%)",
+      backdropFilter: "blur(14px) saturate(120%)",
+      WebkitBackdropFilter: "blur(14px) saturate(120%)",
+      animation: "sanctumIn 0.4s ease-out",
+      overflowY: "auto",
+      WebkitOverflowScrolling: "touch"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
+      haptic(15);
       setSanctumOpen(false);
       setHatcheryDoorOpen(false);
+    },
+    "aria-label": "Close Sanctum",
+    className: "fixed top-3 right-3 z-[125] active:scale-90 transition-transform",
+    style: {
+      width: 40,
+      height: 40,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'rgba(10, 6, 4, 0.85)',
+      border: '1px solid rgba(201, 169, 97, 0.4)',
+      borderRadius: '50%',
+      color: '#c9a961',
+      fontSize: '1.1rem',
+      fontFamily: "'Cinzel', serif",
+      cursor: 'pointer',
+      boxShadow: '0 2px 12px rgba(0,0,0,0.6)',
+      top: 'max(0.75rem, env(safe-area-inset-top))'
+    }
+  }, "\u2715"), /*#__PURE__*/React.createElement("div", {
+    className: "relative w-full max-w-md mx-auto my-4 px-3",
+    style: {
+      paddingTop: 'max(1rem, env(safe-area-inset-top))',
+      paddingBottom: 'max(1rem, env(safe-area-inset-bottom))'
     }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "relative w-full max-w-md my-4 mx-3",
-    onClick: function onClick(e) {
-      return e.stopPropagation();
-    },
+    className: "relative",
     style: {
       background: "linear-gradient(180deg, rgba(26, 17, 10, 0.95) 0%, rgba(10, 6, 4, 0.98) 100%)",
       border: "1px solid rgba(201, 169, 97, 0.5)",
@@ -10700,7 +10891,7 @@ function TokenTracker() {
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "2px"
     }
-  }, "Return")))), memoryOpen && /*#__PURE__*/React.createElement(MemoryGame, {
+  }, "Return"))))), memoryOpen && /*#__PURE__*/React.createElement(MemoryGame, {
     onClose: function onClose() {
       return setMemoryOpen(false);
     },
