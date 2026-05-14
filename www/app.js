@@ -476,9 +476,23 @@ function StarterCard(_ref2) {
       position: 'relative',
       marginTop: 2
     }
-  }, /*#__PURE__*/React.createElement(ManaPip, {
-    color: typeData.color,
-    size: 32
+  }, /*#__PURE__*/React.createElement("img", {
+    src: "https://svgs.scryfall.io/card-symbols/" + typeData.color + ".svg",
+    alt: "{" + typeData.color + "}",
+    onError: function onError(e) {
+      if (e.currentTarget.dataset.tqFb === "1") return;
+      e.currentTarget.dataset.tqFb = "1";
+      e.currentTarget.src = "img/mana/" + typeData.color + ".svg";
+    },
+    style: {
+      width: 32,
+      height: 32,
+      display: "block",
+      borderRadius: "50%",
+      boxShadow: selected ? "0 0 16px " + cd.glow : "0 1px 4px rgba(0,0,0,0.5)",
+      filter: selected ? "none" : "saturate(0.85)",
+      transition: "all 0.25s ease"
+    }
   })), /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: "'Cinzel', serif",
@@ -3379,26 +3393,28 @@ var FlappyDragon = function FlappyDragon(_ref16) {
   }, [muted]);
 
   // ============ Difficulty presets ============
+  // Gravity values are PER-FRAME at 60fps reference; the game loop scales
+  // them by deltaTime so the feel stays identical at any frame rate.
   var DIFF = {
     easy: {
       gap: 200,
       speed: 1.8,
-      gravity: 0.36,
-      jump: -6.4,
+      gravity: 0.28,
+      jump: -5.6,
       spawnGap: 280
     },
     normal: {
       gap: 160,
       speed: 2.3,
-      gravity: 0.42,
-      jump: -6.8,
+      gravity: 0.33,
+      jump: -6.0,
       spawnGap: 240
     },
     hard: {
       gap: 130,
       speed: 2.9,
-      gravity: 0.50,
-      jump: -7.4,
+      gravity: 0.40,
+      jump: -6.4,
       spawnGap: 210
     }
   };
@@ -3547,6 +3563,7 @@ var FlappyDragon = function FlappyDragon(_ref16) {
       W: W,
       H: H,
       diff: diff,
+      _lastT: 0,
       dragon: {
         x: W * 0.28,
         y: H * 0.45,
@@ -3587,6 +3604,18 @@ var FlappyDragon = function FlappyDragon(_ref16) {
       rafRef.current = null;
       return;
     }
+    // Frame-rate independence: dt is "how many 60fps frames worth of time
+    // has passed since the last tick". At 60fps dt = 1, at 30fps dt = 2,
+    // at 120fps dt = 0.5. We multiply all per-frame deltas by it.
+    var now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    var dt = 1;
+    if (s._lastT) {
+      dt = (now - s._lastT) / (1000 / 60);
+      // Clamp to avoid huge jumps after tab pause or first frame
+      if (dt < 0.1) dt = 0.1;
+      if (dt > 3) dt = 3;
+    }
+    s._lastT = now;
     var ctx = canvas.getContext('2d');
     var W = s.W,
       H = s.H,
@@ -3595,17 +3624,17 @@ var FlappyDragon = function FlappyDragon(_ref16) {
 
     // ====== Physics ======
     if (!s.dead) {
-      s.dragon.vy += diff.gravity;
+      s.dragon.vy += diff.gravity * dt;
       // Terminal velocity cap
       if (s.dragon.vy > 10) s.dragon.vy = 10;
-      s.dragon.y += s.dragon.vy;
+      s.dragon.y += s.dragon.vy * dt;
       // Rotation based on vy
       var targetRot = Math.max(-0.5, Math.min(1.0, s.dragon.vy * 0.10));
-      s.dragon.rot += (targetRot - s.dragon.rot) * 0.18;
-      s.dragon.flapT = Math.max(0, s.dragon.flapT - 1);
+      s.dragon.rot += (targetRot - s.dragon.rot) * 0.18 * dt;
+      s.dragon.flapT = Math.max(0, s.dragon.flapT - dt);
 
       // Spawn pipes
-      s.spawnTimer -= diff.speed;
+      s.spawnTimer -= diff.speed * dt;
       if (s.spawnTimer <= 0) {
         s.spawnTimer = diff.spawnGap;
         var minTop = 60;
@@ -3631,7 +3660,7 @@ var FlappyDragon = function FlappyDragon(_ref16) {
       // Move pipes
       for (var i = s.pipes.length - 1; i >= 0; i--) {
         var p = s.pipes[i];
-        p.x -= diff.speed;
+        p.x -= diff.speed * dt;
         // Scoring (when dragon passes a pipe's center)
         if (!p.scored && p.x + 30 < s.dragon.x) {
           p.scored = true;
@@ -3657,8 +3686,8 @@ var FlappyDragon = function FlappyDragon(_ref16) {
       // Move coins
       for (var _i = s.coins.length - 1; _i >= 0; _i--) {
         var c = s.coins[_i];
-        c.x -= diff.speed;
-        c.t += 0.1;
+        c.x -= diff.speed * dt;
+        c.t += 0.1 * dt;
         var _dx = s.dragon.x - c.x;
         var _dy = s.dragon.y - c.y;
         if (!c.taken && Math.sqrt(_dx * _dx + _dy * _dy) < 22) {
@@ -3751,9 +3780,9 @@ var FlappyDragon = function FlappyDragon(_ref16) {
 
     // Continue gravity even after death (rag-doll fall)
     if (s.dead) {
-      s.dragon.vy += diff.gravity;
-      s.dragon.y += s.dragon.vy;
-      s.dragon.rot += 0.05;
+      s.dragon.vy += diff.gravity * dt;
+      s.dragon.y += s.dragon.vy * dt;
+      s.dragon.rot += 0.05 * dt;
     }
     rafRef.current = requestAnimationFrame(_loop);
   };
@@ -5338,14 +5367,24 @@ function CommanderVault() {
         background: filterColor === c ? COLORS[c].hex : SURFACE,
         border: "2px solid ".concat(filterColor === c ? COLORS[c].border : "#444"),
         cursor: "pointer",
-        fontSize: 14,
+        padding: 0,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         transition: "all 0.15s",
-        boxShadow: filterColor === c ? "0 0 10px ".concat(COLORS[c].border, "66") : "none"
+        boxShadow: filterColor === c ? "0 0 10px ".concat(COLORS[c].border, "66") : "none",
+        opacity: filterColor && filterColor !== c ? 0.45 : 1
       }
-    }, COLORS[c].symbol);
+    }, /*#__PURE__*/React.createElement("img", {
+      src: "https://svgs.scryfall.io/card-symbols/" + c + ".svg",
+      alt: "{" + c + "}",
+      onError: function onError(e) {
+        if (e.currentTarget.dataset.tqFb === "1") return;
+        e.currentTarget.dataset.tqFb = "1";
+        e.currentTarget.src = "img/mana/" + c + ".svg";
+      },
+      style: { width: 20, height: 20, display: "block" }
+    }));
   })), /*#__PURE__*/React.createElement("button", {
     onClick: openAdd,
     style: {
@@ -5503,6 +5542,7 @@ function CommanderVault() {
       marginBottom: 16
     }
   }, ["W", "U", "B", "R", "G", "C"].map(function (c) {
+    var on = formColors.includes(c);
     return /*#__PURE__*/React.createElement("button", {
       key: c,
       onClick: function onClick() {
@@ -5513,14 +5553,27 @@ function CommanderVault() {
         width: 38,
         height: 38,
         borderRadius: "50%",
-        background: formColors.includes(c) ? COLORS[c].hex : SURFACE2,
-        border: "2px solid ".concat(formColors.includes(c) ? COLORS[c].border : "#555"),
+        background: on ? COLORS[c].hex : SURFACE2,
+        border: "2px solid ".concat(on ? COLORS[c].border : "#555"),
         cursor: "pointer",
-        fontSize: 16,
-        boxShadow: formColors.includes(c) ? "0 0 12px ".concat(COLORS[c].border, "88") : "none",
-        transition: "all 0.15s"
+        padding: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: on ? "0 0 12px ".concat(COLORS[c].border, "88") : "none",
+        transition: "all 0.15s",
+        opacity: on ? 1 : 0.55
       }
-    }, COLORS[c].symbol);
+    }, /*#__PURE__*/React.createElement("img", {
+      src: "https://svgs.scryfall.io/card-symbols/" + c + ".svg",
+      alt: "{" + c + "}",
+      onError: function onError(e) {
+        if (e.currentTarget.dataset.tqFb === "1") return;
+        e.currentTarget.dataset.tqFb = "1";
+        e.currentTarget.src = "img/mana/" + c + ".svg";
+      },
+      style: { width: 24, height: 24, display: "block" }
+    }));
   })), /*#__PURE__*/React.createElement("label", {
     style: {
       fontSize: 12,
@@ -8992,14 +9045,17 @@ function TokenTracker() {
       onClick: function onClick() {
         return setPlayerCount(n);
       },
-      className: "px-2 py-1 text-[10px] active:scale-95 transition-transform",
+      className: "text-[10px] active:scale-95 transition-transform",
       style: {
         fontFamily: "'JetBrains Mono', monospace",
         fontWeight: 600,
         color: players.length === n ? "#1a110a" : "#c9a961",
-        background: players.length === n ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent"
+        background: players.length === n ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
+        minWidth: 32,
+        padding: "4px 8px",
+        textAlign: "center"
       }
-    }, n, "P");
+    }, n + "P");
   })), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return setShowResetConfirm(true);
@@ -10843,7 +10899,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement(PetEgg, {
     orbsLit: unlockedOrbs.length,
     size: 100
-  })), /*#__PURE__*/React.createElement("div", {
+  })), hatcheryDoorOpen && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-center gap-2.5 mb-4",
     style: { position: 'relative', zIndex: 20 }
   }, WUBRG.map(function (c) {
@@ -10859,21 +10915,29 @@ function TokenTracker() {
         width: '40px',
         height: '40px',
         borderRadius: '50%',
-        background: lit ? "radial-gradient(circle at 35% 35%, ".concat(cd.bg, ", ").concat(cd.symbol, ")") : "radial-gradient(circle at 35% 35%, ".concat(cd.bg, "66, ").concat(cd.symbol, "44)"),
-        border: "2px solid ".concat(lit ? cd.symbol : cd.symbol + '55'),
-        boxShadow: lit ? "0 0 16px ".concat(cd.glow, ", 0 0 4px ").concat(cd.glow, " inset") : "0 0 4px ".concat(cd.glow, "88 inset"),
-        opacity: lit ? 1 : 0.6,
+        background: 'transparent',
+        border: "2px solid ".concat(lit ? cd.symbol : cd.symbol + '44'),
+        boxShadow: lit ? "0 0 16px ".concat(cd.glow, ", 0 0 8px ").concat(cd.glow, " inset") : "none",
+        opacity: lit ? 1 : 0.45,
         transition: 'all 0.3s ease',
-        fontFamily: "'Cinzel', serif",
-        fontWeight: 700,
-        fontSize: '1.1rem',
-        color: lit ? cd.textOnBg : cd.symbol + 'aa',
-        textShadow: lit ? "0 0 4px ".concat(cd.glow) : 'none',
         cursor: 'pointer',
-        padding: 0
+        padding: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        filter: lit ? 'none' : 'grayscale(0.6)'
       },
       "aria-label": "".concat(cd.name, " mana orb")
-    }, c);
+    }, /*#__PURE__*/React.createElement("img", {
+      src: "https://svgs.scryfall.io/card-symbols/" + c + ".svg",
+      alt: "{" + c + "}",
+      onError: function onError(e) {
+        if (e.currentTarget.dataset.tqFb === "1") return;
+        e.currentTarget.dataset.tqFb = "1";
+        e.currentTarget.src = "img/mana/" + c + ".svg";
+      },
+      style: { width: 28, height: 28, display: 'block' }
+    }));
   })), /*#__PURE__*/React.createElement("p", {
     className: "text-sm italic mb-1",
     style: {
@@ -10895,269 +10959,82 @@ function TokenTracker() {
     }
   }, "the orbs seem to remember an order...")), !hatcheryDoorOpen && /*#__PURE__*/React.createElement("div", {
     onClick: function onClick() {
-      haptic(25);
+      haptic([20, 30, 60]);
       setHatcheryDoorOpen(true);
     },
     style: {
       position: 'absolute',
       inset: 0,
       cursor: 'pointer',
-      zIndex: 10
-    }
+      zIndex: 10,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'radial-gradient(ellipse at center, rgba(20,12,6,0.95) 0%, rgba(10,6,4,0.98) 70%, rgba(5,3,2,1) 100%)',
+      borderRadius: '2px',
+      overflow: 'hidden'
+    },
+    "aria-label": "Tap to break the seal"
   }, /*#__PURE__*/React.createElement("svg", {
-    width: "100%",
-    height: "100%",
-    viewBox: "0 0 300 240",
-    preserveAspectRatio: "none",
+    width: "82%",
+    viewBox: "0 0 220 220",
+    style: { maxHeight: '90%', filter: 'drop-shadow(0 0 24px rgba(201,169,97,0.35))' },
     xmlns: "http://www.w3.org/2000/svg"
-  }, /*#__PURE__*/React.createElement("rect", {
-    x: "0",
-    y: "0",
-    width: "300",
-    height: "240",
-    fill: "#1a0e1a"
-  }), [0, 1, 2, 3, 4, 5].map(function (i) {
-    return /*#__PURE__*/React.createElement("rect", {
-      key: "tl".concat(i),
-      x: 0,
-      y: i * 40,
-      width: "18",
-      height: "38",
-      fill: i % 2 === 0 ? '#3a2a4a' : '#2e2240',
-      rx: "1",
-      stroke: "#4a3a5a",
-      strokeWidth: "0.5"
-    });
-  }), [0, 1, 2, 3, 4, 5].map(function (i) {
-    return /*#__PURE__*/React.createElement("rect", {
-      key: "tr".concat(i),
-      x: 282,
-      y: i * 40,
-      width: "18",
-      height: "38",
-      fill: i % 2 === 0 ? '#2e2240' : '#3a2a4a',
-      rx: "1",
-      stroke: "#4a3a5a",
-      strokeWidth: "0.5"
-    });
-  }), [0, 1, 2, 3, 4].map(function (i) {
-    return /*#__PURE__*/React.createElement("rect", {
-      key: "bt".concat(i),
-      x: 18 + i * 54,
-      y: 222,
-      width: "52",
-      height: "18",
-      fill: i % 2 === 0 ? '#3a2a4a' : '#2e2240',
-      rx: "1",
-      stroke: "#4a3a5a",
-      strokeWidth: "0.5"
-    });
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M18,20 Q150,-30 282,20",
-    fill: "none",
-    stroke: "#4a3a5a",
-    strokeWidth: "16"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M18,20 Q150,-30 282,20",
-    fill: "none",
-    stroke: "#3a2a4a",
-    strokeWidth: "13"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M20,220 L20,60 Q20,20 150,18 Q280,20 280,60 L280,220 Z",
-    fill: "#2a1808"
-  }), [0, 1, 2, 3, 4].map(function (i) {
-    return /*#__PURE__*/React.createElement("clipPath", {
-      key: "cp".concat(i),
-      id: "plank".concat(i)
-    }, /*#__PURE__*/React.createElement("path", {
-      d: "M20,220 L20,60 Q20,20 150,18 Q280,20 280,60 L280,220 Z"
-    }));
-  }), [0, 1, 2, 3, 4].map(function (i) {
-    return /*#__PURE__*/React.createElement("rect", {
-      key: "pl".concat(i),
-      x: "20",
-      y: 20 + i * 40,
-      width: "260",
-      height: "37",
-      fill: i % 2 === 0 ? '#2a1808' : '#231405',
-      clipPath: "url(#plank0)"
-    });
-  }), [0, 1, 2, 3, 4].map(function (i) {
-    return [0.35, 0.7].map(function (f, j) {
-      return /*#__PURE__*/React.createElement("line", {
-        key: "g".concat(i).concat(j),
-        x1: "20",
-        y1: 20 + i * 40 + 37 * f,
-        x2: "280",
-        y2: 20 + i * 40 + 37 * f,
-        stroke: "#3a2010",
-        strokeWidth: "0.7",
-        opacity: "0.5",
-        clipPath: "url(#plank0)"
-      });
-    });
-  }), /*#__PURE__*/React.createElement("line", {
-    x1: "150",
-    y1: "20",
-    x2: "150",
-    y2: "220",
-    stroke: "#1a0c04",
-    strokeWidth: "2.5",
-    clipPath: "url(#plank0)"
-  }), [58, 118, 178].map(function (y) {
-    return /*#__PURE__*/React.createElement("rect", {
-      key: "band".concat(y),
-      x: "20",
-      y: y,
-      width: "260",
-      height: "7",
-      fill: "#282830",
-      stroke: "#404048",
-      strokeWidth: "0.8",
-      clipPath: "url(#plank0)"
-    });
-  }), /*#__PURE__*/React.createElement("rect", {
-    x: "20",
-    y: "36",
-    width: "24",
-    height: "46",
-    rx: "2",
-    fill: "#383840",
-    stroke: "#505058",
-    strokeWidth: "1"
-  }), /*#__PURE__*/React.createElement("rect", {
-    x: "20",
-    y: "36",
-    width: "24",
-    height: "3",
-    fill: "#606068"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "32",
-    cy: "59",
-    r: "5",
-    fill: "#484850"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "32",
-    cy: "59",
-    r: "2.5",
-    fill: "#282830"
-  }), /*#__PURE__*/React.createElement("rect", {
-    x: "20",
-    y: "155",
-    width: "24",
-    height: "46",
-    rx: "2",
-    fill: "#383840",
-    stroke: "#505058",
-    strokeWidth: "1"
-  }), /*#__PURE__*/React.createElement("rect", {
-    x: "20",
-    y: "155",
-    width: "24",
-    height: "3",
-    fill: "#606068"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "32",
-    cy: "178",
-    r: "5",
-    fill: "#484850"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "32",
-    cy: "178",
-    r: "2.5",
-    fill: "#282830"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "240",
-    cy: "110",
-    r: "16",
-    fill: "none",
-    stroke: "#5a4a2a",
-    strokeWidth: "5"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "240",
-    cy: "110",
-    r: "7",
-    fill: "#2a1808",
-    stroke: "#6a5a3a",
-    strokeWidth: "2"
-  }), /*#__PURE__*/React.createElement("rect", {
-    x: "232",
-    y: "120",
-    width: "16",
-    height: "7",
-    rx: "2",
-    fill: "#3a2a12",
-    stroke: "#5a4a2a",
-    strokeWidth: "1.2"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "150",
-    cy: "110",
-    r: "9",
-    fill: "#080406",
-    stroke: "#5a3a20",
-    strokeWidth: "1.5"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "150",
-    cy: "107",
-    r: "5",
-    fill: "#060304"
-  }), /*#__PURE__*/React.createElement("rect", {
-    x: "146",
-    y: "110",
-    width: "8",
-    height: "14",
-    rx: "1",
-    fill: "#060304"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "150",
-    cy: "107",
-    r: "4"
-  }, /*#__PURE__*/React.createElement("animate", {
-    attributeName: "fill",
-    values: "#c9a961;#f5d98f;#c9a961",
-    dur: "2.5s",
-    repeatCount: "indefinite"
-  }), /*#__PURE__*/React.createElement("animate", {
-    attributeName: "opacity",
-    values: "0.25;0.6;0.25",
-    dur: "2.5s",
-    repeatCount: "indefinite"
-  })), ['#e8e4d0', '#7aaccc', '#3a2a3a', '#c87860', '#7aaa70'].map(function (col, i) {
-    var a = i / 5 * Math.PI * 2 - Math.PI / 2;
-    return /*#__PURE__*/React.createElement("circle", {
-      key: i,
-      cx: 150 + Math.cos(a) * 26,
-      cy: 170 + Math.sin(a) * 18,
-      r: "5",
-      fill: col,
-      opacity: "0.30"
-    });
-  }), /*#__PURE__*/React.createElement("polygon", {
-    points: "150,148 162,164 150,178 138,164",
-    fill: "none",
-    stroke: "#c9a961",
-    strokeWidth: "0.8",
-    opacity: "0.25"
-  }), /*#__PURE__*/React.createElement("text", {
-    x: "150",
-    y: "210",
-    textAnchor: "middle",
-    fontFamily: "serif",
-    fontSize: "8",
-    fill: "#6a4a28",
-    letterSpacing: "4",
-    opacity: "0.7"
-  }, "HATCHERY"), /*#__PURE__*/React.createElement("rect", {
-    x: "20",
-    y: "18",
-    width: "260",
-    height: "202",
-    fill: "none",
-    stroke: "#0a0604",
-    strokeWidth: "3",
-    opacity: "0.5",
-    clipPath: "url(#plank0)"
-  }))), hatcheryDoorOpen && /*#__PURE__*/React.createElement("div", {
+  },
+    /*#__PURE__*/React.createElement("defs", null,
+      /*#__PURE__*/React.createElement("radialGradient", { id: "sealGlow", cx: "50%", cy: "50%", r: "55%" },
+        /*#__PURE__*/React.createElement("stop", { offset: "0%", stopColor: "#f5d98f", stopOpacity: "0.45" }),
+        /*#__PURE__*/React.createElement("stop", { offset: "60%", stopColor: "#c9a961", stopOpacity: "0.15" }),
+        /*#__PURE__*/React.createElement("stop", { offset: "100%", stopColor: "#c9a961", stopOpacity: "0" })
+      ),
+      /*#__PURE__*/React.createElement("linearGradient", { id: "sealRing", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+        /*#__PURE__*/React.createElement("stop", { offset: "0%", stopColor: "#f5d98f" }),
+        /*#__PURE__*/React.createElement("stop", { offset: "50%", stopColor: "#c9a961" }),
+        /*#__PURE__*/React.createElement("stop", { offset: "100%", stopColor: "#8a6b3a" })
+      )
+    ),
+    /*#__PURE__*/React.createElement("circle", { cx: "110", cy: "110", r: "100", fill: "url(#sealGlow)" }),
+    /*#__PURE__*/React.createElement("circle", { cx: "110", cy: "110", r: "92", fill: "none", stroke: "url(#sealRing)", strokeWidth: "2.5" }),
+    /*#__PURE__*/React.createElement("circle", { cx: "110", cy: "110", r: "86", fill: "none", stroke: "#c9a961", strokeWidth: "0.5", strokeDasharray: "3 2", opacity: "0.6" }),
+    /*#__PURE__*/React.createElement("circle", { cx: "110", cy: "110", r: "72", fill: "none", stroke: "url(#sealRing)", strokeWidth: "1" }),
+    /*#__PURE__*/[0,1,2,3,4,5,6,7,8,9,10,11].map(function (i) {
+      var a = i * Math.PI / 6;
+      var x1 = 110 + Math.cos(a) * 78;
+      var y1 = 110 + Math.sin(a) * 78;
+      var x2 = 110 + Math.cos(a) * 86;
+      var y2 = 110 + Math.sin(a) * 86;
+      return /*#__PURE__*/React.createElement("line", { key: "tick"+i, x1: x1, y1: y1, x2: x2, y2: y2, stroke: "#c9a961", strokeWidth: "1", opacity: i % 3 === 0 ? "1" : "0.5" });
+    }),
+    /*#__PURE__*/[0,1,2,3,4].map(function (i) {
+      var a = i * 2 * Math.PI / 5 - Math.PI / 2;
+      var x = 110 + Math.cos(a) * 50;
+      var y = 110 + Math.sin(a) * 50;
+      return /*#__PURE__*/React.createElement("g", { key: "pt"+i, transform: "translate("+x+" "+y+")" },
+        /*#__PURE__*/React.createElement("circle", { r: "9", fill: "#15100a", stroke: "url(#sealRing)", strokeWidth: "1.5" }),
+        /*#__PURE__*/React.createElement("circle", { r: "3", fill: "#c9a961", opacity: "0.85" },
+          /*#__PURE__*/React.createElement("animate", { attributeName: "opacity", values: "0.85;0.35;0.85", dur: (2 + i * 0.2) + "s", repeatCount: "indefinite" })
+        )
+      );
+    }),
+    /*#__PURE__*/React.createElement("g", { transform: "translate(110 110)" },
+      /*#__PURE__*/React.createElement("polygon", {
+        points: "0,-32 8,-10 30,-10 12,4 18,26 0,14 -18,26 -12,4 -30,-10 -8,-10",
+        fill: "#c9a961",
+        opacity: "0.9"
+      },
+        /*#__PURE__*/React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "0", to: "360", dur: "60s", repeatCount: "indefinite" })
+      ),
+      /*#__PURE__*/React.createElement("circle", { r: "8", fill: "#15100a" }),
+      /*#__PURE__*/React.createElement("circle", { r: "4", fill: "#f5d98f" },
+        /*#__PURE__*/React.createElement("animate", { attributeName: "r", values: "3.5;5;3.5", dur: "2.4s", repeatCount: "indefinite" })
+      )
+    ),
+    /*#__PURE__*/React.createElement("text", {
+      x: "110", y: "205", textAnchor: "middle",
+      fontFamily: "'Cinzel', serif", fontSize: "9", fill: "#9a8765",
+      letterSpacing: "5", opacity: "0.85"
+    }, "TAP TO BREAK THE SEAL")
+  )), hatcheryDoorOpen && /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
       top: 0,
@@ -12072,14 +11949,19 @@ function TokenTracker() {
         color: "#c9a961",
         fontSize: '1.25rem'
       }
-    })) : /*#__PURE__*/React.createElement("p", {
-      className: "text-sm whitespace-pre-line",
+    })) : /*#__PURE__*/React.createElement("div", {
+      className: "text-sm whitespace-pre-line tq-oracle-text",
       style: {
         color: "#e8dcc4",
         fontFamily: "'Crimson Pro', serif",
         lineHeight: 1.5
+      },
+      ref: function ref(el) {
+        if (el && window.TQ && typeof window.TQ.renderOracleText === 'function') {
+          window.TQ.renderOracleText(el, oracleText || "(No rules text)");
+        }
       }
-    }, oracleText || "(No rules text)"), target.power !== null && target.toughness !== null && /*#__PURE__*/React.createElement("p", {
+    }), target.power !== null && target.toughness !== null && /*#__PURE__*/React.createElement("p", {
       className: "mt-3 text-right",
       style: {
         fontFamily: "'JetBrains Mono', monospace",
@@ -12841,7 +12723,7 @@ function TokenTracker() {
         transition: 'all 0.2s ease'
       }
     }), /*#__PURE__*/React.createElement("span", {
-      className: "text-[9px] tracking-[0.18em] uppercase",
+      className: "tq-tab-label text-[9px] tracking-[0.18em] uppercase",
       style: {
         fontFamily: "'Cinzel', serif",
         fontWeight: isActive ? 700 : 500,

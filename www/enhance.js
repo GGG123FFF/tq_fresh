@@ -274,35 +274,10 @@
     'RAD': 'rad'
   };
 
-  // Inject a small counter icon next to each pip span so it's always visible.
-  function decorateCounterSpan(span) {
-    if (span.dataset.tqDecorated === '1') return;
-    var text = (span.textContent || '').trim();
-    var counterId = null;
-    for (var ch in EMOJI_TO_COUNTER) {
-      if (text.indexOf(ch) === 0) { counterId = EMOJI_TO_COUNTER[ch]; break; }
-    }
-    if (!counterId) return;
-    var spec = FALLBACKS.counters[counterId];
-    if (!spec) return;
-
-    span.dataset.tqDecorated = '1';
-    span.style.cursor = 'pointer';
-    span.setAttribute('aria-label', spec.name + ' counter, tap for card');
-
-    var icon = document.createElement('img');
-    icon.src = spec.local;
-    icon.alt = '';
-    icon.setAttribute('aria-hidden', 'true');
-    icon.style.cssText = 'width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;border-radius:2px;border:1px solid rgba(201,169,97,0.3);object-fit:cover;flex-shrink:0';
-
-    // Try upgrading to real Scryfall art in background
-    resolveCounter(counterId).then(function (data) {
-      if (data && data.art) icon.src = data.art;
-    });
-
-    span.insertBefore(icon, span.firstChild);
-  }
+  // Counter pip auto-decoration removed: the app already renders its own
+  // counter pip (single/double letter). The popup that opens on tap covers
+  // the "see the card" need without duplicating visual elements.
+  function decorateCounterSpan() { /* no-op, kept for MutationObserver call site */ }
 
   document.addEventListener('click', function (e) {
     var t = e.target;
@@ -740,8 +715,11 @@
   // Provides: search-only keyword lookup, rules reader with TOC + body search.
 
   // Static keyword list — concise summaries of MTG evergreen + common mechanics.
+  // ~120 entries: every evergreen ability, every common deciduous mechanic,
+  // and the major named mechanics from the last few years of releases.
   // Each: { k: keyword, t: short text }
   var REFERENCE_KEYWORDS = [
+    // ============ Evergreen ============
     { k: 'Deathtouch',     t: 'Any amount of damage this deals to a creature is enough to destroy it.' },
     { k: 'Defender',       t: 'This creature can\'t attack.' },
     { k: 'Double Strike',  t: 'This creature deals both first-strike and regular combat damage.' },
@@ -760,29 +738,137 @@
     { k: 'Trample',        t: 'Excess combat damage may be assigned to the defending player or planeswalker.' },
     { k: 'Vigilance',      t: 'Attacking doesn\'t cause this to tap.' },
     { k: 'Ward',           t: 'Whenever this becomes target of a spell or ability opponents control, counter it unless they pay ward cost.' },
+    { k: 'Shroud',         t: 'This permanent can\'t be the target of any spells or abilities. (Older keyword; replaced by hexproof in most cases.)' },
+    { k: 'Reach (Spider)', t: 'Same rule as reach: can block flying creatures.' },
+    { k: 'Banding',        t: 'Old keyword; lets attacking creatures form bands and lets the defender choose damage assignment.' },
+    { k: 'Intimidate',     t: 'Can\'t be blocked except by artifact creatures and/or creatures that share a colour with this.' },
+    { k: 'Fear',           t: 'Can\'t be blocked except by artifact creatures and/or black creatures.' },
+    { k: 'Landwalk',       t: 'Plainswalk/Islandwalk/Swampwalk/Mountainwalk/Forestwalk: can\'t be blocked while defender controls that land type.' },
+
+    // ============ Spell/Cost mechanics ============
     { k: 'Cycling',        t: 'Discard this card to draw a card by paying the cycling cost.' },
+    { k: 'Typecycling',    t: 'Discard this card to search your library for a card of the specified type, by paying the typecycling cost.' },
     { k: 'Convoke',        t: 'Each creature you tap while casting this pays for {1} or one mana of that creature\'s colour.' },
-    { k: 'Cascade',        t: 'When cast, exile cards until you exile a nonland with lesser mana value; you may cast it without paying.' },
+    { k: 'Improvise',      t: 'Each artifact you tap while casting this pays for {1}.' },
+    { k: 'Delve',          t: 'You may exile any number of cards from your graveyard as you cast this. Each card exiled this way pays for {1}.' },
+    { k: 'Emerge',         t: 'You may cast this by sacrificing a creature and paying the emerge cost minus that creature\'s mana value.' },
     { k: 'Affinity for X', t: 'This spell costs {1} less to cast for each X you control.' },
+    { k: 'Cascade',        t: 'When cast, exile cards until you exile a nonland with lesser mana value; you may cast it without paying.' },
     { k: 'Storm',          t: 'When cast, copy it for each other spell cast before it this turn. Choose new targets per copy.' },
     { k: 'Suspend',        t: 'Exile with N time counters; remove one each upkeep. When the last is removed, cast without paying.' },
+    { k: 'Buyback',        t: 'You may pay the buyback cost when casting; if you do, put this card into your hand instead of the graveyard as it resolves.' },
+    { k: 'Flashback',      t: 'You may cast this from your graveyard for its flashback cost; then exile it.' },
+    { k: 'Madness',        t: 'If you discard this, you may cast it for its madness cost.' },
+    { k: 'Dredge',         t: 'If you would draw a card and this is in your graveyard, you may instead mill N cards and return this to your hand.' },
+    { k: 'Retrace',        t: 'You may cast this from your graveyard by discarding a land card in addition to paying its costs.' },
+    { k: 'Splice onto X',  t: 'As you cast an X spell, you may reveal this from your hand and pay its splice cost to add its effect.' },
+    { k: 'Kicker',         t: 'You may pay an additional cost as you cast this. If you do, it gains additional effects.' },
+    { k: 'Multikicker',    t: 'Kicker that can be paid any number of times.' },
+    { k: 'Overload',       t: 'You may cast this for its overload cost; if you do, replace "target" with "each".' },
+    { k: 'Entwine',        t: 'Choose all modes by paying the entwine cost.' },
+    { k: 'Escape',         t: 'You may cast this from your graveyard by paying its escape cost and exiling other cards from your graveyard.' },
+    { k: 'Spectacle',      t: 'You may cast this for its spectacle cost rather than its mana cost if an opponent lost life this turn.' },
+    { k: 'Foretell',       t: 'During your turn, exile this from your hand face-down for {2}. On a later turn you may cast it for its foretell cost.' },
+    { k: 'Disturb',        t: 'You may cast this from your graveyard transformed by paying its disturb cost.' },
+    { k: 'Cleave',         t: 'You may cast this for its cleave cost. If you do, remove the text in brackets.' },
+    { k: 'Channel',        t: 'Discard this card; pay the channel cost. This card grants an effect from your hand.' },
+    { k: 'Bargain',        t: 'You may sacrifice an artifact, creature, or land as you cast this for additional effect.' },
+    { k: 'Casualty N',     t: 'As you cast this, you may sacrifice a creature with power N or greater. If you do, copy this spell.' },
+    { k: 'Disguise',       t: 'You may cast this face-down as a 2/2 creature for {3}. Turn it face-up any time for its disguise cost; it has ward {2}.' },
+    { k: 'Plot',           t: 'During your turn, exile this from your hand and pay the plot cost. On a later turn, you may cast it from exile without paying.' },
+    { k: 'Impending N',    t: 'You may cast this for its impending cost. If you do, it enters with N time counters. It\'s not a creature until the last is removed.' },
+    { k: 'Saddle N',       t: 'Tap any number of other creatures you control with total power N or more: this Mount becomes saddled until end of turn.' },
+    { k: 'Spree',          t: 'As you cast this, choose one or more additional costs; the spell gains the corresponding effects.' },
+    { k: 'Eerie',          t: 'Whenever an enchantment enters under your control or you fully unlock a Room, the eerie ability triggers.' },
+    { k: 'Outlaw',          t: 'Outlaw is a card-type shorthand (Assassin, Mercenary, Pirate, Rogue, Warlock). Many cards reference outlaws as a group.' },
+    { k: 'Offspring',      t: 'You may pay the offspring cost as you cast this. If you do, when it enters, create a 1/1 token copy.' },
+
+    // ============ Triggered/Activated patterns ============
     { k: 'Proliferate',    t: 'Choose any number of permanents and/or players with counters. Add one more of each kind already there.' },
+    { k: 'Populate',       t: 'Create a token that\'s a copy of a creature token you control.' },
     { k: 'Scry N',         t: 'Look at the top N cards of your library, put any on the bottom and the rest back on top in any order.' },
     { k: 'Surveil N',      t: 'Look at the top N cards; put any number into your graveyard and the rest on top in any order.' },
     { k: 'Mill N',         t: 'Put the top N cards of your library into your graveyard.' },
     { k: 'Explore',        t: 'Reveal the top card; if land, put in hand. Otherwise put a +1/+1 counter on the creature and optionally put the card in your graveyard.' },
     { k: 'Adapt N',        t: 'If this creature has no +1/+1 counters, put N +1/+1 counters on it.' },
     { k: 'Monstrosity N',  t: 'If this creature isn\'t monstrous, put N +1/+1 counters on it and it becomes monstrous.' },
+    { k: 'Renown N',       t: 'When this deals combat damage to a player, if it isn\'t renowned, put N +1/+1 counters and it becomes renowned.' },
     { k: 'Embalm',         t: 'Exile this card from your graveyard, paying the embalm cost, to create a token copy that\'s a white Zombie with no mana cost.' },
     { k: 'Eternalize',     t: 'Exile this card from your graveyard, paying the eternalize cost, to create a 4/4 black Zombie token copy with no mana cost.' },
-    { k: 'Madness',        t: 'If you discard this, you may cast it for its madness cost.' },
-    { k: 'Flashback',      t: 'You may cast this from your graveyard for its flashback cost; then exile it.' },
-    { k: 'Delve',          t: 'You may exile any number of cards from your graveyard as you cast this. Each card exiled this way pays for {1}.' },
     { k: 'Investigate',    t: 'Create a colorless Clue artifact token with "{2}, Sacrifice this: Draw a card."' },
     { k: 'Food',           t: 'Create a colorless Food artifact token with "{2}, {T}, Sacrifice this: You gain 3 life."' },
     { k: 'Treasure',       t: 'Create a colorless Treasure artifact token with "{T}, Sacrifice this: Add one mana of any colour."' },
+    { k: 'Blood',          t: 'Create a colorless Blood artifact token with "{1}, {T}, Discard a card, Sacrifice this: Draw a card."' },
+    { k: 'Map',            t: 'Create a colorless Map artifact token with "{1}, {T}, Sacrifice this: Target creature explores."' },
+    { k: 'Powerstone',     t: 'Create a colorless Powerstone artifact token with "{T}: Add {C}. This mana can\'t be spent to cast a nonartifact spell."' },
+    { k: 'Manifest',       t: 'Put the top card of your library onto the battlefield face-down as a 2/2 creature. Turn it face-up at any time for its mana cost if it\'s a creature card.' },
+    { k: 'Morph',          t: 'You may cast this face-down as a 2/2 creature for {3}. Turn it face-up at any time for its morph cost.' },
+    { k: 'Megamorph',      t: 'Like morph, but turning it face-up also puts a +1/+1 counter on it.' },
+    { k: 'Bestow',         t: 'You may cast this for its bestow cost as an Aura that enchants a creature. If the enchanted creature dies, this becomes a creature again.' },
+    { k: 'Soulbond',       t: 'You may pair this with another unpaired creature when either enters. They become soulbonded for as long as you control both.' },
+    { k: 'Soulshift',      t: 'When this dies, you may return a Spirit card with lesser mana value from your graveyard to your hand.' },
+    { k: 'Persist',        t: 'When this dies, if it had no -1/-1 counters on it, return it to the battlefield with a -1/-1 counter.' },
+    { k: 'Undying',        t: 'When this dies, if it had no +1/+1 counters, return it with a +1/+1 counter.' },
+    { k: 'Modular',        t: 'This creature enters with N +1/+1 counters; when it dies, you may move them to another artifact creature.' },
+    { k: 'Living Weapon',  t: 'When this Equipment enters, create a 0/0 black Phyrexian Germ token and attach this to it.' },
+    { k: 'Reconfigure',    t: 'You may pay the reconfigure cost to attach/unattach this Equipment-creature from a creature you control.' },
+    { k: 'Mutate',         t: 'You may cast this for its mutate cost. If you do, combine it with a non-Human creature you control, mixing abilities.' },
+    { k: 'Companion',      t: 'If your starting deck meets the companion\'s condition, you may start with it outside the game and cast it once per game.' },
+    { k: 'Crew N',         t: 'Tap any number of creatures you control with total power N+ to turn this Vehicle into an artifact creature until end of turn.' },
+    { k: 'Devour N',       t: 'As this enters, sacrifice any number of creatures; this enters with N +1/+1 counters per creature sacrificed.' },
+    { k: 'Exploit',        t: 'When this enters, you may sacrifice a creature for additional effect.' },
+
+    // ============ Card-types / structural ============
     { k: 'Saga',           t: 'On the appropriate phase each turn, advance the saga\'s chapter; effects trigger as the chapter is reached.' },
-    { k: 'Modal Double-Faced Card (MDFC)', t: 'A card with two faces, either of which may be cast. Doesn\'t flip during play; you choose at cast time.' }
+    { k: 'Class',          t: 'A Class enchantment with multiple levels. Pay level-up cost as a sorcery to advance.' },
+    { k: 'Battle',         t: 'A new card type. Battles enter with defense counters and can be attacked. Reduce to 0 to flip and trigger an effect.' },
+    { k: 'Room',           t: 'A split enchantment with two unlocked halves. Pay either side\'s cost to unlock that half; unlock both for full effect.' },
+    { k: 'Modal Double-Faced Card (MDFC)', t: 'A card with two faces, either of which may be cast. Doesn\'t flip during play; you choose at cast time.' },
+    { k: 'Transform',      t: 'Some double-faced cards transform between front and back faces in play, triggered by abilities or conditions.' },
+    { k: 'Adventure',      t: 'You may cast the adventure side from your hand for its alternate cost. If exiled this way, you may cast the creature side later.' },
+    { k: 'Backgrounds',    t: 'A Background is an enchantment subtype. Some commanders allow you to have one Background in your command zone in addition.' },
+    { k: 'Partner',        t: 'You may have two commanders, each with the partner keyword, in your command zone.' },
+    { k: 'Partner with X', t: 'If both partners are in your starting deck, you may have both as commanders.' },
+    { k: 'Friends Forever',t: 'Like partner: you may pair this commander with another that also has Friends Forever.' },
+    { k: 'Doctor\'s Companion', t: 'Doctor Who-set partner mechanic: a Doctor commander can be paired with a Companion creature.' },
+
+    // ============ Recent or set-specific ============
+    { k: 'Toxic N',        t: 'Whenever this deals combat damage to a player, they get N poison counters.' },
+    { k: 'Corrupted',      t: 'A card has corrupted abilities active while opponents have 3 or more poison counters.' },
+    { k: 'Incubate N',     t: 'Create an Incubator token with N +1/+1 counters that transforms into a 0/0 Phyrexian artifact creature for {2}.' },
+    { k: 'For Mirrodin!',  t: 'When this Equipment enters, create a 2/2 red Rebel creature token and attach this to it.' },
+    { k: 'Discover N',     t: 'Exile cards until you exile a nonland with mana value N or less. Cast it without paying or put it into your hand.' },
+    { k: 'Boast',          t: 'Activate this ability only if this creature attacked this turn, and only once per turn.' },
+    { k: 'Magecraft',      t: 'Trigger whenever you cast or copy an instant or sorcery spell.' },
+    { k: 'Coven',          t: 'You have coven as long as you control three or more creatures with different powers.' },
+    { k: 'Domain',         t: 'Effect scales with the number of basic land types among lands you control (max 5).' },
+    { k: 'Strive',         t: 'You may copy this spell for each additional target by paying the strive cost per target.' },
+    { k: 'Constellation',  t: 'Trigger whenever an enchantment enters under your control.' },
+    { k: 'Devotion to X',  t: 'Counts coloured mana symbols among permanents you control that match X.' },
+    { k: 'Heroic',         t: 'Trigger whenever you cast a spell that targets this creature.' },
+    { k: 'Prowess',        t: 'Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.' },
+    { k: 'Threshold',      t: 'Effect active as long as seven or more cards are in your graveyard.' },
+    { k: 'Hellbent',       t: 'Effect active as long as you have no cards in hand.' },
+    { k: 'Metalcraft',     t: 'Effect active as long as you control three or more artifacts.' },
+    { k: 'Delirium',       t: 'Effect active as long as four or more card types are in your graveyard.' },
+    { k: 'Revolt',         t: 'Trigger if a permanent you controlled left the battlefield this turn.' },
+    { k: 'Raid',           t: 'Trigger or condition active if you attacked with a creature this turn.' },
+    { k: 'Landfall',       t: 'Trigger whenever a land enters under your control.' },
+    { k: 'Constellation',  t: 'See above — trigger on enchantment enters.' },
+    { k: 'Ferocious',      t: 'Effect active as long as you control a creature with power 4 or greater.' },
+    { k: 'Formidable',     t: 'Effect active as long as creatures you control have total power 8 or greater.' },
+    { k: 'Inspired',       t: 'Trigger whenever this creature becomes untapped.' },
+    { k: 'Energy',         t: 'Energy counters are a player resource. Effects say "Get {E}" and many costs spend energy.' },
+    { k: 'Initiative',     t: 'The initiative is taken from another player by dealing combat damage; the initiative-holder gains "Undercity" venture-style triggers.' },
+    { k: 'Venture into the Dungeon', t: 'Enter a chosen dungeon (or advance to the next room). Reaching the end provides a final effect.' },
+    { k: 'Munition',       t: 'Equipment-type permanent that may be detonated/consumed for an effect.' },
+    { k: 'Mentor',         t: 'When this attacks, put a +1/+1 counter on target attacking creature with lesser power.' },
+    { k: 'Afflict N',      t: 'Whenever this becomes blocked, defending player loses N life.' },
+    { k: 'Amass N',        t: 'Put N +1/+1 counters on an Army you control. If you don\'t have one, create a 0/0 black Zombie Army token first.' },
+    { k: 'Compleated',     t: 'You may pay {P} (Phyrexian mana) by paying 2 life rather than the coloured mana cost.' },
+    { k: 'Phyrexian Mana', t: '{W/P}, {U/P}, etc. — pay either the colour or 2 life.' },
+    { k: 'Hybrid Mana',    t: '{W/U}, etc. — pay either of the two colours.' },
+    { k: 'Snow',           t: 'A supertype on lands and some other cards. Snow mana is mana produced by snow permanents.' }
   ];
 
   function makeEl(tag, attrs, children) {
@@ -1117,10 +1203,326 @@
         if (data && data.art) { var img = new Image(); img.src = data.art; }
       }).catch(function () {});
     });
+    // Feature 14: warm comp rules in background so first tap is instant
+    if (window.TQ && typeof window.TQ.fetchRules === 'function') {
+      setTimeout(function () {
+        window.TQ.fetchRules('comprehensive').catch(function () {});
+      }, 5000);
+    }
   }
   if (typeof requestIdleCallback === 'function') {
     requestIdleCallback(preload, { timeout: 3000 });
   } else {
     setTimeout(preload, 2000);
   }
+
+  // ============================================================
+  // FEATURES: oracle text, color identity validator, memory tiers,
+  // orb hint, pet xp ring, vault open-in links, onboarding,
+  // deck export, vault sort.
+  // ============================================================
+
+  // ---- Feature 7: Oracle text mana symbols ----
+  // Parses {2}{U}{U} style symbols and inserts <img> elements inline.
+  window.TQ.renderOracleText = function (el, text) {
+    if (!el) return;
+    el.innerHTML = '';
+    if (!text) { el.textContent = '(No rules text)'; return; }
+    // Match any {…} token, plus any text in between
+    var re = /\{([^}]+)\}/g;
+    var lastIdx = 0;
+    var m;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > lastIdx) {
+        el.appendChild(document.createTextNode(text.slice(lastIdx, m.index)));
+      }
+      var sym = m[1].toUpperCase();
+      var img = document.createElement('img');
+      img.src = 'https://svgs.scryfall.io/card-symbols/' + sym + '.svg';
+      img.alt = '{' + sym + '}';
+      img.style.cssText = 'width:14px;height:14px;display:inline-block;vertical-align:-2px;margin:0 1px;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,0.4)';
+      // Fallback to bundled if local exists
+      if (BUNDLED_SYMBOLS[sym]) {
+        img.onerror = function (fb) { return function (e) {
+          if (e.currentTarget.dataset.tqFb === '1') return;
+          e.currentTarget.dataset.tqFb = '1';
+          e.currentTarget.src = LOCAL_SYMBOL_BASE + fb + '.svg';
+        }; }(sym);
+      }
+      el.appendChild(img);
+      lastIdx = re.lastIndex;
+    }
+    if (lastIdx < text.length) {
+      el.appendChild(document.createTextNode(text.slice(lastIdx)));
+    }
+  };
+
+  // ---- Feature 8: Deck colour identity validator ----
+  // Given a commander name and a list of card names in the 99,
+  // checks each card's colour identity against the commander.
+  // Returns Promise<{ commanderIdentity: ['W','U'], violators: [{name, identity}], ok }>
+  window.TQ.validateDeckIdentity = function (commanderName, cardNames) {
+    if (!commanderName || !Array.isArray(cardNames)) {
+      return Promise.reject(new Error('validateDeckIdentity: bad args'));
+    }
+    function fetchCardIdentity(name) {
+      var ck = 'ident:' + name.toLowerCase();
+      var cached = cacheGet(ck);
+      if (cached) return Promise.resolve(cached);
+      return fetchJSON(SCRYFALL_API + '/cards/named?exact=' + encodeURIComponent(name))
+        .then(function (card) {
+          var ci = card.color_identity || [];
+          cacheSet(ck, ci);
+          return ci;
+        })
+        .catch(function () { return null; });
+    }
+    return fetchCardIdentity(commanderName).then(function (cmdIdent) {
+      if (!cmdIdent) throw new Error('Commander not found on Scryfall');
+      var cmdSet = {};
+      cmdIdent.forEach(function (c) { cmdSet[c] = 1; });
+      // Walk cards one at a time, gently throttled
+      var violators = [];
+      var unknown = [];
+      var idx = 0;
+      function next() {
+        if (idx >= cardNames.length) {
+          return { commanderIdentity: cmdIdent, violators: violators, unknown: unknown, ok: violators.length === 0 };
+        }
+        var n = cardNames[idx++];
+        return fetchCardIdentity(n).then(function (ci) {
+          if (ci === null) { unknown.push(n); }
+          else {
+            var bad = ci.filter(function (c) { return !cmdSet[c]; });
+            if (bad.length) violators.push({ name: n, identity: ci, illegal: bad });
+          }
+          return new Promise(function (r) { setTimeout(r, 80); }).then(next);
+        });
+      }
+      return next();
+    });
+  };
+
+  // ---- Feature 9: Memory game difficulty tiers ----
+  // Exposes preferred pair count; app.js can read it if it wants. Default is 6 pairs.
+  window.TQ.memoryConfig = {
+    tier: localStorage.getItem('tq_memory_tier') || 'normal',
+    pairsForTier: function (t) {
+      return ({ easy: 4, normal: 6, hard: 8, expert: 10 })[t] || 6;
+    },
+    setTier: function (t) {
+      this.tier = t;
+      try { localStorage.setItem('tq_memory_tier', t); } catch (e) {}
+    }
+  };
+
+  // ---- Feature 10: Sanctum orb sequence hint ----
+  // After ~10 seconds of inactivity on the orbs, pulse them in W→U→B→R→G order.
+  // We hook the existing decorate observer to find orbs (40px round buttons with
+  // single-letter content) inside the Sanctum.
+  var orbHintState = { lastTap: Date.now(), timer: null, active: false };
+  function startOrbHint() {
+    if (orbHintState.active) return;
+    var letters = ['W', 'U', 'B', 'R', 'G'];
+    var btns = letters.map(function (L) {
+      var found = null;
+      document.querySelectorAll('button[aria-label]').forEach(function (b) {
+        if (found) return;
+        var al = b.getAttribute('aria-label') || '';
+        if (al.indexOf('mana orb') !== -1 && al.charAt(0).toUpperCase() === ({ W:'W',U:'B',B:'B',R:'R',G:'G' }[L] || L)) {
+          // Match by colour name prefix (White/Blue/Black/Red/Green)
+        }
+        var colourPrefix = ({ W:'White', U:'Blue', B:'Black', R:'Red', G:'Green' })[L];
+        if (al.indexOf(colourPrefix) === 0 && al.indexOf('mana orb') !== -1) found = b;
+      });
+      return found;
+    }).filter(Boolean);
+    if (btns.length < 5) return;
+    orbHintState.active = true;
+    var i = 0;
+    function pulseNext() {
+      if (!orbHintState.active) return;
+      var b = btns[i];
+      if (b) {
+        var prev = b.style.transform;
+        var prevBox = b.style.boxShadow;
+        b.style.transition = 'all 0.3s ease';
+        b.style.transform = 'scale(1.18)';
+        b.style.boxShadow = '0 0 28px rgba(245, 217, 143, 0.95)';
+        setTimeout(function () {
+          b.style.transform = prev;
+          b.style.boxShadow = prevBox;
+        }, 320);
+      }
+      i = (i + 1) % btns.length;
+      orbHintState.timer = setTimeout(pulseNext, 420);
+    }
+    pulseNext();
+  }
+  function stopOrbHint() {
+    orbHintState.active = false;
+    if (orbHintState.timer) { clearTimeout(orbHintState.timer); orbHintState.timer = null; }
+  }
+  document.addEventListener('click', function () {
+    orbHintState.lastTap = Date.now();
+    stopOrbHint();
+    setTimeout(function () {
+      if (Date.now() - orbHintState.lastTap >= 10000) startOrbHint();
+    }, 10000);
+  }, true);
+
+  // ---- Feature 11: Pet XP progress ring ----
+  // The app shows xp as a number. We append a small SVG ring below it.
+  function decoratePetXP() {
+    document.querySelectorAll('[data-tq-pet-xp]').forEach(function (host) {
+      // host has data-tq-pet-xp="current,nextLevelAt"
+      var raw = host.getAttribute('data-tq-pet-xp');
+      var parts = raw.split(',');
+      var cur = parseInt(parts[0], 10) || 0;
+      var nxt = parseInt(parts[1], 10) || 100;
+      var pct = Math.max(0, Math.min(1, cur / nxt));
+      host.innerHTML = '';
+      var size = 60, r = 26, c = 2 * Math.PI * r;
+      var svgNs = 'http://www.w3.org/2000/svg';
+      var svg = document.createElementNS(svgNs, 'svg');
+      svg.setAttribute('width', size); svg.setAttribute('height', size); svg.setAttribute('viewBox', '0 0 ' + size + ' ' + size);
+      var bg = document.createElementNS(svgNs, 'circle');
+      bg.setAttribute('cx', size/2); bg.setAttribute('cy', size/2); bg.setAttribute('r', r);
+      bg.setAttribute('fill', 'none'); bg.setAttribute('stroke', 'rgba(154,135,101,0.25)'); bg.setAttribute('stroke-width', '4');
+      svg.appendChild(bg);
+      var fg = document.createElementNS(svgNs, 'circle');
+      fg.setAttribute('cx', size/2); fg.setAttribute('cy', size/2); fg.setAttribute('r', r);
+      fg.setAttribute('fill', 'none'); fg.setAttribute('stroke', '#c9a961'); fg.setAttribute('stroke-width', '4');
+      fg.setAttribute('stroke-linecap', 'round');
+      fg.setAttribute('stroke-dasharray', c);
+      fg.setAttribute('stroke-dashoffset', c - c * pct);
+      fg.setAttribute('transform', 'rotate(-90 ' + (size/2) + ' ' + (size/2) + ')');
+      svg.appendChild(fg);
+      var label = document.createElementNS(svgNs, 'text');
+      label.setAttribute('x', size/2); label.setAttribute('y', size/2 + 4);
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('fill', '#c9a961');
+      label.setAttribute('font-family', "'Cinzel', serif");
+      label.setAttribute('font-size', '11');
+      label.textContent = cur + '/' + nxt;
+      svg.appendChild(label);
+      host.appendChild(svg);
+    });
+  }
+  window.TQ.decoratePetXP = decoratePetXP;
+  setInterval(decoratePetXP, 1500);
+
+  // ---- Feature 12: Vault deck → external tool links ----
+  window.TQ.openInMoxfield = function (commanderName) {
+    var url = 'https://www.moxfield.com/decks?fmt=commander&q=' + encodeURIComponent(commanderName);
+    window.open(url, '_blank', 'noopener');
+  };
+  window.TQ.openInEDHREC = function (commanderName) {
+    var slug = String(commanderName).toLowerCase()
+      .replace(/[',]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    window.open('https://edhrec.com/commanders/' + slug, '_blank', 'noopener');
+  };
+  window.TQ.openInScryfall = function (commanderName) {
+    window.open('https://scryfall.com/search?q=' + encodeURIComponent('!"' + commanderName + '"'), '_blank', 'noopener');
+  };
+
+  // ---- Feature 13: First-time onboarding toast ----
+  // Shows a one-time hint about the Sanctum 24h after first install.
+  function maybeShowOnboarding() {
+    try {
+      var shown = localStorage.getItem('tq_onboarded_v1');
+      if (shown) return;
+      var firstSeen = parseInt(localStorage.getItem('tq_first_seen') || '0', 10);
+      if (!firstSeen) {
+        localStorage.setItem('tq_first_seen', String(Date.now()));
+        return;
+      }
+      // Show after 30 seconds of use on first session (not 24h — would be invisible)
+      setTimeout(function () { showOnboardToast(); }, 30000);
+    } catch (e) {}
+  }
+  function showOnboardToast() {
+    if (document.getElementById('tq-onboard-toast')) return;
+    var t = document.createElement('div');
+    t.id = 'tq-onboard-toast';
+    t.style.cssText = [
+      'position:fixed', 'left:50%', 'transform:translateX(-50%)',
+      'bottom:90px', 'z-index:150', 'max-width:320px', 'padding:14px 16px',
+      'background:linear-gradient(180deg, rgba(20,14,8,0.96), rgba(10,6,4,0.96))',
+      'border:1px solid rgba(201,169,97,0.5)', 'border-radius:6px',
+      'color:#e8dcc4', 'font-family:"Crimson Pro", serif', 'font-size:13px',
+      'line-height:1.5', 'box-shadow:0 8px 24px rgba(0,0,0,0.6), 0 0 24px rgba(201,169,97,0.15)',
+      'animation:tqOnboardIn 0.5s ease-out'
+    ].join(';');
+    t.innerHTML =
+      '<style>@keyframes tqOnboardIn { from {opacity:0;transform:translate(-50%,12px)} to {opacity:1;transform:translate(-50%,0)} }</style>' +
+      '<div style="font-family:\'Cinzel\',serif;color:#d4b87a;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:6px">A whisper</div>' +
+      '<div>The Token Queen title hides a secret. Tap it seven times to unveil the Sanctum.</div>' +
+      '<button id="tq-onboard-close" style="margin-top:10px;padding:4px 12px;background:transparent;border:1px solid rgba(201,169,97,0.4);color:#c9a961;font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:0.15em;border-radius:2px;cursor:pointer">DISMISS</button>';
+    document.body.appendChild(t);
+    document.getElementById('tq-onboard-close').addEventListener('click', function () {
+      t.remove();
+      try { localStorage.setItem('tq_onboarded_v1', '1'); } catch (e) {}
+    });
+    setTimeout(function () { if (t.parentNode) { t.remove(); try { localStorage.setItem('tq_onboarded_v1', '1'); } catch (e) {} } }, 30000);
+  }
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    maybeShowOnboarding();
+  } else {
+    document.addEventListener('DOMContentLoaded', maybeShowOnboarding);
+  }
+
+  // ---- Feature 15: Deck export to text ----
+  // Accepts { commander, theme, colors, cards: [{name, qty}] } and returns plain text.
+  window.TQ.exportDeckAsText = function (deck) {
+    if (!deck) return '';
+    var lines = [];
+    lines.push('// ' + (deck.commander || 'Untitled Commander'));
+    if (deck.theme) lines.push('// ' + deck.theme);
+    if (deck.colors && deck.colors.length) lines.push('// Identity: ' + deck.colors.join(''));
+    lines.push('');
+    lines.push('1 ' + (deck.commander || 'Commander'));
+    if (Array.isArray(deck.cards)) {
+      deck.cards.forEach(function (c) {
+        if (typeof c === 'string') lines.push('1 ' + c);
+        else if (c && c.name) lines.push((c.qty || 1) + ' ' + c.name);
+      });
+    }
+    return lines.join('\n');
+  };
+  window.TQ.copyDeckToClipboard = function (deck) {
+    var txt = window.TQ.exportDeckAsText(deck);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(txt);
+    }
+    // Fallback
+    var ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    return Promise.resolve();
+  };
+
+  // ---- Feature 16: Vault sort options ----
+  // Used by the app to sort its deck array.
+  window.TQ.sortDecks = function (decks, mode) {
+    if (!Array.isArray(decks)) return decks;
+    var order = ['W', 'U', 'B', 'R', 'G'];
+    var copy = decks.slice();
+    if (mode === 'alpha') {
+      copy.sort(function (a, b) { return (a.commander || '').localeCompare(b.commander || ''); });
+    } else if (mode === 'identity') {
+      copy.sort(function (a, b) {
+        var al = (a.colors || []).length, bl = (b.colors || []).length;
+        if (al !== bl) return al - bl;
+        // Same length: lexicographic by WUBRG order
+        var as = (a.colors || []).slice().sort(function (x, y) { return order.indexOf(x) - order.indexOf(y); }).join('');
+        var bs = (b.colors || []).slice().sort(function (x, y) { return order.indexOf(x) - order.indexOf(y); }).join('');
+        return as.localeCompare(bs);
+      });
+    }
+    // 'manual' or anything else: keep order
+    return copy;
+  };
+
 })();

@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@media (max-width: 379px) {
+  .tq-tab-label { display: none; }
+}
