@@ -3,7 +3,10 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "build": "node build.js"
+    "build": "node build.js",
+    "test": "node smoke-test.js",
+    "fetch-assets": "node fetch-assets.js",
+    "gen-svg": "node gen-svg-fallbacks.js"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
@@ -16,6 +19,8 @@
     "@babel/core": "^7.29.0",
     "@babel/preset-env": "^7.29.5",
     "@babel/preset-react": "^7.28.5",
-    "@capacitor/cli": "^8.0.0"
+    "@capacitor/cli": "^8.0.0",
+    "jsdom": "^29.1.1",
+    "tailwindcss": "^3.4.13"
   }
 }

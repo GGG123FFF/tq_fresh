@@ -1,0 +1,75 @@
+{
+  "generated": "2026-05-14T06:13:08.857Z",
+  "counters": {
+    "energy": {
+      "local": "img/counters/energy.svg",
+      "scryfall": "tmh3/36"
+    },
+    "poison": {
+      "local": "img/counters/poison.svg",
+      "scryfall": "tone/14"
+    },
+    "experience": {
+      "local": "img/counters/experience.svg",
+      "scryfall": "tc16/21"
+    },
+    "oil": {
+      "local": "img/counters/oil.svg",
+      "scryfall": "tone/15"
+    },
+    "rad": {
+      "local": "img/counters/rad.svg",
+      "scryfall": "tpip/22"
+    }
+  },
+  "tokens": {
+    "goblin": {
+      "local": "img/tokens/goblin.svg",
+      "name": "Goblin Token"
+    },
+    "soldier": {
+      "local": "img/tokens/soldier.svg",
+      "name": "Soldier Token"
+    },
+    "zombie": {
+      "local": "img/tokens/zombie.svg",
+      "name": "Zombie Token"
+    },
+    "dragon": {
+      "local": "img/tokens/dragon.svg",
+      "name": "Dragon Token"
+    },
+    "angel": {
+      "local": "img/tokens/angel.svg",
+      "name": "Angel Token"
+    },
+    "wolf": {
+      "local": "img/tokens/wolf.svg",
+      "name": "Wolf Token"
+    },
+    "elemental": {
+      "local": "img/tokens/elemental.svg",
+      "name": "Elemental Token"
+    },
+    "saproling": {
+      "local": "img/tokens/saproling.svg",
+      "name": "Saproling Token"
+    },
+    "spirit": {
+      "local": "img/tokens/spirit.svg",
+      "name": "Spirit Token"
+    },
+    "bird": {
+      "local": "img/tokens/bird.svg",
+      "name": "Bird Token"
+    },
+    "insect": {
+      "local": "img/tokens/insect.svg",
+      "name": "Insect Token"
+    },
+    "thopter": {
+      "local": "img/tokens/thopter.svg",
+      "name": "Thopter Token"
+    }
+  }
+}

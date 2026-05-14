@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 700" preserveAspectRatio="xMidYMid slice">
+  
+    <defs>
+      <radialGradient id="bg" cx="50%" cy="40%" r="70%">
+        <stop offset="0%" stop-color="#2a1f14"/>
+        <stop offset="60%" stop-color="#15100a"/>
+        <stop offset="100%" stop-color="#05030a"/>
+      </radialGradient>
+      <radialGradient id="glow" cx="50%" cy="45%" r="55%">
+        <stop offset="0%" stop-color="#9fc7e6" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#9fc7e6" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="border" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#c9a961"/>
+        <stop offset="50%" stop-color="#7d6740"/>
+        <stop offset="100%" stop-color="#c9a961"/>
+      </linearGradient>
+    </defs>
+    <rect width="500" height="700" fill="url(#bg)"/>
+    <rect width="500" height="700" fill="url(#glow)"/>
+    <rect x="10" y="10" width="480" height="680" fill="none" stroke="url(#border)" stroke-width="2" rx="6"/>
+    <rect x="20" y="20" width="460" height="660" fill="none" stroke="#9fc7e6" stroke-width="0.5" opacity="0.4" rx="4"/>
+  
+  
+    <text x="250" y="80" text-anchor="middle" font-family="Cinzel, serif" font-size="32" font-weight="600" fill="#9fc7e6" letter-spacing="4">EXPERIENCE</text>
+    <line x1="120" y1="100" x2="380" y2="100" stroke="#9fc7e6" stroke-width="0.8" opacity="0.5"/>
+    <text x="250" y="650" text-anchor="middle" font-family="Cinzel, serif" font-size="14" fill="#9a8765" letter-spacing="3" opacity="0.8">KNOWLEDGE EARNED</text>
+  
+  <g transform="translate(250 360)">
+      <polygon points="0,-110 105,-50 65,80 -65,80 -105,-50" fill="#1a2a3a" stroke="#9fc7e6" stroke-width="1.5"/>
+      <polygon points="0,-70 65,-30 40,50 -40,50 -65,-30" fill="none" stroke="#9fc7e6" stroke-width="0.8" opacity="0.6"/>
+      <text x="0" y="20" text-anchor="middle" font-family="Cinzel, serif" font-size="64" font-weight="700" fill="#9fc7e6" opacity="0.9">XP</text>
+    </g>
+</svg>

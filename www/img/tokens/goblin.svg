@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 700" preserveAspectRatio="xMidYMid slice">
+  
+    <defs>
+      <radialGradient id="bg" cx="50%" cy="40%" r="70%">
+        <stop offset="0%" stop-color="#2a1f14"/>
+        <stop offset="60%" stop-color="#15100a"/>
+        <stop offset="100%" stop-color="#05030a"/>
+      </radialGradient>
+      <radialGradient id="glow" cx="50%" cy="45%" r="55%">
+        <stop offset="0%" stop-color="#d97757" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#d97757" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="border" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#c9a961"/>
+        <stop offset="50%" stop-color="#7d6740"/>
+        <stop offset="100%" stop-color="#c9a961"/>
+      </linearGradient>
+    </defs>
+    <rect width="500" height="700" fill="url(#bg)"/>
+    <rect width="500" height="700" fill="url(#glow)"/>
+    <rect x="10" y="10" width="480" height="680" fill="none" stroke="url(#border)" stroke-width="2" rx="6"/>
+    <rect x="20" y="20" width="460" height="660" fill="none" stroke="#d97757" stroke-width="0.5" opacity="0.4" rx="4"/>
+  
+  
+    <text x="250" y="80" text-anchor="middle" font-family="Cinzel, serif" font-size="32" font-weight="600" fill="#d97757" letter-spacing="4">GOBLIN</text>
+    <line x1="120" y1="100" x2="380" y2="100" stroke="#d97757" stroke-width="0.8" opacity="0.5"/>
+    <text x="250" y="650" text-anchor="middle" font-family="Cinzel, serif" font-size="14" fill="#9a8765" letter-spacing="3" opacity="0.8">1/1 RED</text>
+  
+  <g transform="translate(250 360)" fill="#d97757">
+      <ellipse cx="0" cy="-30" rx="50" ry="60"/>
+      <polygon points="-40,-90 -50,-60 -30,-70" fill="#a0432c"/>
+      <polygon points="40,-90 50,-60 30,-70" fill="#a0432c"/>
+      <circle cx="-15" cy="-30" r="4" fill="#1a0a05"/>
+      <circle cx="15" cy="-30" r="4" fill="#1a0a05"/>
+      <path d="M -20 0 Q 0 15 20 0" stroke="#1a0a05" stroke-width="2" fill="none"/>
+      <rect x="-30" y="20" width="60" height="40" fill="#7a3020"/>
+    </g>
+</svg>
