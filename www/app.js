@@ -6081,7 +6081,6 @@ function TokenTracker() {
       // Hide Capacitor splash screen if available
       if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
         window.Capacitor.Plugins.SplashScreen.hide();
-        console.log('Capacitor splash hidden');
       }
 
       // Hide loading screen
@@ -6098,7 +6097,6 @@ function TokenTracker() {
 
       // Force hide any overlay
       document.body.style.overflow = 'auto';
-      console.log('Token Queen mounted successfully');
     } catch (e) {
       console.error('Startup error:', e);
       alert("STARTUP ERROR: ".concat(e.message));
@@ -12820,7 +12818,6 @@ if (typeof window !== 'undefined') {
         alert('ERROR: Root element not found. App cannot start.');
         return;
       }
-      console.log('Starting Token Queen app...');
 
       // Hide any loading screens before mounting
       var hideLoading = function hideLoading() {
@@ -12828,17 +12825,14 @@ if (typeof window !== 'undefined') {
           var el = document.getElementById(id);
           if (el) {
             el.style.display = 'none';
-            console.log("Hidden: ".concat(id));
           }
         });
         document.querySelectorAll('[class*="summoning"]').forEach(function (el) {
           el.style.display = 'none';
-          console.log('Hidden summoning screen');
         });
       };
       hideLoading();
       ReactDOM.createRoot(root).render(/*#__PURE__*/React.createElement(TokenTracker, null));
-      console.log('Token Queen app started successfully');
 
       // Give it a moment to render, then check if still stuck
       setTimeout(function () {
@@ -12857,9 +12851,7 @@ if (typeof window !== 'undefined') {
   };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', startApp);
-    console.log('Waiting for DOMContentLoaded...');
   } else {
-    console.log('DOM already ready, starting immediately...');
     startApp();
   }
 }
