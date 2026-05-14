@@ -117,5 +117,8 @@ vc.on('jsdomError', e => errors.push(String(e.stack || e.message || e)));
     else      { console.log('  FAIL  ' + c.name + (c.detail ? '\n        ' + c.detail : '')); fail++; }
   }
   console.log(`\n${pass} passed, ${fail} failed`);
-  if (fail > 0) process.exit(1);
+  // jsdom keeps timers alive (intervals, MutationObserver). Force-exit so CI
+  // moves on to the next step instead of hanging until the job timeout.
+  dom.window.close();
+  process.exit(fail > 0 ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });
