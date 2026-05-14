@@ -1,18 +1,43 @@
-#!/usr/bin/env node
-const fs = require("fs"), path = require("path");
-const www = path.join(__dirname, "www");
-const required = [
-  "index.html",
-  "app.js",
-  "tailwind.css",
-  "vendor/react.production.min.js",
-  "vendor/react-dom.production.min.js"
-];
-let ok = true;
-for (const f of required) {
-  const fp = path.join(www, f);
-  if (!fs.existsSync(fp)) { console.error(`❌ Missing: www/${f}`); ok = false; }
-  else console.log(`✅ www/${f} (${(fs.statSync(fp).size/1024).toFixed(0)} KB)`);
-}
-if (!ok) process.exit(1);
-console.log("\n✨ Build complete — www/ ready for Capacitor sync.");
+name: Build Token Queen APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - run: npm ci
+
+      - name: Verify www/ assets
+        run: node build.js
+
+      - name: Run smoke tests
+        run: node smoke-test.js
+
+      - name: Capacitor sync
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: token-queen-debug
+          path: android/app/build/outputs/apk/debug/*.apk
