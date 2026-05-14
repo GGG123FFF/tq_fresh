@@ -7,6 +7,10 @@
     "allowNavigation": [
       "api.scryfall.com",
       "cards.scryfall.io",
+      "svgs.scryfall.io",
+      "media.wizards.com",
+      "magic.wizards.com",
+      "mtgcommander.net",
       "fonts.googleapis.com",
       "fonts.gstatic.com"
     ]

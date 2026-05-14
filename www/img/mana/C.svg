@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#cac5b8" stroke="#88847a" stroke-width="3"/>
+  <circle cx="50" cy="50" r="44" fill="none" stroke="#88847a" stroke-width="0.8" opacity="0.5"/>
+  <g transform="translate(50 50)" fill="#2a2820">
+      <!-- Diamond (colourless symbol) -->
+      <polygon points="0,-26 18,0 0,26 -18,0" stroke="#2a2820" stroke-width="2" fill="#9a9486"/>
+      <polygon points="0,-16 10,0 0,16 -10,0" fill="#2a2820"/>
+    </g>
+</svg>

@@ -4068,9 +4068,14 @@ var FlappyDragon = function FlappyDragon(_ref16) {
   };
 
   // ============ Input handlers ============
+  var lastFlapAtRef = useRef(0);
+  var FLAP_COOLDOWN_MS = 150;
   var flap = function flap() {
     var s = stateRef.current;
     if (!s || s.dead) return;
+    var now = Date.now();
+    if (now - lastFlapAtRef.current < FLAP_COOLDOWN_MS) return;
+    lastFlapAtRef.current = now;
     s.dragon.vy = s.diff.jump;
     s.dragon.flapT = 6;
     sfx.flap();
@@ -4084,6 +4089,9 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     s.shakeAmount = 14;
     sfx.hit();
     haptic([0, 30, 50, 30]);
+    if (window.TQ && typeof window.TQ.stopDragonMusic === 'function') {
+      window.TQ.stopDragonMusic();
+    }
   };
   var finishGame = function finishGame(score, coinsCol) {
     if (rafRef.current) {
@@ -4118,6 +4126,10 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     setPhase('playing');
     sfx.start();
     haptic(15);
+    // Start background music (Hoots-Force-inspired chiptune)
+    if (!muted && window.TQ && typeof window.TQ.startDragonMusic === 'function') {
+      window.TQ.startDragonMusic();
+    }
     // Initial flap to kick things off
     setTimeout(function () {
       return flap();
@@ -4138,6 +4150,9 @@ var FlappyDragon = function FlappyDragon(_ref16) {
       window.removeEventListener('resize', onResize);
       window.removeEventListener('orientationchange', onResize);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (window.TQ && typeof window.TQ.stopDragonMusic === 'function') {
+        window.TQ.stopDragonMusic();
+      }
       if (audioCtxRef.current) {
         try {
           audioCtxRef.current.close();
@@ -4199,7 +4214,11 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     onClick: function onClick() {
       haptic(10);
       setMuted(function (m) {
-        return !m;
+        var next = !m;
+        if (next && window.TQ && typeof window.TQ.stopDragonMusic === 'function') {
+          window.TQ.stopDragonMusic();
+        }
+        return next;
       });
     },
     className: "w-10 h-10 flex items-center justify-center active:scale-90",
@@ -5012,23 +5031,27 @@ function VaultColorPip(_ref19) {
     _ref19$size = _ref19.size,
     size = _ref19$size === void 0 ? 22 : _ref19$size;
   var col = COLORS[c];
-  return /*#__PURE__*/React.createElement("span", {
+  var letter = (c || 'C').toUpperCase();
+  var primary = 'https://svgs.scryfall.io/card-symbols/' + letter + '.svg';
+  var fallback = 'img/mana/' + letter + '.svg';
+  return /*#__PURE__*/React.createElement("img", {
+    src: primary,
+    alt: '{' + letter + '}',
+    title: col ? col.label : letter,
+    onError: function onError(e) {
+      if (e.currentTarget.dataset.tqFb === '1') return;
+      e.currentTarget.dataset.tqFb = '1';
+      e.currentTarget.src = fallback;
+    },
     style: {
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
+      display: 'inline-block',
       width: size,
       height: size,
-      borderRadius: "50%",
-      background: col.hex,
-      border: "2px solid ".concat(col.border),
-      fontSize: size * 0.55,
-      lineHeight: 1,
       flexShrink: 0,
-      boxShadow: "0 1px 4px rgba(0,0,0,0.4)"
-    },
-    title: col.label
-  }, col.symbol);
+      borderRadius: '50%',
+      boxShadow: '0 1px 4px rgba(0,0,0,0.5)'
+    }
+  });
 }
 function VaultColorBar(_ref20) {
   var colors = _ref20.colors;
@@ -5648,9 +5671,15 @@ function VaultDeckCard(_ref21) {
       color: TEXT,
       fontWeight: 600
     }
-  }, "Identity: "), deck.colors.map(function (c) {
-    return COLORS[c].label;
-  }).join(" / "), deck.theme && /*#__PURE__*/React.createElement(React.Fragment, null, " \xB7 ", /*#__PURE__*/React.createElement("span", {
+  }, "Identity: "), deck.colors.map(function (c, idx) {
+    return /*#__PURE__*/React.createElement("span", {
+      key: c,
+      style: { display: "inline-flex", alignItems: "center", gap: 4, marginRight: idx < deck.colors.length - 1 ? 8 : 0 }
+    },
+      /*#__PURE__*/React.createElement(VaultColorPip, { c: c, size: 14 }),
+      /*#__PURE__*/React.createElement("span", null, COLORS[c].label)
+    );
+  }), deck.theme && /*#__PURE__*/React.createElement(React.Fragment, null, " \xB7 ", /*#__PURE__*/React.createElement("span", {
     style: {
       fontStyle: "italic"
     }
@@ -6572,13 +6601,16 @@ function TokenTracker() {
       var newLit = [].concat(_toConsumableArray(unlockedOrbs), [colour]);
       setUnlockedOrbs(newLit);
       if (newLit.length === 5) {
-        // All 5 lit -- open hatching ceremony after a brief celebratory pause
+        // All 5 lit -- celebratory fanfare + open ceremony
         haptic([30, 50, 30, 50, 100]);
+        if (window.TQ && typeof window.TQ.playFanfare === 'function') {
+          window.TQ.playFanfare();
+        }
         setTimeout(function () {
           setCeremonyStarters(pickCeremonyStarters());
           setChosenType(null);
           setHatchingOpen(true);
-        }, 600);
+        }, 350);
       }
     } else {
       // Wrong order -- reset
@@ -10048,7 +10080,7 @@ function TokenTracker() {
         fontWeight: 600
       }
     }, r.result));
-  }))), /*#__PURE__*/React.createElement(KeywordIndex, null)), /*#__PURE__*/React.createElement("footer", {
+  })))), /*#__PURE__*/React.createElement("footer", {
     className: "mt-10 pt-5",
     style: {
       borderTop: "1px solid rgba(201, 169, 97, 0.15)"
@@ -10812,7 +10844,8 @@ function TokenTracker() {
     orbsLit: unlockedOrbs.length,
     size: 100
   })), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-center gap-2.5 mb-4"
+    className: "flex items-center justify-center gap-2.5 mb-4",
+    style: { position: 'relative', zIndex: 20 }
   }, WUBRG.map(function (c) {
     var lit = unlockedOrbs.includes(c);
     var cd = COLOR_DATA[c];
@@ -12727,7 +12760,19 @@ function TokenTracker() {
       background: "#0d0d0f",
       paddingBottom: 80
     }
-  }, /*#__PURE__*/React.createElement(CommanderVault, null)), /*#__PURE__*/React.createElement("nav", {
+  }, /*#__PURE__*/React.createElement(CommanderVault, null)), activeTab === 'reference' && /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen tab-enter",
+    key: "reference",
+    style: {
+      background: "#0d0d0f",
+      paddingBottom: 80
+    },
+    ref: function ref(el) {
+      if (el && window.TQ && typeof window.TQ.mountReference === 'function') {
+        window.TQ.mountReference(el);
+      }
+    }
+  }), /*#__PURE__*/React.createElement("nav", {
     className: "fixed bottom-0 left-0 right-0 z-40",
     style: {
       background: "linear-gradient(to top, rgba(5, 3, 4, 0.98) 0%, rgba(10, 6, 4, 0.95) 100%)",
@@ -12755,6 +12800,10 @@ function TokenTracker() {
     id: 'vault',
     label: 'Vault',
     Icon: Crown
+  }, {
+    id: 'reference',
+    label: 'Reference',
+    Icon: BookOpen
   }].map(function (tab) {
     var isActive = activeTab === tab.id;
     return /*#__PURE__*/React.createElement("button", {

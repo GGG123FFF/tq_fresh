@@ -108,6 +108,18 @@ vc.on('jsdomError', e => errors.push(String(e.stack || e.message || e)));
     {
       name: 'build.js compiles Tailwind',
       ok: fs.readFileSync(path.join(__dirname, 'build.js'), 'utf-8').includes('tailwindcss')
+    },
+    {
+      name: 'All 6 mana symbol SVGs bundled',
+      ok: ['W','U','B','R','G','C'].every(s => fs.existsSync(path.join(WWW, 'img', 'mana', s + '.svg')))
+    },
+    {
+      name: 'Reference tab + rules API present',
+      ok: !!w.TQ && typeof w.TQ.fetchRules === 'function' && typeof w.TQ.mountReference === 'function' && typeof w.TQ.manaSymbolUrl === 'function'
+    },
+    {
+      name: 'capacitor.config.json allows svgs.scryfall.io + media.wizards.com + mtgcommander.net',
+      ok: ['svgs.scryfall.io', 'media.wizards.com', 'mtgcommander.net'].every(h => fs.readFileSync(path.join(__dirname, 'capacitor.config.json'), 'utf-8').includes(h))
     }
   ];
 

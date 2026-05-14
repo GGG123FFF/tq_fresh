@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#9bd3ae" stroke="#5a8a6a" stroke-width="3"/>
+  <circle cx="50" cy="50" r="44" fill="none" stroke="#5a8a6a" stroke-width="0.8" opacity="0.5"/>
+  <g transform="translate(50 50)" fill="#0a2812">
+      <!-- Tree shape -->
+      <ellipse cx="0" cy="-10" rx="20" ry="18"/>
+      <ellipse cx="-12" cy="-4" rx="12" ry="14" opacity="0.85"/>
+      <ellipse cx="12" cy="-4" rx="12" ry="14" opacity="0.85"/>
+      <rect x="-3" y="6" width="6" height="22"/>
+      <path d="M -3 14 L -10 22 M 3 14 L 10 22" stroke="#0a2812" stroke-width="3" stroke-linecap="round"/>
+    </g>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#f8efd1" stroke="#cab682" stroke-width="3"/>
+  <circle cx="50" cy="50" r="44" fill="none" stroke="#cab682" stroke-width="0.8" opacity="0.5"/>
+  <g transform="translate(50 50)" fill="#3a2f1a">
+      <!-- Sun symbol: central disc + 8 rays -->
+      <circle r="14" fill="#3a2f1a"/>
+      <g stroke="#3a2f1a" stroke-width="6" stroke-linecap="round">
+        <line x1="0" y1="-30" x2="0" y2="-22"/>
+        <line x1="0" y1="22" x2="0" y2="30"/>
+        <line x1="-30" y1="0" x2="-22" y2="0"/>
+        <line x1="22" y1="0" x2="30" y2="0"/>
+        <line x1="-21" y1="-21" x2="-15" y2="-15"/>
+        <line x1="15" y1="15" x2="21" y2="21"/>
+        <line x1="-21" y1="21" x2="-15" y2="15"/>
+        <line x1="15" y1="-15" x2="21" y2="-21"/>
+      </g>
+    </g>
+</svg>

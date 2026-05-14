@@ -70,20 +70,36 @@ const COUNTERS = [
   {
     id: 'experience', title: 'Experience', subtitle: 'KNOWLEDGE EARNED', accent: '#9fc7e6',
     art: `<g transform="translate(250 360)">
-      <polygon points="0,-110 105,-50 65,80 -65,80 -105,-50" fill="#1a2a3a" stroke="#9fc7e6" stroke-width="1.5"/>
-      <polygon points="0,-70 65,-30 40,50 -40,50 -65,-30" fill="none" stroke="#9fc7e6" stroke-width="0.8" opacity="0.6"/>
-      <text x="0" y="20" text-anchor="middle" font-family="Cinzel, serif" font-size="64" font-weight="700" fill="#9fc7e6" opacity="0.9">XP</text>
+      <radialGradient id="xpGrad" cx="50%" cy="50%" r="55%">
+        <stop offset="0%" stop-color="#5a90c0" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#1a3a5a" stop-opacity="0.95"/>
+      </radialGradient>
+      <polygon points="0,-115 110,-35 70,90 -70,90 -110,-35" fill="url(#xpGrad)" stroke="#9fc7e6" stroke-width="2.5"/>
+      <polygon points="0,-115 110,-35 70,90 -70,90 -110,-35" fill="none" stroke="#c9e6f0" stroke-width="0.5" opacity="0.6"/>
+      <polygon points="0,-75 70,-25 45,55 -45,55 -70,-25" fill="none" stroke="#c9e6f0" stroke-width="1" opacity="0.5"/>
+      <text x="0" y="22" text-anchor="middle" font-family="Cinzel, serif" font-size="68" font-weight="700" fill="#fffbe6" opacity="0.95">XP</text>
+      <circle cx="0" cy="-115" r="5" fill="#fffbe6" opacity="0.8"/>
+      <circle cx="110" cy="-35" r="4" fill="#fffbe6" opacity="0.7"/>
+      <circle cx="-110" cy="-35" r="4" fill="#fffbe6" opacity="0.7"/>
     </g>`
   },
   {
-    id: 'oil', title: 'Oil', subtitle: 'PHYREXIAN GREASE', accent: '#7a7a8a',
+    id: 'oil', title: 'Oil', subtitle: 'PHYREXIAN GREASE', accent: '#b8a0d4',
     art: `<g transform="translate(250 360)">
-      <ellipse rx="120" ry="100" fill="#0a0a14" stroke="#7a7a8a" stroke-width="1.5"/>
-      <ellipse cx="-30" cy="-30" rx="20" ry="12" fill="#3a3a4a" opacity="0.7"/>
-      <ellipse cx="40" cy="10" rx="30" ry="18" fill="#3a3a4a" opacity="0.7"/>
-      <ellipse cx="-10" cy="40" rx="25" ry="14" fill="#3a3a4a" opacity="0.7"/>
-      <circle cx="0" cy="-10" r="6" fill="#c9c9d9" opacity="0.5"/>
-      <circle cx="60" cy="-40" r="4" fill="#c9c9d9" opacity="0.4"/>
+      <radialGradient id="oilGrad" cx="40%" cy="40%" r="65%">
+        <stop offset="0%" stop-color="#e8c4f0" stop-opacity="0.9"/>
+        <stop offset="40%" stop-color="#9070c0" stop-opacity="0.85"/>
+        <stop offset="100%" stop-color="#2a1a3a" stop-opacity="0.95"/>
+      </radialGradient>
+      <ellipse rx="130" ry="105" fill="url(#oilGrad)" stroke="#b8a0d4" stroke-width="2"/>
+      <ellipse rx="130" ry="105" fill="none" stroke="#e8c4f0" stroke-width="0.5" opacity="0.5"/>
+      <ellipse cx="-40" cy="-35" rx="35" ry="20" fill="#d4b0e8" opacity="0.6"/>
+      <ellipse cx="35" cy="15" rx="45" ry="25" fill="#c090d4" opacity="0.5"/>
+      <ellipse cx="-15" cy="45" rx="30" ry="15" fill="#a878c4" opacity="0.7"/>
+      <ellipse cx="-50" cy="20" rx="14" ry="8" fill="#fff4ff" opacity="0.5"/>
+      <ellipse cx="55" cy="-25" rx="10" ry="6" fill="#fff4ff" opacity="0.7"/>
+      <circle cx="-10" cy="-15" r="4" fill="#fff4ff" opacity="0.8"/>
+      <circle cx="20" cy="-50" r="3" fill="#fff4ff" opacity="0.6"/>
     </g>`
   },
   {
@@ -237,8 +253,8 @@ const manifest = {
   counters: {
     energy:     { local: 'img/counters/energy.svg',     scryfall: 'tmh3/36' },
     poison:     { local: 'img/counters/poison.svg',     scryfall: 'tone/14' },
-    experience: { local: 'img/counters/experience.svg', scryfall: 'tc16/21' },
-    oil:        { local: 'img/counters/oil.svg',        scryfall: 'tone/15' },
+    experience: { local: 'img/counters/experience.svg', scryfall: 'ttdc/34' },
+    oil:        { local: 'img/counters/oil.svg',        scryfall: null },
     rad:        { local: 'img/counters/rad.svg',        scryfall: 'tpip/22' }
   },
   tokens: {

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#fcb6a0" stroke="#c47358" stroke-width="3"/>
+  <circle cx="50" cy="50" r="44" fill="none" stroke="#c47358" stroke-width="0.8" opacity="0.5"/>
+  <g transform="translate(50 50)" fill="#3a0a05">
+      <!-- Fireball / clenched fist (Scryfall uses a stylised punch) -->
+      <path d="M -18 -8 Q -22 0 -18 12 L -12 18 Q -4 22 4 20 L 14 16 Q 22 10 22 0 Q 22 -10 14 -16 L 4 -20 Q -4 -22 -12 -18 L -18 -12 Z"/>
+      <path d="M -10 -6 L -6 -2 M -2 -8 L 2 -4 M 6 -10 L 10 -6 M 12 -2 L 16 2" stroke="#fcb6a0" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    </g>
+</svg>
