@@ -6422,6 +6422,15 @@ function TokenTracker() {
     _useState86 = _slicedToArray(_useState85, 2),
     playerFlipped = _useState86[0],
     setPlayerFlipped = _useState86[1];
+  var _tqBigInit = (function () { try { return localStorage.getItem('tq_bigpicture') === '1'; } catch (e) { return false; } })();
+  var _useStateBP = useState(_tqBigInit),
+    _useStateBPArr = _slicedToArray(_useStateBP, 2),
+    bigPicture = _useStateBPArr[0],
+    setBigPictureRaw = _useStateBPArr[1];
+  var setBigPicture = function setBigPicture(v) {
+    setBigPictureRaw(v);
+    try { localStorage.setItem('tq_bigpicture', v ? '1' : '0'); } catch (e) {}
+  };
   var _useState87 = useState([]),
     _useState88 = _slicedToArray(_useState87, 2),
     lifeHistory = _useState88[0],
@@ -7165,7 +7174,18 @@ function TokenTracker() {
             return res.json();
           case 6:
             data = _context2.v;
-            setResults((data.data || []).slice(0, 18));
+            // De-dupe by image URL so we don't show the same art 9 times
+            var seenArt = {};
+            var deduped = (data.data || []).filter(function (c) {
+              var _i1, _i2, _f;
+              var key = ((_i1 = c.image_uris) && (_i1.art_crop || _i1.small || _i1.normal)) ||
+                       ((_f = c.card_faces) && _f[0] && (_i2 = _f[0].image_uris) && (_i2.art_crop || _i2.small || _i2.normal)) ||
+                       c.id;
+              if (seenArt[key]) return false;
+              seenArt[key] = 1;
+              return true;
+            });
+            setResults(deduped.slice(0, 18));
             _context2.n = 8;
             break;
           case 7:
@@ -7287,7 +7307,17 @@ function TokenTracker() {
             return res.json();
           case 6:
             data = _context3.v;
-            setCopyResults((data.data || []).slice(0, 18));
+            var seenArt2 = {};
+            var deduped2 = (data.data || []).filter(function (c) {
+              var _i1, _i2, _f;
+              var key = ((_i1 = c.image_uris) && (_i1.art_crop || _i1.small || _i1.normal)) ||
+                       ((_f = c.card_faces) && _f[0] && (_i2 = _f[0].image_uris) && (_i2.art_crop || _i2.small || _i2.normal)) ||
+                       c.id;
+              if (seenArt2[key]) return false;
+              seenArt2[key] = 1;
+              return true;
+            });
+            setCopyResults(deduped2.slice(0, 18));
             _context3.n = 8;
             break;
           case 7:
@@ -9106,12 +9136,29 @@ function TokenTracker() {
         fontWeight: 600,
         color: players.length === n ? "#1a110a" : "#c9a961",
         background: players.length === n ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
-        minWidth: 32,
-        padding: "4px 8px",
-        textAlign: "center"
+        minWidth: 40,
+        flex: "0 0 auto",
+        padding: "4px 6px",
+        textAlign: "center",
+        whiteSpace: "nowrap"
       }
     }, n + "P");
   })), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() { setBigPicture(!bigPicture); },
+    title: bigPicture ? "Exit fullscreen" : "Big-picture mode",
+    className: "text-[10px] active:scale-95",
+    style: {
+      fontFamily: "'Cinzel', serif",
+      fontWeight: 600,
+      color: bigPicture ? "#1a110a" : "#c9a961",
+      background: bigPicture ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
+      border: "1px solid rgba(201, 169, 97, 0.4)",
+      borderRadius: "2px",
+      marginLeft: 6,
+      padding: "4px 8px",
+      letterSpacing: "0.15em"
+    }
+  }, bigPicture ? "EXIT" : "FULL"), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return setShowResetConfirm(true);
     },
@@ -11014,8 +11061,15 @@ function TokenTracker() {
     }
   }, "the orbs seem to remember an order...")), !hatcheryDoorOpen && /*#__PURE__*/React.createElement("div", {
     onClick: function onClick() {
-      haptic([20, 30, 60]);
-      setHatcheryDoorOpen(true);
+      haptic([10]);
+      if (window.TQ && window.TQ.openSealRiddle) {
+        window.TQ.openSealRiddle(function () {
+          haptic([20, 30, 60]);
+          setHatcheryDoorOpen(true);
+        });
+      } else {
+        setHatcheryDoorOpen(true);
+      }
     },
     style: {
       position: 'absolute',
@@ -11085,10 +11139,10 @@ function TokenTracker() {
       )
     ),
     /*#__PURE__*/React.createElement("text", {
-      x: "110", y: "205", textAnchor: "middle",
-      fontFamily: "'Cinzel', serif", fontSize: "9", fill: "#9a8765",
-      letterSpacing: "5", opacity: "0.85"
-    }, "TAP TO BREAK THE SEAL")
+      x: "110", y: "212", textAnchor: "middle",
+      fontFamily: "'Cinzel', serif", fontSize: "8.5", fill: "#9a8765",
+      letterSpacing: "4", opacity: "0.85"
+    }, "SPEAK THE WORD")
   )), hatcheryDoorOpen && /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'absolute',
@@ -11316,8 +11370,102 @@ function TokenTracker() {
     pet: pet,
     setPet: setPet,
     haptic: haptic
-  }), hatchingOpen && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[110] flex items-start justify-center overflow-y-auto p-3",
+  }), bigPicture && activeTab === 'life' && (players.length === 2 || players.length === 4) && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[115]",
+    style: {
+      background: "#05030a",
+      paddingTop: "env(safe-area-inset-top)",
+      paddingBottom: "env(safe-area-inset-bottom)",
+      display: "grid",
+      gridTemplateColumns: players.length === 2 ? "1fr" : "1fr 1fr",
+      gridTemplateRows: players.length === 2 ? "1fr 1fr" : "1fr 1fr",
+      gap: "2px"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() { setBigPicture(false); },
+    style: {
+      position: "absolute",
+      top: "calc(env(safe-area-inset-top) + 8px)",
+      left: "50%",
+      transform: "translateX(-50%)",
+      zIndex: 10,
+      padding: "6px 14px",
+      background: "rgba(10,6,4,0.85)",
+      border: "1px solid rgba(201,169,97,0.4)",
+      borderRadius: "3px",
+      color: "#c9a961",
+      fontFamily: "'Cinzel', serif",
+      fontSize: "10px",
+      letterSpacing: "0.2em",
+      cursor: "pointer"
+    }
+  }, "× EXIT"), players.map(function (p, idx) {
+    var lifeColor = p.life <= 0 ? "#a0302c" : p.life <= 10 ? "#d48a86" : "#d4b87a";
+    // 2P: top player (idx 0) is rotated 180° so they read it across the table
+    // 4P: top-left and top-right rotated 180°, bottom two normal
+    var rotate = players.length === 2 ? (idx === 0 ? "180deg" : "0deg") : (idx < 2 ? "180deg" : "0deg");
+    return /*#__PURE__*/React.createElement("div", {
+      key: p.id,
+      style: {
+        background: "linear-gradient(180deg, rgba(20,14,8,0.95), rgba(10,6,4,0.92))",
+        border: "1px solid " + p.color + "55",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "stretch",
+        justifyContent: "stretch",
+        position: "relative",
+        overflow: "hidden",
+        transform: "rotate(" + rotate + ")"
+      }
+    },
+      /*#__PURE__*/React.createElement("div", {
+        style: {
+          textAlign: "center",
+          padding: "10px 0 4px",
+          color: p.color,
+          fontFamily: "'Cinzel', serif",
+          fontSize: "11px",
+          letterSpacing: "0.2em",
+          textTransform: "uppercase",
+          opacity: 0.85
+        }
+      }, p.name || ("Player " + (idx + 1))),
+      /*#__PURE__*/React.createElement("div", {
+        style: { flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 8px" }
+      },
+        /*#__PURE__*/React.createElement("button", {
+          onClick: function onClick() { adjustLife(p.id, -1); },
+          style: { flex: "0 0 auto", background: "transparent", border: "none", color: "#a0302c", fontSize: "48px", padding: "0 16px", cursor: "pointer", fontFamily: "'Cinzel', serif" }
+        }, "−"),
+        /*#__PURE__*/React.createElement("div", {
+          style: { flex: 1, textAlign: "center", color: lifeColor, fontFamily: "'Cinzel', serif", fontSize: players.length === 2 ? "150px" : "100px", fontWeight: 700, lineHeight: 1, textShadow: "0 0 24px " + lifeColor + "66" }
+        }, p.life),
+        /*#__PURE__*/React.createElement("button", {
+          onClick: function onClick() { adjustLife(p.id, 1); },
+          style: { flex: "0 0 auto", background: "transparent", border: "none", color: "#8aaa70", fontSize: "48px", padding: "0 16px", cursor: "pointer", fontFamily: "'Cinzel', serif" }
+        }, "+")
+      ),
+      /*#__PURE__*/React.createElement("div", {
+        style: { display: "flex", justifyContent: "center", gap: "8px", padding: "0 0 12px" }
+      }, [-5, -1, 1, 5].map(function (d) {
+        return /*#__PURE__*/React.createElement("button", {
+          key: d,
+          onClick: function onClick() { adjustLife(p.id, d); },
+          style: {
+            padding: "6px 12px",
+            background: d < 0 ? "rgba(160,48,44,0.18)" : "rgba(138,170,112,0.18)",
+            border: "1px solid " + (d < 0 ? "#a0302c66" : "#8aaa7066"),
+            borderRadius: "3px",
+            color: d < 0 ? "#d48a86" : "#a0c87a",
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "11px",
+            cursor: "pointer"
+          }
+        }, (d > 0 ? "+" : "") + d);
+      }))
+    );
+  })), hatchingOpen && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[130] flex items-start justify-center overflow-y-auto p-3",
     style: {
       background: "radial-gradient(ellipse at top, rgba(40, 30, 60, 0.97) 0%, rgba(5, 3, 10, 0.99) 70%)",
       backdropFilter: "blur(12px)",

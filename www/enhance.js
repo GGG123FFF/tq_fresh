@@ -1546,8 +1546,86 @@
     setTimeout(function () { if (el.parentNode) el.remove(); }, opts.duration || 2400);
   };
 
+  // ---- Seal riddle (Sanctum hatchery) ----
+  // Tap-to-break seal shows a multiple-choice MTG riddle. Correct answer
+  // spins the seal and triggers onSuccess.
+  var SEAL_RIDDLES = [
+    { q: "How many cards make up a Commander deck, including the commander?", a: "100", choices: ["60", "75", "100", "99"] },
+    { q: "What is the starting life total in a standard multiplayer Commander game?", a: "40", choices: ["20", "30", "40", "50"] },
+    { q: "Which keyword lets a creature attack the turn it enters?", a: "Haste", choices: ["Vigilance", "Haste", "Trample", "Flash"] },
+    { q: "How much commander damage from a single commander ends the game?", a: "21", choices: ["15", "20", "21", "25"] },
+    { q: "Which colour's mana symbol is a water droplet?", a: "Blue", choices: ["White", "Blue", "Black", "Green"] },
+    { q: "Which card type has no mana value and is played as a free action each turn?", a: "Land", choices: ["Sorcery", "Instant", "Land", "Artifact"] },
+    { q: "What does \"singleton\" mean in deck construction?", a: "Only one of each non-basic card", choices: ["Solo play only", "Only one of each non-basic card", "One commander only", "One colour only"] },
+    { q: "Which ability allows a creature to deal damage to a player or planeswalker beyond a blocker's toughness?", a: "Trample", choices: ["Menace", "Trample", "Lifelink", "Deathtouch"] },
+    { q: "How many basic land types exist in Magic?", a: "5", choices: ["3", "5", "6", "7"] },
+    { q: "Which zone is your commander kept in when not in play?", a: "Command zone", choices: ["Sideboard", "Exile", "Command zone", "Library"] }
+  ];
+
+  window.TQ.openSealRiddle = function (onSuccess) {
+    var existing = document.getElementById('tq-seal-riddle');
+    if (existing) existing.remove();
+    var riddle = SEAL_RIDDLES[Math.floor(Math.random() * SEAL_RIDDLES.length)];
+    // Shuffle choices
+    var shuffled = riddle.choices.slice().sort(function () { return Math.random() - 0.5; });
+
+    var modal = document.createElement('div');
+    modal.id = 'tq-seal-riddle';
+    modal.style.cssText = [
+      'position:fixed', 'inset:0', 'z-index:150', 'display:flex',
+      'align-items:center', 'justify-content:center', 'padding:20px',
+      'background:rgba(5,3,4,0.94)', 'backdrop-filter:blur(8px)',
+      '-webkit-backdrop-filter:blur(8px)', 'animation:tqFadeIn 0.25s ease-out'
+    ].join(';');
+
+    var panel = document.createElement('div');
+    panel.style.cssText = [
+      'max-width:360px', 'width:100%',
+      'background:linear-gradient(180deg, rgba(20,14,8,0.98), rgba(10,6,4,0.98))',
+      'border:1px solid rgba(201,169,97,0.5)', 'border-radius:6px',
+      'padding:22px 22px 16px', 'color:#e8dcc4',
+      'font-family:"Crimson Pro", serif',
+      'box-shadow:0 12px 40px rgba(0,0,0,0.7), 0 0 36px rgba(201,169,97,0.18)'
+    ].join(';');
+
+    var html = '<style>@keyframes tqFadeIn{from{opacity:0}to{opacity:1}}.tq-riddle-choice{padding:10px 14px;margin:6px 0;background:rgba(20,14,8,0.7);border:1px solid rgba(201,169,97,0.3);border-radius:3px;color:#e8dcc4;font-family:"Crimson Pro",serif;font-size:14px;cursor:pointer;text-align:left;width:100%;transition:all 0.15s}.tq-riddle-choice:active{transform:scale(0.97)}.tq-riddle-correct{border-color:#a0c87a !important;background:rgba(138,170,112,0.2) !important;color:#c0e89a !important}.tq-riddle-wrong{border-color:#d48a86 !important;background:rgba(160,48,44,0.18) !important;color:#d48a86 !important;animation:tqShake 0.4s}@keyframes tqShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}</style>' +
+      '<div style="font-family:\'Cinzel\',serif;color:#d4b87a;font-size:11px;letter-spacing:0.25em;text-transform:uppercase;text-align:center;margin-bottom:14px">The Seal Speaks</div>' +
+      '<div style="font-size:14px;line-height:1.5;text-align:center;color:#cab896;margin-bottom:14px;font-style:italic">' + escapeHtml2(riddle.q) + '</div>' +
+      '<div id="tq-riddle-choices"></div>' +
+      '<div style="text-align:center;margin-top:10px"><button id="tq-riddle-close" style="padding:5px 12px;background:transparent;color:#9a8765;border:1px solid rgba(154,135,101,0.3);border-radius:2px;font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:0.18em;cursor:pointer">RETREAT</button></div>';
+    panel.innerHTML = html;
+    modal.appendChild(panel);
+    document.body.appendChild(modal);
+
+    function close() { if (modal.parentNode) modal.parentNode.removeChild(modal); }
+    panel.querySelector('#tq-riddle-close').addEventListener('click', close);
+    modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+
+    var choicesEl = panel.querySelector('#tq-riddle-choices');
+    shuffled.forEach(function (c) {
+      var btn = document.createElement('button');
+      btn.className = 'tq-riddle-choice';
+      btn.textContent = c;
+      btn.addEventListener('click', function () {
+        if (c === riddle.a) {
+          btn.className = 'tq-riddle-choice tq-riddle-correct';
+          if (navigator.vibrate) try { navigator.vibrate([30, 50, 80]); } catch (e) {}
+          if (window.TQ && typeof window.TQ.playFanfare === 'function') window.TQ.playFanfare();
+          setTimeout(function () {
+            close();
+            if (typeof onSuccess === 'function') onSuccess();
+          }, 600);
+        } else {
+          btn.className = 'tq-riddle-choice tq-riddle-wrong';
+          if (navigator.vibrate) try { navigator.vibrate([60, 30, 60]); } catch (e) {}
+          setTimeout(function () { btn.className = 'tq-riddle-choice'; }, 600);
+        }
+      });
+      choicesEl.appendChild(btn);
+    });
+  };
+
   // ---- Validate deck wrapper ----
-  // Wraps validateDeckIdentity and shows a result popup. Accepts a deck object.
   window.TQ.validateDeck = function (deck) {
     if (!deck || !deck.commander) {
       window.TQ.toast('No commander set for this deck.', { kind: 'error' });
