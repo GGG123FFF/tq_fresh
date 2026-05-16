@@ -6431,6 +6431,10 @@ function TokenTracker() {
     setBigPictureRaw(v);
     try { localStorage.setItem('tq_bigpicture', v ? '1' : '0'); } catch (e) {}
   };
+  var _useStateBPM = useState(false),
+    _useStateBPMArr = _slicedToArray(_useStateBPM, 2),
+    bigPictureMenu = _useStateBPMArr[0],
+    setBigPictureMenu = _useStateBPMArr[1];
   var _useState87 = useState([]),
     _useState88 = _slicedToArray(_useState87, 2),
     lifeHistory = _useState88[0],
@@ -7150,7 +7154,7 @@ function TokenTracker() {
             setError("");
             setActiveSearch(searchTerm);
             _context2.p = 2;
-            url = "https://api.scryfall.com/cards/search?q=".concat(encodeURIComponent("t:token ".concat(searchTerm)), "&unique=art&order=name");
+            url = "https://api.scryfall.com/cards/search?q=".concat(encodeURIComponent("t:token ".concat(searchTerm)), "&unique=art&order=released&dir=desc");
             _context2.n = 3;
             return fetch(url);
           case 3:
@@ -7174,13 +7178,12 @@ function TokenTracker() {
             return res.json();
           case 6:
             data = _context2.v;
-            // De-dupe by image URL so we don't show the same art 9 times
+            // Dedupe by oracle_id (stable across reprints) then illustration_id.
+            // Scryfall's unique=art still returns multiple "art_crop URLs" for
+            // the same artwork across printings; this collapses them properly.
             var seenArt = {};
             var deduped = (data.data || []).filter(function (c) {
-              var _i1, _i2, _f;
-              var key = ((_i1 = c.image_uris) && (_i1.art_crop || _i1.small || _i1.normal)) ||
-                       ((_f = c.card_faces) && _f[0] && (_i2 = _f[0].image_uris) && (_i2.art_crop || _i2.small || _i2.normal)) ||
-                       c.id;
+              var key = c.oracle_id || c.illustration_id || (c.name + '|' + (c.type_line || ''));
               if (seenArt[key]) return false;
               seenArt[key] = 1;
               return true;
@@ -7283,7 +7286,7 @@ function TokenTracker() {
             setCopyError("");
             _context3.p = 2;
             qParts = scope === "tokens" ? "t:token ".concat(searchTerm) : "t:creature ".concat(searchTerm);
-            url = "https://api.scryfall.com/cards/search?q=".concat(encodeURIComponent(qParts), "&unique=art&order=name");
+            url = "https://api.scryfall.com/cards/search?q=".concat(encodeURIComponent(qParts), "&unique=art&order=released&dir=desc");
             _context3.n = 3;
             return fetch(url);
           case 3:
@@ -7307,17 +7310,14 @@ function TokenTracker() {
             return res.json();
           case 6:
             data = _context3.v;
-            var seenArt2 = {};
-            var deduped2 = (data.data || []).filter(function (c) {
-              var _i1, _i2, _f;
-              var key = ((_i1 = c.image_uris) && (_i1.art_crop || _i1.small || _i1.normal)) ||
-                       ((_f = c.card_faces) && _f[0] && (_i2 = _f[0].image_uris) && (_i2.art_crop || _i2.small || _i2.normal)) ||
-                       c.id;
-              if (seenArt2[key]) return false;
-              seenArt2[key] = 1;
+            var seenArt3 = {};
+            var deduped3 = (data.data || []).filter(function (c) {
+              var key = c.oracle_id || c.illustration_id || (c.name + '|' + (c.type_line || ''));
+              if (seenArt3[key]) return false;
+              seenArt3[key] = 1;
               return true;
             });
-            setCopyResults(deduped2.slice(0, 18));
+            setCopyResults(deduped3.slice(0, 18));
             _context3.n = 8;
             break;
           case 7:
@@ -8333,21 +8333,7 @@ function TokenTracker() {
         borderRadius: '2px',
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 4px ".concat(ctr.glow)
       }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 18,
-        height: 18,
-        borderRadius: '50%',
-        background: "radial-gradient(circle at 30% 30%, ".concat(ctr.color, ", ").concat(ctr.color, "88)"),
-        color: '#0a0604',
-        fontSize: '0.55rem',
-        fontWeight: 800,
-        boxShadow: "inset 0 -1px 1px rgba(0,0,0,0.3), 0 0 4px ".concat(ctr.glow)
-      }
-    }, ctr.short), ctr.name);
+    }, /*#__PURE__*/React.createElement("span", null, ctr.name));
   }))), (loading || results.length > 0 || error) && showSearch && /*#__PURE__*/React.createElement("section", {
     className: "mb-6"
   }, /*#__PURE__*/React.createElement("div", {
@@ -9098,7 +9084,7 @@ function TokenTracker() {
     className: "mb-6 tab-enter",
     key: "life"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between mb-4"
+    className: "flex flex-col gap-2 mb-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("div", {
@@ -9116,7 +9102,7 @@ function TokenTracker() {
       fontWeight: 600
     }
   }, "Life Totals")), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-1.5"
+    className: "flex items-center gap-1.5 flex-wrap"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center",
     style: {
@@ -11382,24 +11368,85 @@ function TokenTracker() {
       gap: "2px"
     }
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() { setBigPicture(false); },
+    onClick: function onClick() { setBigPictureMenu(!bigPictureMenu); haptic(10); },
     style: {
       position: "absolute",
-      top: "calc(env(safe-area-inset-top) + 8px)",
+      top: "50%",
       left: "50%",
-      transform: "translateX(-50%)",
-      zIndex: 10,
-      padding: "6px 14px",
-      background: "rgba(10,6,4,0.85)",
-      border: "1px solid rgba(201,169,97,0.4)",
-      borderRadius: "3px",
-      color: "#c9a961",
+      transform: "translate(-50%, -50%)",
+      zIndex: 30,
+      width: "54px",
+      height: "54px",
+      borderRadius: "50%",
+      background: bigPictureMenu
+        ? "radial-gradient(circle at 35% 35%, rgba(245,217,143,0.95), rgba(201,169,97,0.85))"
+        : "radial-gradient(circle at 35% 35%, rgba(20,14,8,0.98), rgba(10,6,4,0.98))",
+      border: "2px solid #c9a961",
+      boxShadow: "0 0 20px rgba(201,169,97,0.4), 0 4px 14px rgba(0,0,0,0.7), 0 0 0 6px rgba(5,3,4,0.95)",
+      color: bigPictureMenu ? "#1a110a" : "#c9a961",
       fontFamily: "'Cinzel', serif",
-      fontSize: "10px",
-      letterSpacing: "0.2em",
-      cursor: "pointer"
-    }
-  }, "× EXIT"), players.map(function (p, idx) {
+      fontSize: bigPictureMenu ? "22px" : "10px",
+      fontWeight: 700,
+      letterSpacing: "0.18em",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    },
+    "aria-label": "Big picture menu"
+  }, bigPictureMenu ? "×" : "MENU"),
+    bigPictureMenu && /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        zIndex: 25,
+        width: "260px",
+        background: "linear-gradient(180deg, rgba(20,14,8,0.98), rgba(10,6,4,0.98))",
+        border: "1px solid rgba(201,169,97,0.45)",
+        borderRadius: "10px",
+        padding: "84px 18px 18px",
+        boxShadow: "0 10px 40px rgba(0,0,0,0.7), 0 0 32px rgba(201,169,97,0.15)",
+        color: "#e8dcc4",
+        fontFamily: "'Crimson Pro', serif",
+        textAlign: "center"
+      }
+    },
+      /*#__PURE__*/React.createElement("div", {
+        style: { fontFamily: "'Cinzel', serif", fontSize: "10px", letterSpacing: "0.25em", color: "#9a8765", textTransform: "uppercase", marginBottom: "12px" }
+      }, "Big-Picture"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function onClick() { setBigPicture(false); setBigPictureMenu(false); haptic(15); },
+        style: { display: "block", width: "100%", margin: "6px 0", padding: "10px", background: "rgba(160,48,44,0.18)", color: "#d48a86", border: "1px solid #a0302c66", borderRadius: "4px", fontFamily: "'Cinzel', serif", fontSize: "11px", letterSpacing: "0.18em", cursor: "pointer" }
+      }, "× EXIT FULLSCREEN"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function onClick() {
+          setBigPictureMenu(false);
+          setActiveTab('battlefield');
+          haptic(10);
+        },
+        style: { display: "block", width: "100%", margin: "6px 0", padding: "10px", background: "rgba(20,14,8,0.6)", color: "#c9a961", border: "1px solid rgba(201,169,97,0.4)", borderRadius: "4px", fontFamily: "'Cinzel', serif", fontSize: "11px", letterSpacing: "0.18em", cursor: "pointer" }
+      }, "TOKEN MANAGEMENT"),
+      /*#__PURE__*/React.createElement("div", {
+        style: { display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", margin: "10px 0 4px" }
+      },
+        /*#__PURE__*/React.createElement("span", { style: { fontSize: "10px", color: "#9a8765", letterSpacing: "0.2em", fontFamily: "'Cinzel', serif", marginRight: "4px" } }, "COLOUR"),
+        ["#d4b87a", "#9fc7e6", "#5a4060", "#d97757", "#7faf4f", "#fffbe6"].map(function (col) {
+          return /*#__PURE__*/React.createElement("button", {
+            key: col,
+            onClick: function onClick() {
+              setPlayers(function (prev) { return prev.map(function (pl, i) { return i === activePlayerIndex ? Object.assign({}, pl, { color: col }) : pl; }); });
+              haptic(8);
+            },
+            style: { width: "22px", height: "22px", borderRadius: "50%", background: col, border: "2px solid rgba(255,255,255,0.15)", cursor: "pointer", padding: 0 }
+          });
+        })
+      ),
+      /*#__PURE__*/React.createElement("div", {
+        style: { fontSize: "9px", color: "#6a5a42", marginTop: "6px", fontStyle: "italic" }
+      }, "Colour applies to the active (highlighted) player.")
+    ), players.map(function (p, idx) {
     var lifeColor = p.life <= 0 ? "#a0302c" : p.life <= 10 ? "#d48a86" : "#d4b87a";
     // 2P: top player (idx 0) is rotated 180° so they read it across the table
     // 4P: top-left and top-right rotated 180°, bottom two normal
@@ -11446,7 +11493,7 @@ function TokenTracker() {
         }, "+")
       ),
       /*#__PURE__*/React.createElement("div", {
-        style: { display: "flex", justifyContent: "center", gap: "8px", padding: "0 0 12px" }
+        style: { display: "flex", justifyContent: "center", gap: "8px", padding: "12px 0 16px" }
       }, [-5, -1, 1, 5].map(function (d) {
         return /*#__PURE__*/React.createElement("button", {
           key: d,
