@@ -1711,4 +1711,267 @@
     });
   };
 
+  // ---- Deck list import ----
+  // Parses a deck-list paste into { commander, cards: [{name, qty}], theme? }.
+  // Supports:
+  //   - "1 Card Name" (Moxfield/Arena/MTGGoldfish standard)
+  //   - "1x Card Name" (TappedOut)
+  //   - "// Commander: Card Name" or "// CMDR: ..."  (explicit marker)
+  //   - Lines containing "*CMDR*" suffix (Moxfield export)
+  //   - "SIDEBOARD" or "Sideboard" header — treated as commander pool if exactly 1 card
+  //   - Blank lines, comments starting with // or # are skipped (except commander markers)
+  window.TQ.parseDeckList = function (text) {
+    if (!text || typeof text !== 'string') return null;
+    var lines = text.replace(/\r\n/g, '\n').split('\n');
+    var commander = null;
+    var theme = null;
+    var cards = [];
+    var inSideboard = false;
+    var sideCards = [];
+
+    for (var i = 0; i < lines.length; i++) {
+      var raw = lines[i];
+      var line = raw.trim();
+      if (!line) continue;
+
+      // Explicit commander markers
+      var cmdMatch = line.match(/^\/\/\s*(?:commander|cmdr)\s*[:=-]?\s*(.+)$/i);
+      if (cmdMatch) { commander = cmdMatch[1].trim(); continue; }
+      var themeMatch = line.match(/^\/\/\s*(?:theme|deck)\s*[:=-]?\s*(.+)$/i);
+      if (themeMatch) { theme = themeMatch[1].trim(); continue; }
+
+      // Sideboard / commander section header
+      if (/^(sideboard|commander|cmdr)\s*[:=-]?\s*$/i.test(line)) { inSideboard = true; continue; }
+      if (/^deck\s*[:=-]?\s*$/i.test(line)) { inSideboard = false; continue; }
+
+      // Skip comment lines
+      if (line.charAt(0) === '/' || line.charAt(0) === '#') continue;
+
+      // Moxfield-style *CMDR* suffix
+      var moxfieldCmdr = line.match(/^(\d+)\s+(.+?)\s+\*CMDR\*\s*$/i) ||
+                        line.match(/^(\d+)x?\s+(.+?)\s+#!Commander\s*$/i);
+      if (moxfieldCmdr) {
+        commander = moxfieldCmdr[2].trim().replace(/\s*\([A-Z0-9]+\)\s*\d*$/i, '');
+        continue;
+      }
+
+      // Standard card line: "1 Card Name" or "1x Card Name"
+      var cardMatch = line.match(/^(\d+)x?\s+(.+)$/);
+      if (cardMatch) {
+        var qty = parseInt(cardMatch[1], 10);
+        var name = cardMatch[2].trim()
+          // Strip set/collector annotations: "Card (SET) 123" → "Card"
+          .replace(/\s*\([A-Z0-9]+\)\s*[\dA-Za-z\-★]*$/i, '')
+          // Strip foil markers
+          .replace(/\s*\*F\*$/i, '');
+        var entry = { name: name, qty: qty };
+        if (inSideboard) sideCards.push(entry);
+        else cards.push(entry);
+      } else {
+        // Bare card name without quantity
+        if (line.length < 80 && !/^https?:/.test(line)) {
+          var entry2 = { name: line, qty: 1 };
+          if (inSideboard) sideCards.push(entry2);
+          else cards.push(entry2);
+        }
+      }
+    }
+
+    // If no explicit commander but sideboard has exactly 1 card, treat it as commander
+    if (!commander && sideCards.length === 1) {
+      commander = sideCards[0].name;
+    }
+
+    return { commander: commander, theme: theme, cards: cards, _sideCards: sideCards };
+  };
+
+  // Look up a commander on Scryfall and return { name, colorIdentity, scryfall_id }
+  // Uses a 7-day cache.
+  window.TQ.lookupCommander = function (name) {
+    if (!name) return Promise.reject(new Error('No commander name'));
+    var ck = 'commander:' + name.toLowerCase();
+    var cached = cacheGet(ck);
+    if (cached) return Promise.resolve(cached);
+    return fetchJSON(SCRYFALL_API + '/cards/named?fuzzy=' + encodeURIComponent(name))
+      .then(function (card) {
+        if (!card || card.object === 'error') throw new Error('Not found');
+        // Verify it's a legendary creature or planeswalker that can be a commander
+        var typeLine = card.type_line || '';
+        var canBeCommander = /Legendary.*(Creature|Planeswalker)/i.test(typeLine) ||
+                             /can be your commander/i.test(card.oracle_text || '');
+        var result = {
+          name: card.name,
+          colorIdentity: card.color_identity || [],
+          scryfall_id: card.id,
+          scryfall_uri: card.scryfall_uri,
+          type_line: typeLine,
+          canBeCommander: canBeCommander
+        };
+        cacheSet(ck, result);
+        return result;
+      });
+  };
+
+  // The big import popup: handles both Quick (commander only) and Full Deck modes.
+  // onSave(deck) — callback when user confirms; deck = { commander, colors, theme, cards }
+  window.TQ.openDeckImport = function (onSave) {
+    var existing = document.getElementById('tq-deck-import');
+    if (existing) existing.remove();
+
+    var modal = document.createElement('div');
+    modal.id = 'tq-deck-import';
+    modal.style.cssText = [
+      'position:fixed', 'inset:0', 'z-index:170', 'display:flex',
+      'align-items:center', 'justify-content:center', 'padding:14px',
+      'background:rgba(5,3,4,0.94)', 'backdrop-filter:blur(8px)',
+      '-webkit-backdrop-filter:blur(8px)'
+    ].join(';');
+
+    var panel = document.createElement('div');
+    panel.style.cssText = [
+      'max-width:440px', 'width:100%', 'max-height:90vh',
+      'background:linear-gradient(180deg, rgba(20,14,8,0.98), rgba(10,6,4,0.98))',
+      'border:1px solid rgba(201,169,97,0.5)', 'border-radius:6px',
+      'padding:18px', 'color:#e8dcc4',
+      'font-family:"Crimson Pro", serif',
+      'box-shadow:0 12px 40px rgba(0,0,0,0.7), 0 0 36px rgba(201,169,97,0.15)',
+      'display:flex', 'flex-direction:column'
+    ].join(';');
+
+    panel.innerHTML =
+      '<div style="font-family:\'Cinzel\',serif;color:#d4b87a;font-size:12px;letter-spacing:0.22em;text-transform:uppercase;margin-bottom:10px;text-align:center">Import Deck</div>' +
+      '<div id="tq-import-tabs" style="display:flex;gap:4px;margin-bottom:12px">' +
+        '<button data-tab="quick" class="tq-imp-tab" style="flex:1;padding:8px;background:rgba(201,169,97,0.18);color:#d4b87a;border:1px solid rgba(201,169,97,0.45);border-radius:3px;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:0.15em;cursor:pointer">QUICK</button>' +
+        '<button data-tab="full" class="tq-imp-tab" style="flex:1;padding:8px;background:transparent;color:#9a8765;border:1px solid rgba(154,135,101,0.3);border-radius:3px;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:0.15em;cursor:pointer">FULL LIST</button>' +
+      '</div>' +
+      '<div id="tq-imp-quick">' +
+        '<label style="display:block;font-size:11px;color:#9a8765;letter-spacing:0.15em;text-transform:uppercase;font-family:\'Cinzel\',serif;margin-bottom:6px">Commander name</label>' +
+        '<input id="tq-imp-cmd" type="text" placeholder="e.g. Atraxa, Praetors\' Voice" style="width:100%;padding:10px 12px;background:rgba(20,14,8,0.7);border:1px solid rgba(201,169,97,0.3);border-radius:3px;color:#e8dcc4;font-family:\'Crimson Pro\',serif;font-size:14px;outline:none;box-sizing:border-box" />' +
+        '<label style="display:block;font-size:11px;color:#9a8765;letter-spacing:0.15em;text-transform:uppercase;font-family:\'Cinzel\',serif;margin:12px 0 6px">Deck theme (optional)</label>' +
+        '<input id="tq-imp-theme" type="text" placeholder="e.g. Superfriends Proliferate" style="width:100%;padding:10px 12px;background:rgba(20,14,8,0.7);border:1px solid rgba(201,169,97,0.3);border-radius:3px;color:#e8dcc4;font-family:\'Crimson Pro\',serif;font-size:14px;outline:none;box-sizing:border-box" />' +
+      '</div>' +
+      '<div id="tq-imp-full" style="display:none">' +
+        '<label style="display:block;font-size:11px;color:#9a8765;letter-spacing:0.15em;text-transform:uppercase;font-family:\'Cinzel\',serif;margin-bottom:6px">Paste deck list</label>' +
+        '<textarea id="tq-imp-list" rows="10" placeholder="// Commander: Atraxa, Praetors&#39; Voice\n// Theme: Superfriends\n1 Sol Ring\n1 Arcane Signet\n1 Doubling Season\n..." style="width:100%;padding:10px 12px;background:rgba(20,14,8,0.7);border:1px solid rgba(201,169,97,0.3);border-radius:3px;color:#e8dcc4;font-family:\'JetBrains Mono\',monospace;font-size:12px;line-height:1.4;outline:none;box-sizing:border-box;resize:vertical"></textarea>' +
+        '<div style="font-size:10px;color:#6a5a42;margin-top:6px;font-style:italic;line-height:1.5">Supports Moxfield, MTGGoldfish, Arena and TappedOut formats. Commander is auto-detected from <code style="color:#9a8765">*CMDR*</code> markers, <code style="color:#9a8765">// Commander: Name</code>, or a single-card Sideboard section.</div>' +
+      '</div>' +
+      '<div id="tq-imp-status" style="margin-top:12px;font-size:12px;color:#9a8765;font-style:italic;min-height:18px"></div>' +
+      '<div id="tq-imp-preview" style="margin-top:8px;display:none;padding:10px;background:rgba(20,14,8,0.5);border:1px solid rgba(154,135,101,0.25);border-radius:3px"></div>' +
+      '<div style="display:flex;gap:8px;margin-top:14px">' +
+        '<button id="tq-imp-cancel" style="flex:1;padding:10px;background:transparent;color:#9a8765;border:1px solid rgba(154,135,101,0.3);border-radius:3px;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:0.18em;cursor:pointer">CANCEL</button>' +
+        '<button id="tq-imp-fetch" style="flex:1;padding:10px;background:rgba(201,169,97,0.15);color:#d4b87a;border:1px solid rgba(201,169,97,0.45);border-radius:3px;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:0.18em;cursor:pointer">LOOK UP</button>' +
+        '<button id="tq-imp-save" style="flex:1;padding:10px;background:linear-gradient(180deg,#f5d98f,#c9a961);color:#1a110a;border:1px solid #c9a961;border-radius:3px;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:0.18em;cursor:pointer;font-weight:700;opacity:0.5" disabled>SAVE</button>' +
+      '</div>';
+
+    modal.appendChild(panel);
+    document.body.appendChild(modal);
+
+    function close() { if (modal.parentNode) modal.parentNode.removeChild(modal); }
+
+    var tabs = panel.querySelectorAll('.tq-imp-tab');
+    var quickEl = panel.querySelector('#tq-imp-quick');
+    var fullEl = panel.querySelector('#tq-imp-full');
+    var statusEl = panel.querySelector('#tq-imp-status');
+    var previewEl = panel.querySelector('#tq-imp-preview');
+    var saveBtn = panel.querySelector('#tq-imp-save');
+    var fetchBtn = panel.querySelector('#tq-imp-fetch');
+    var resolvedDeck = null;
+
+    tabs.forEach(function (t) {
+      t.addEventListener('click', function () {
+        var which = t.getAttribute('data-tab');
+        tabs.forEach(function (other) {
+          var on = other === t;
+          other.style.background = on ? 'rgba(201,169,97,0.18)' : 'transparent';
+          other.style.color = on ? '#d4b87a' : '#9a8765';
+          other.style.borderColor = on ? 'rgba(201,169,97,0.45)' : 'rgba(154,135,101,0.3)';
+        });
+        quickEl.style.display = which === 'quick' ? 'block' : 'none';
+        fullEl.style.display = which === 'full' ? 'block' : 'none';
+        statusEl.textContent = '';
+        previewEl.style.display = 'none';
+        resolvedDeck = null;
+        saveBtn.disabled = true; saveBtn.style.opacity = '0.5';
+      });
+    });
+
+    panel.querySelector('#tq-imp-cancel').addEventListener('click', close);
+    modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+
+    fetchBtn.addEventListener('click', function () {
+      var isFull = fullEl.style.display !== 'none';
+      var commanderName, theme, cards;
+
+      if (isFull) {
+        var raw = panel.querySelector('#tq-imp-list').value;
+        var parsed = window.TQ.parseDeckList(raw);
+        if (!parsed || !parsed.commander) {
+          statusEl.style.color = '#cf8a8a';
+          statusEl.textContent = 'Could not find a commander in the list. Add "// Commander: Name" at the top.';
+          return;
+        }
+        commanderName = parsed.commander;
+        theme = parsed.theme;
+        cards = parsed.cards;
+      } else {
+        commanderName = panel.querySelector('#tq-imp-cmd').value.trim();
+        theme = panel.querySelector('#tq-imp-theme').value.trim();
+        cards = [];
+        if (!commanderName) {
+          statusEl.style.color = '#cf8a8a';
+          statusEl.textContent = 'Enter a commander name.';
+          return;
+        }
+      }
+
+      statusEl.style.color = '#9a8765';
+      statusEl.textContent = 'Looking up "' + commanderName + '" on Scryfall…';
+      previewEl.style.display = 'none';
+      saveBtn.disabled = true; saveBtn.style.opacity = '0.5';
+
+      window.TQ.lookupCommander(commanderName).then(function (info) {
+        if (!info.canBeCommander) {
+          statusEl.style.color = '#d4b87a';
+          statusEl.textContent = 'Warning: "' + info.name + '" may not be a legal commander. Saving anyway.';
+        } else {
+          statusEl.style.color = '#a0c87a';
+          statusEl.textContent = 'Found: ' + info.name;
+        }
+        var pipsHtml = (info.colorIdentity.length ? info.colorIdentity : ['C']).map(function (c) {
+          return '<img src="https://svgs.scryfall.io/card-symbols/' + c + '.svg" alt="{' + c + '}" style="width:16px;height:16px;vertical-align:-3px;margin:0 2px;border-radius:50%">';
+        }).join('');
+        var themeText = theme ? '<div style="font-size:11px;color:#9a8765;font-style:italic;margin-top:4px">' + escapeHtml2(theme) + '</div>' : '';
+        var cardsText = cards.length ? '<div style="font-size:11px;color:#9a8765;margin-top:4px">' + cards.length + ' cards in list</div>' : '';
+        previewEl.innerHTML =
+          '<div style="font-family:\'Cinzel\',serif;color:#d4b87a;font-size:13px;letter-spacing:0.1em">' + escapeHtml2(info.name) + '</div>' +
+          '<div style="margin-top:6px">' + pipsHtml + '</div>' +
+          themeText + cardsText +
+          '<div style="font-size:10px;color:#6a5a42;margin-top:6px;font-style:italic">' + escapeHtml2(info.type_line) + '</div>';
+        previewEl.style.display = 'block';
+        resolvedDeck = {
+          commander: info.name,
+          colors: info.colorIdentity,
+          theme: theme || '',
+          cards: cards
+        };
+        saveBtn.disabled = false; saveBtn.style.opacity = '1';
+      }).catch(function (err) {
+        statusEl.style.color = '#cf8a8a';
+        statusEl.textContent = 'Could not find "' + commanderName + '" on Scryfall. Check the spelling.';
+      });
+    });
+
+    saveBtn.addEventListener('click', function () {
+      if (!resolvedDeck) return;
+      close();
+      if (typeof onSave === 'function') onSave(resolvedDeck);
+    });
+
+    // Auto-focus first input
+    setTimeout(function () {
+      var inp = panel.querySelector('#tq-imp-cmd');
+      if (inp) inp.focus();
+    }, 100);
+  };
+
 })();

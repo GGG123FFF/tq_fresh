@@ -4976,7 +4976,7 @@ var INITIAL_DECKS = [{
   theme: "Gruul +1/+1 Counters"
 }, {
   id: 2,
-  commander: "Pantlazar",
+  commander: "Pantlaza, Sun-Favored",
   colors: ["W", "R", "G"],
   theme: "Naya Dinosaur Tribal"
 }, {
@@ -4991,19 +4991,19 @@ var INITIAL_DECKS = [{
   theme: "Mono-Black Zombie Aristocrats"
 }, {
   id: 5,
-  commander: "Brenard, Ginger Sculptor",
-  colors: ["W", "U", "G"],
-  theme: "Bant Food Golem Tokens"
-}, {
-  id: 6,
   commander: "Adeliz, the Cinder Wind",
   colors: ["U", "R"],
   theme: "Izzet Wizard Spellslinger"
 }, {
-  id: 7,
+  id: 6,
   commander: "Kastral, the Windcrested",
   colors: ["W", "U"],
   theme: "Azorius Bird Tribal"
+}, {
+  id: 7,
+  commander: "Slimefoot and Squee",
+  colors: ["B", "R", "G"],
+  theme: "Jund Aristocrats / Reanimator"
 }, {
   id: 8,
   commander: "Sauron, the Dark Lord",
@@ -5016,34 +5016,29 @@ var INITIAL_DECKS = [{
   theme: "Esper Artifacts"
 }, {
   id: 10,
-  commander: "Slimefoot and Squee",
-  colors: ["B", "R", "G"],
-  theme: "Jund Aristocrats/Reanimator"
+  commander: "Saheeli, the Gifted",
+  colors: ["U", "R"],
+  theme: "Izzet Artifact Copies"
 }, {
   id: 11,
-  commander: "Ulalek, Fused Atrocity",
-  colors: ["W", "U", "B", "R", "G"],
-  theme: "Five-Color Eldrazi"
-}, {
-  id: 12,
   commander: "Krenko, Mob Boss",
   colors: ["R"],
   theme: "Mono-Red Goblins"
 }, {
-  id: 13,
-  commander: "Dina, Soul Steeper",
+  id: 12,
+  commander: "Dina, Essence Brewer",
   colors: ["B", "G"],
-  theme: "Golgari Aristocrats"
+  theme: "Golgari Aristocrats / Lifegain"
+}, {
+  id: 13,
+  commander: "Quintorius, History Chaser",
+  colors: ["R", "W"],
+  theme: "Boros Graveyard / Spirits"
 }, {
   id: 14,
-  commander: "Quintorius, History Chaser",
-  colors: ["W", "R"],
-  theme: "Boros Lorehold"
-}, {
-  id: 15,
-  commander: "Saruman of Many Colors",
-  colors: ["W", "U", "R"],
-  theme: "Jeskai Spellslinger"
+  commander: "Zinnia, Valley's Voice",
+  colors: ["U", "R", "W"],
+  theme: "Jeskai Offspring / Tokens"
 }];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -5107,10 +5102,24 @@ function VaultColorBar(_ref20) {
 // ─── Main App ─────────────────────────────────────────────────────────────────
 function CommanderVault() {
   // Load from localStorage, fall back to INITIAL_DECKS
+  // Migration: if old vault data exists without v2 marker, offer to refresh
   var _useState13 = useState(function () {
       try {
         var saved = localStorage.getItem('tq_vault_decks');
-        return saved ? JSON.parse(saved) : INITIAL_DECKS;
+        var version = localStorage.getItem('tq_vault_version');
+        if (saved && version === 'v2') return JSON.parse(saved);
+        if (saved && version !== 'v2') {
+          // Preserve user-added decks (id > 100 or commander not in initial set)
+          var initialNames = INITIAL_DECKS.map(function (d) { return d.commander.toLowerCase(); });
+          var oldDecks = JSON.parse(saved);
+          var userAdditions = oldDecks.filter(function (d) {
+            return d.commander && initialNames.indexOf(d.commander.toLowerCase()) === -1;
+          });
+          localStorage.setItem('tq_vault_version', 'v2');
+          return INITIAL_DECKS.concat(userAdditions);
+        }
+        localStorage.setItem('tq_vault_version', 'v2');
+        return INITIAL_DECKS;
       } catch (_unused15) {
         return INITIAL_DECKS;
       }
@@ -5443,7 +5452,37 @@ function CommanderVault() {
       cursor: "pointer",
       whiteSpace: "nowrap"
     }
-  }, "\u2B07 Export"), /*#__PURE__*/React.createElement("select", {
+  }, "\u2B07 Export"), /*#__PURE__*/React.createElement("button", {
+    onClick: function onClick() {
+      if (window.TQ && typeof window.TQ.openDeckImport === 'function') {
+        window.TQ.openDeckImport(function (deck) {
+          setDecks(function (prev) {
+            return [].concat(_toConsumableArray(prev), [{
+              id: nextId(prev),
+              commander: deck.commander,
+              colors: deck.colors,
+              theme: deck.theme || '',
+              cards: deck.cards || []
+            }]);
+          });
+          if (window.TQ && window.TQ.toast) window.TQ.toast('Added "' + deck.commander + '" to your vault');
+        });
+      }
+    },
+    title: "Import deck",
+    style: {
+      padding: "10px 14px",
+      borderRadius: 8,
+      background: SURFACE,
+      border: "1px solid ".concat(ACCENT, "66"),
+      color: ACCENT,
+      fontFamily: "inherit",
+      fontSize: 13,
+      fontWeight: 600,
+      cursor: "pointer",
+      whiteSpace: "nowrap"
+    }
+  }, "\u2B06 Import"), /*#__PURE__*/React.createElement("select", {
     value: sortMode,
     onChange: function onChange(e) { setSortMode(e.target.value); },
     title: "Sort decks",
