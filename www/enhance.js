@@ -1841,8 +1841,9 @@
     panel.innerHTML =
       '<div style="font-family:\'Cinzel\',serif;color:#d4b87a;font-size:12px;letter-spacing:0.22em;text-transform:uppercase;margin-bottom:10px;text-align:center">Import Deck</div>' +
       '<div id="tq-import-tabs" style="display:flex;gap:4px;margin-bottom:12px">' +
-        '<button data-tab="quick" class="tq-imp-tab" style="flex:1;padding:8px;background:rgba(201,169,97,0.18);color:#d4b87a;border:1px solid rgba(201,169,97,0.45);border-radius:3px;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:0.15em;cursor:pointer">QUICK</button>' +
-        '<button data-tab="full" class="tq-imp-tab" style="flex:1;padding:8px;background:transparent;color:#9a8765;border:1px solid rgba(154,135,101,0.3);border-radius:3px;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:0.15em;cursor:pointer">FULL LIST</button>' +
+        '<button data-tab="quick" class="tq-imp-tab" style="flex:1;padding:8px;background:rgba(201,169,97,0.18);color:#d4b87a;border:1px solid rgba(201,169,97,0.45);border-radius:3px;font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:0.12em;cursor:pointer">QUICK</button>' +
+        '<button data-tab="full" class="tq-imp-tab" style="flex:1;padding:8px;background:transparent;color:#9a8765;border:1px solid rgba(154,135,101,0.3);border-radius:3px;font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:0.12em;cursor:pointer">FULL LIST</button>' +
+        '<button data-tab="bulk" class="tq-imp-tab" style="flex:1;padding:8px;background:transparent;color:#9a8765;border:1px solid rgba(154,135,101,0.3);border-radius:3px;font-family:\'Cinzel\',serif;font-size:10px;letter-spacing:0.12em;cursor:pointer">BULK</button>' +
       '</div>' +
       '<div id="tq-imp-quick">' +
         '<label style="display:block;font-size:11px;color:#9a8765;letter-spacing:0.15em;text-transform:uppercase;font-family:\'Cinzel\',serif;margin-bottom:6px">Commander name</label>' +
@@ -1855,8 +1856,13 @@
         '<textarea id="tq-imp-list" rows="10" placeholder="// Commander: Atraxa, Praetors&#39; Voice\n// Theme: Superfriends\n1 Sol Ring\n1 Arcane Signet\n1 Doubling Season\n..." style="width:100%;padding:10px 12px;background:rgba(20,14,8,0.7);border:1px solid rgba(201,169,97,0.3);border-radius:3px;color:#e8dcc4;font-family:\'JetBrains Mono\',monospace;font-size:12px;line-height:1.4;outline:none;box-sizing:border-box;resize:vertical"></textarea>' +
         '<div style="font-size:10px;color:#6a5a42;margin-top:6px;font-style:italic;line-height:1.5">Supports Moxfield, MTGGoldfish, Arena and TappedOut formats. Commander is auto-detected from <code style="color:#9a8765">*CMDR*</code> markers, <code style="color:#9a8765">// Commander: Name</code>, or a single-card Sideboard section.</div>' +
       '</div>' +
+      '<div id="tq-imp-bulk" style="display:none">' +
+        '<label style="display:block;font-size:11px;color:#9a8765;letter-spacing:0.15em;text-transform:uppercase;font-family:\'Cinzel\',serif;margin-bottom:6px">Commander names — one per line</label>' +
+        '<textarea id="tq-imp-bulk-list" rows="10" placeholder="Atraxa, Praetors&#39; Voice\nKrenko, Mob Boss\nGhoulcaller Gisa\nSauron, the Dark Lord\nDina, Essence Brewer" style="width:100%;padding:10px 12px;background:rgba(20,14,8,0.7);border:1px solid rgba(201,169,97,0.3);border-radius:3px;color:#e8dcc4;font-family:\'JetBrains Mono\',monospace;font-size:12px;line-height:1.5;outline:none;box-sizing:border-box;resize:vertical"></textarea>' +
+        '<div style="font-size:10px;color:#6a5a42;margin-top:6px;font-style:italic;line-height:1.5">Just commanders, one per line. Each will be looked up on Scryfall and added with its real colour identity. Lines starting with <code style="color:#9a8765">//</code> are ignored. You can add a theme after a comma with <code style="color:#9a8765">|</code>, e.g. <code style="color:#9a8765">Atraxa, Praetors\' Voice | Superfriends</code></div>' +
+      '</div>' +
       '<div id="tq-imp-status" style="margin-top:12px;font-size:12px;color:#9a8765;font-style:italic;min-height:18px"></div>' +
-      '<div id="tq-imp-preview" style="margin-top:8px;display:none;padding:10px;background:rgba(20,14,8,0.5);border:1px solid rgba(154,135,101,0.25);border-radius:3px"></div>' +
+      '<div id="tq-imp-preview" style="margin-top:8px;display:none;padding:10px;background:rgba(20,14,8,0.5);border:1px solid rgba(154,135,101,0.25);border-radius:3px;max-height:200px;overflow-y:auto"></div>' +
       '<div style="display:flex;gap:8px;margin-top:14px">' +
         '<button id="tq-imp-cancel" style="flex:1;padding:10px;background:transparent;color:#9a8765;border:1px solid rgba(154,135,101,0.3);border-radius:3px;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:0.18em;cursor:pointer">CANCEL</button>' +
         '<button id="tq-imp-fetch" style="flex:1;padding:10px;background:rgba(201,169,97,0.15);color:#d4b87a;border:1px solid rgba(201,169,97,0.45);border-radius:3px;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:0.18em;cursor:pointer">LOOK UP</button>' +
@@ -1871,11 +1877,18 @@
     var tabs = panel.querySelectorAll('.tq-imp-tab');
     var quickEl = panel.querySelector('#tq-imp-quick');
     var fullEl = panel.querySelector('#tq-imp-full');
+    var bulkEl = panel.querySelector('#tq-imp-bulk');
     var statusEl = panel.querySelector('#tq-imp-status');
     var previewEl = panel.querySelector('#tq-imp-preview');
     var saveBtn = panel.querySelector('#tq-imp-save');
     var fetchBtn = panel.querySelector('#tq-imp-fetch');
-    var resolvedDeck = null;
+    var resolvedDecks = []; // array — bulk may have many, quick/full just one
+
+    function currentTab() {
+      if (bulkEl.style.display !== 'none') return 'bulk';
+      if (fullEl.style.display !== 'none') return 'full';
+      return 'quick';
+    }
 
     tabs.forEach(function (t) {
       t.addEventListener('click', function () {
@@ -1888,23 +1901,120 @@
         });
         quickEl.style.display = which === 'quick' ? 'block' : 'none';
         fullEl.style.display = which === 'full' ? 'block' : 'none';
+        bulkEl.style.display = which === 'bulk' ? 'block' : 'none';
         statusEl.textContent = '';
         previewEl.style.display = 'none';
-        resolvedDeck = null;
+        previewEl.innerHTML = '';
+        resolvedDecks = [];
         saveBtn.disabled = true; saveBtn.style.opacity = '0.5';
+        saveBtn.textContent = 'SAVE';
       });
     });
 
     panel.querySelector('#tq-imp-cancel').addEventListener('click', close);
     modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
 
-    fetchBtn.addEventListener('click', function () {
-      var isFull = fullEl.style.display !== 'none';
-      var commanderName, theme, cards;
+    // Parse a bulk-list textarea into [{ name, theme }]
+    function parseBulkList(text) {
+      var out = [];
+      (text || '').replace(/\r\n/g, '\n').split('\n').forEach(function (raw) {
+        var line = raw.trim();
+        if (!line) return;
+        if (line.indexOf('//') === 0 || line.indexOf('#') === 0) return;
+        // Allow "Name | Theme"
+        var pipe = line.indexOf('|');
+        if (pipe !== -1) {
+          var n = line.slice(0, pipe).trim();
+          var th = line.slice(pipe + 1).trim();
+          if (n) out.push({ name: n, theme: th || null });
+        } else {
+          out.push({ name: line, theme: null });
+        }
+      });
+      return out;
+    }
 
-      if (isFull) {
-        var raw = panel.querySelector('#tq-imp-list').value;
-        var parsed = window.TQ.parseDeckList(raw);
+    function renderPipsHtml(colours) {
+      return (colours.length ? colours : ['C']).map(function (c) {
+        return '<img src="https://svgs.scryfall.io/card-symbols/' + c + '.svg" alt="{' + c + '}" style="width:14px;height:14px;vertical-align:-3px;margin:0 1px;border-radius:50%">';
+      }).join('');
+    }
+
+    fetchBtn.addEventListener('click', function () {
+      var tab = currentTab();
+      previewEl.style.display = 'none';
+      previewEl.innerHTML = '';
+      saveBtn.disabled = true; saveBtn.style.opacity = '0.5';
+      resolvedDecks = [];
+
+      if (tab === 'bulk') {
+        var raw = panel.querySelector('#tq-imp-bulk-list').value;
+        var lines = parseBulkList(raw);
+        if (!lines.length) {
+          statusEl.style.color = '#cf8a8a';
+          statusEl.textContent = 'Paste one commander per line.';
+          return;
+        }
+        statusEl.style.color = '#9a8765';
+        statusEl.textContent = 'Looking up ' + lines.length + ' commander(s) on Scryfall…';
+        previewEl.style.display = 'block';
+        previewEl.innerHTML = '';
+        fetchBtn.disabled = true; fetchBtn.style.opacity = '0.5';
+
+        var results = []; // { name, status: 'ok'|'fail', info?, theme }
+        var idx = 0;
+        function next() {
+          if (idx >= lines.length) {
+            // Done — render preview + enable save if any succeeded
+            var okCount = results.filter(function (r) { return r.status === 'ok'; }).length;
+            var failCount = results.length - okCount;
+            statusEl.style.color = okCount ? '#a0c87a' : '#cf8a8a';
+            statusEl.textContent = 'Found ' + okCount + ' / ' + results.length + (failCount ? ' (' + failCount + ' not found)' : '');
+            previewEl.innerHTML = results.map(function (r) {
+              if (r.status === 'ok') {
+                return '<div style="padding:4px 0;border-bottom:1px solid rgba(154,135,101,0.15);font-size:12px">' +
+                  '<span style="color:#d4b87a;font-weight:600">' + escapeHtml2(r.info.name) + '</span>' +
+                  ' <span style="margin-left:6px">' + renderPipsHtml(r.info.colorIdentity) + '</span>' +
+                  (r.theme ? ' <span style="color:#9a8765;font-size:11px;font-style:italic;margin-left:6px">' + escapeHtml2(r.theme) + '</span>' : '') +
+                '</div>';
+              }
+              return '<div style="padding:4px 0;border-bottom:1px solid rgba(154,135,101,0.15);font-size:12px;color:#cf8a8a">✗ ' + escapeHtml2(r.name) + ' — not found</div>';
+            }).join('');
+            resolvedDecks = results.filter(function (r) { return r.status === 'ok'; }).map(function (r) {
+              return {
+                commander: r.info.name,
+                colors: r.info.colorIdentity,
+                theme: r.theme || '',
+                cards: []
+              };
+            });
+            if (resolvedDecks.length) {
+              saveBtn.disabled = false; saveBtn.style.opacity = '1';
+              saveBtn.textContent = 'SAVE ' + resolvedDecks.length;
+            }
+            fetchBtn.disabled = false; fetchBtn.style.opacity = '1';
+            return;
+          }
+          var item = lines[idx++];
+          statusEl.textContent = 'Looking up ' + idx + ' / ' + lines.length + ': ' + item.name;
+          window.TQ.lookupCommander(item.name).then(function (info) {
+            results.push({ name: item.name, status: 'ok', info: info, theme: item.theme });
+          }).catch(function () {
+            results.push({ name: item.name, status: 'fail', theme: item.theme });
+          }).then(function () {
+            // Gentle throttle — Scryfall asks for ~10 requests/sec max
+            setTimeout(next, 110);
+          });
+        }
+        next();
+        return;
+      }
+
+      // quick / full — same as before, but writes into resolvedDecks
+      var commanderName, theme, cards;
+      if (tab === 'full') {
+        var rawFull = panel.querySelector('#tq-imp-list').value;
+        var parsed = window.TQ.parseDeckList(rawFull);
         if (!parsed || !parsed.commander) {
           statusEl.style.color = '#cf8a8a';
           statusEl.textContent = 'Could not find a commander in the list. Add "// Commander: Name" at the top.';
@@ -1926,8 +2036,6 @@
 
       statusEl.style.color = '#9a8765';
       statusEl.textContent = 'Looking up "' + commanderName + '" on Scryfall…';
-      previewEl.style.display = 'none';
-      saveBtn.disabled = true; saveBtn.style.opacity = '0.5';
 
       window.TQ.lookupCommander(commanderName).then(function (info) {
         if (!info.canBeCommander) {
@@ -1937,34 +2045,36 @@
           statusEl.style.color = '#a0c87a';
           statusEl.textContent = 'Found: ' + info.name;
         }
-        var pipsHtml = (info.colorIdentity.length ? info.colorIdentity : ['C']).map(function (c) {
-          return '<img src="https://svgs.scryfall.io/card-symbols/' + c + '.svg" alt="{' + c + '}" style="width:16px;height:16px;vertical-align:-3px;margin:0 2px;border-radius:50%">';
-        }).join('');
         var themeText = theme ? '<div style="font-size:11px;color:#9a8765;font-style:italic;margin-top:4px">' + escapeHtml2(theme) + '</div>' : '';
         var cardsText = cards.length ? '<div style="font-size:11px;color:#9a8765;margin-top:4px">' + cards.length + ' cards in list</div>' : '';
         previewEl.innerHTML =
           '<div style="font-family:\'Cinzel\',serif;color:#d4b87a;font-size:13px;letter-spacing:0.1em">' + escapeHtml2(info.name) + '</div>' +
-          '<div style="margin-top:6px">' + pipsHtml + '</div>' +
+          '<div style="margin-top:6px">' + renderPipsHtml(info.colorIdentity) + '</div>' +
           themeText + cardsText +
           '<div style="font-size:10px;color:#6a5a42;margin-top:6px;font-style:italic">' + escapeHtml2(info.type_line) + '</div>';
         previewEl.style.display = 'block';
-        resolvedDeck = {
+        resolvedDecks = [{
           commander: info.name,
           colors: info.colorIdentity,
           theme: theme || '',
           cards: cards
-        };
+        }];
         saveBtn.disabled = false; saveBtn.style.opacity = '1';
-      }).catch(function (err) {
+        saveBtn.textContent = 'SAVE';
+      }).catch(function () {
         statusEl.style.color = '#cf8a8a';
         statusEl.textContent = 'Could not find "' + commanderName + '" on Scryfall. Check the spelling.';
       });
     });
 
     saveBtn.addEventListener('click', function () {
-      if (!resolvedDeck) return;
+      if (!resolvedDecks.length) return;
       close();
-      if (typeof onSave === 'function') onSave(resolvedDeck);
+      if (typeof onSave === 'function') {
+        // For backward compat: if only one, pass single; else pass array
+        if (resolvedDecks.length === 1) onSave(resolvedDecks[0]);
+        else onSave(resolvedDecks);
+      }
     });
 
     // Auto-focus first input

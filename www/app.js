@@ -5455,17 +5455,25 @@ function CommanderVault() {
   }, "\u2B07 Export"), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       if (window.TQ && typeof window.TQ.openDeckImport === 'function') {
-        window.TQ.openDeckImport(function (deck) {
+        window.TQ.openDeckImport(function (result) {
+          var list = Array.isArray(result) ? result : [result];
           setDecks(function (prev) {
-            return [].concat(_toConsumableArray(prev), [{
-              id: nextId(prev),
-              commander: deck.commander,
-              colors: deck.colors,
-              theme: deck.theme || '',
-              cards: deck.cards || []
-            }]);
+            var startId = nextId(prev);
+            var newDecks = list.map(function (deck, i) {
+              return {
+                id: startId + i,
+                commander: deck.commander,
+                colors: deck.colors,
+                theme: deck.theme || '',
+                cards: deck.cards || []
+              };
+            });
+            return [].concat(_toConsumableArray(prev), newDecks);
           });
-          if (window.TQ && window.TQ.toast) window.TQ.toast('Added "' + deck.commander + '" to your vault');
+          if (window.TQ && window.TQ.toast) {
+            if (list.length === 1) window.TQ.toast('Added "' + list[0].commander + '" to your vault');
+            else window.TQ.toast('Added ' + list.length + ' decks to your vault');
+          }
         });
       }
     },
