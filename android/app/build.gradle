@@ -18,13 +18,13 @@ android {
         }
     }
 
-    defaultConfig {
+       defaultConfig {
         applicationId "com.sodiumfabrications.tokenqueen"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // CI passes the run number so each build is a real version bump.
-        versionCode (System.getenv("TQ_VERSION_CODE") ?: "1").toInteger()
-        versionName (System.getenv("TQ_VERSION_NAME") ?: "1.0")
+        versionCode = (System.getenv("TQ_VERSION_CODE") ?: "1").toInteger()
+        versionName = System.getenv("TQ_VERSION_NAME") ?: "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
