@@ -10,13 +10,22 @@ execSync("npx tailwindcss -i tailwind.src.css -o www/tailwind.css --minify", {
   stdio: "inherit"
 });
 
-// 2. Verify required artefacts
+// 2. Bundle the simulator from real source in src/
+console.log("Bundling src/ modules...");
+execSync("npx esbuild src/main.js --bundle --format=iife --target=es2017 --outfile=www/modules.js --log-level=warning", {
+  cwd: root,
+  stdio: "inherit"
+});
+
+// 3. Verify required artefacts
 const required = [
   "index.html",
   "app.js",
   "tailwind.css",
   "vendor/react.production.min.js",
-  "vendor/react-dom.production.min.js"
+  "vendor/react-dom.production.min.js",
+  "modules.js",
+  "enhance.js"
 ];
 let ok = true;
 for (const f of required) {
@@ -29,7 +38,7 @@ for (const f of required) {
   }
 }
 
-// 3. Verify image assets directory (used for counter + memory fallbacks)
+// 4. Verify image assets directory (used for counter + memory fallbacks)
 const imgDir = path.join(www, "img");
 if (fs.existsSync(imgDir)) {
   const allFiles = [];

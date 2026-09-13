@@ -20,6 +20,7 @@ vc.on('jsdomError', e => errors.push(String(e.stack || e.message || e)));
   const reactDomJs = fs.readFileSync(path.join(WWW, 'vendor', 'react-dom.production.min.js'), 'utf-8');
   const enhanceJs = fs.readFileSync(path.join(WWW, 'enhance.js'), 'utf-8');
   const appJs = fs.readFileSync(path.join(WWW, 'app.js'), 'utf-8');
+  const modulesJs = fs.readFileSync(path.join(WWW, 'modules.js'), 'utf-8');
   const indexHtml = fs.readFileSync(path.join(WWW, 'index.html'), 'utf-8');
 
   const dom = new JSDOM('<!DOCTYPE html><html><head></head><body><div id="root"></div></body></html>', {
@@ -45,8 +46,24 @@ vc.on('jsdomError', e => errors.push(String(e.stack || e.message || e)));
   runIn('react-dom', reactDomJs);
   runIn('enhance', enhanceJs);
   runIn('app', appJs);
+  runIn('modules', modulesJs);
 
   await new Promise(r => setTimeout(r, 1000));
+
+  // Render the extracted Vault on its own, so the migration out of app.js is
+  // actually covered rather than merely bundling.
+  let vaultRendered = false;
+  let vaultError = '';
+  try {
+    const host = w.document.createElement('div');
+    w.document.body.appendChild(host);
+    w.TQ.mountVault(host);
+    await new Promise(r => setTimeout(r, 400));
+    vaultRendered = host.children.length > 0 && host.textContent.trim().length > 0;
+    if (!vaultRendered) vaultError = 'mounted but rendered nothing';
+  } catch (e) {
+    vaultError = e.message;
+  }
 
   const doc = w.document;
   const root = doc.getElementById('root');
@@ -69,6 +86,39 @@ vc.on('jsdomError', e => errors.push(String(e.stack || e.message || e)));
     {
       name: 'window.ReactDOM global available',
       ok: typeof w.ReactDOM !== 'undefined'
+    },
+    {
+      name: 'Vault-to-simulator bridge wired',
+      ok: !!w.TQ && typeof w.TQ.runOddsFor === 'function' && typeof w.TQ.setTab === 'function'
+    },
+    {
+      name: 'Vault mount point registered',
+      ok: !!w.TQ && typeof w.TQ.mountVault === 'function'
+    },
+    {
+      name: 'Vault renders from src/vault/ (not app.js)',
+      ok: vaultRendered,
+      detail: vaultError
+    },
+    {
+      name: 'Vault fully removed from app.js',
+      ok: !appJs.includes('function CommanderVault(') && appJs.includes('window.TQ.mountVault(el)')
+    },
+    {
+      name: 'Sanctum tap counter uses a ref, not stale state',
+      ok: appJs.includes('titleTapRef.current + 1') && !appJs.includes('var next = titleTapCount + 1')
+    },
+    {
+      name: 'Simulator mount point registered',
+      ok: !!w.TQ && typeof w.TQ.mountSimulator === 'function'
+    },
+    {
+      name: 'Odds tab wired into the bottom nav',
+      ok: appJs.includes("id: 'odds'") && appJs.includes('window.TQ.mountSimulator(el)')
+    },
+    {
+      name: 'modules.js loaded after app.js in index.html',
+      ok: indexHtml.indexOf('modules.js') > indexHtml.indexOf('app.js')
     },
     {
       name: 'window.TQ exposed by enhance.js',
