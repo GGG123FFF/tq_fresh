@@ -3,12 +3,28 @@ apply plugin: 'com.android.application'
 android {
     namespace = "com.sodiumfabrications.tokenqueen"
     compileSdk = rootProject.ext.compileSdkVersion
+
+    // A fixed signing key, so every build signs identically and a new APK
+    // installs OVER the old one instead of demanding an uninstall. Uninstalling
+    // wipes the WebView's localStorage, which is where every deck, life total,
+    // pet and setting lives. Gradle's auto-generated debug keystore is created
+    // per machine, so CI was producing a differently-signed APK every run.
+    signingConfigs {
+        tokenqueen {
+            storeFile file("tokenqueen-debug.keystore")
+            storePassword "tokenqueen"
+            keyAlias "tokenqueen"
+            keyPassword "tokenqueen"
+        }
+    }
+
     defaultConfig {
         applicationId "com.sodiumfabrications.tokenqueen"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // CI passes the run number so each build is a real version bump.
+        versionCode (System.getenv("TQ_VERSION_CODE") ?: "1").toInteger()
+        versionName (System.getenv("TQ_VERSION_NAME") ?: "1.0")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -17,8 +33,12 @@ android {
         }
     }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.tokenqueen
+        }
         release {
             minifyEnabled false
+            signingConfig signingConfigs.tokenqueen
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
