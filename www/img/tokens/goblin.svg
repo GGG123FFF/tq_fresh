@@ -26,13 +26,29 @@
     <line x1="120" y1="100" x2="380" y2="100" stroke="#d97757" stroke-width="0.8" opacity="0.5"/>
     <text x="250" y="650" text-anchor="middle" font-family="Cinzel, serif" font-size="14" fill="#9a8765" letter-spacing="3" opacity="0.8">1/1 RED</text>
   
-  <g transform="translate(250 360)" fill="#d97757">
-      <ellipse cx="0" cy="-30" rx="50" ry="60"/>
-      <polygon points="-40,-90 -50,-60 -30,-70" fill="#a0432c"/>
-      <polygon points="40,-90 50,-60 30,-70" fill="#a0432c"/>
-      <circle cx="-15" cy="-30" r="4" fill="#1a0a05"/>
-      <circle cx="15" cy="-30" r="4" fill="#1a0a05"/>
-      <path d="M -20 0 Q 0 15 20 0" stroke="#1a0a05" stroke-width="2" fill="none"/>
-      <rect x="-30" y="20" width="60" height="40" fill="#7a3020"/>
+  <g transform="translate(250 372)">
+    <circle r="168" fill="none" stroke="#d97757" stroke-width="1" opacity="0.22"/>
+    <circle r="152" fill="none" stroke="#d97757" stroke-width="2.5" opacity="0.5"/>
+    <circle r="144" fill="#4a1a10" opacity="0.35"/>
+    <g stroke="#d97757" stroke-width="1" opacity="0.3">
+      <line x1="-152" y1="0" x2="-168" y2="0"/><line x1="152" y1="0" x2="168" y2="0"/>
+      <line x1="0" y1="-152" x2="0" y2="-168"/><line x1="0" y1="152" x2="0" y2="168"/>
     </g>
+    
+      <g fill="#c0603c" stroke="#2a0d06" stroke-width="2.5" stroke-linejoin="round">
+        <path d="M-40,86 L-30,26 C-44,16 -44,-6 -28,-12 L36,-12
+                 C52,-6 52,16 38,26 L46,86 L22,86 L16,44 L-14,44 L-18,86 Z"/>
+        <path d="M-28,-16 L-16,-30 L28,-30 L38,-16 Z"/>
+        <ellipse cx="6" cy="-56" rx="34" ry="30"/>
+        <path d="M-28,-58 C-62,-76 -84,-70 -88,-54 C-68,-48 -48,-48 -30,-46 Z"/>
+        <path d="M40,-58 C74,-76 96,-70 100,-54 C80,-48 60,-48 42,-46 Z"/>
+      </g>
+      <g fill="#1a0603"><ellipse cx="-6" cy="-60" rx="6" ry="7"/><ellipse cx="18" cy="-60" rx="6" ry="7"/></g>
+      <path d="M-10,-40 L-4,-32 L4,-40 L12,-32 L20,-40" stroke="#ffe0a8" stroke-width="3.5"
+            fill="none" stroke-linecap="round"/>
+      <g stroke="#8a4a20" stroke-width="9" stroke-linecap="round">
+        <line x1="44" y1="10" x2="86" y2="-46"/>
+      </g>
+      <path d="M86,-46 L124,-70 L130,-40 L96,-26 Z" fill="#e8c98a" stroke="#2a0d06" stroke-width="2.5"/>
+  </g>
 </svg>

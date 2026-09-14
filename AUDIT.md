@@ -104,11 +104,25 @@ updater twice.
 The `window.TQ.openSealRiddle` path the door calls does exist in `enhance.js`,
 so the fallback branch in `app.js` was never the problem.
 
-## 5. One commit, no history
+## 5. Correction: the history is fine
 
-`26c52fe "Add files via upload"` is the entire log. Nothing to bisect when
-something breaks, no record of why anything is the way it is. Not fixable
-retroactively — just worth committing in real increments from here.
+An earlier draft of this audit said the repo had a single commit and no
+history. That was wrong, and the mistake was mine: I cloned with `--depth 1`,
+so `git log` showed exactly one commit because that is all a shallow clone
+fetches. The repo has forty-odd commits.
+
+Two real notes stand in its place.
+
+The commit messages are all "Add files via upload", which is what GitHub's web
+uploader writes. That still makes a regression hard to trace — you can see
+*that* a file changed but never why. Worth writing a real message when the
+change is one you might need to understand later.
+
+And `token-queen-upload.zip` and `tq_fresh-v9.zip` were committed by accident,
+adding about 2.6 MB to the repository permanently — git keeps every version of
+a binary forever. Both are removed in this commit and `*.zip` is now ignored.
+Removing them from history entirely would need a rewrite, which is not worth
+it for 2.6 MB on a personal repo.
 
 ## 6. What's already good
 
@@ -195,6 +209,233 @@ commander shows, zero errors.
 Decks without a list show the button disabled with a tooltip pointing at Edit,
 rather than hiding it — the feature stays discoverable.
 
+## 10. The look — consolidating, not redesigning
+
+`app.js` held **118 distinct hex values across 615 literals**. But nine of them
+accounted for most of the usage: `#c9a961` alone appeared 178 times. The
+palette was already there — it just wasn't written down, so every new screen
+drifted a shade off the last one.
+
+The Vault had drifted furthest. It carried its own set: a cooler gold
+(`#c8a84b` against the app's `#c9a961`), lighter text (`#e8e4d8` against
+`#e8dcc4`), and — the one you'd actually feel — a **grey** muted tone
+(`#6b6870`) where the rest of the app uses a warm brown (`#9a8765`). That's
+the main reason it didn't read as one app.
+
+Now there are nine named colour tokens plus type and spacing, declared in
+`index.html` so there's no flash on launch, and mirrored in
+`src/theme/tokens.js`. 419 colour literals in `app.js` became tokens; the
+Vault and simulator both point at the same set. Canvas colours stay as raw hex
+in three places, because `ctx.fillStyle` can't resolve a CSS variable.
+
+**Type had no scale.** Five sizes — 7, 8, 9, 10 and 11px — all inside four
+pixels, which produces no hierarchy at all and is genuinely hard to read at
+arm's length in the light people play cards in. The 7px and 8px uses are gone;
+there's now a real scale from an 11px tracked label up to a 40px figure, with
+the numbers that matter during a game at the top of it.
+
+**Tap targets.** The Vault's deck-card action row sat at roughly 28px tall
+with five buttons side by side. Everything tappable now has a 44px minimum,
+set once as a global rule with the nav and chip strips exempted.
+
+**A regression I caused, fixed.** Adding the Odds tab took the bottom nav from
+five columns to six. At the old 0.22em tracking, "Reference" overflowed its
+column on a 375px phone. Tracking is down to 0.1em and the label is now
+"Rules", which is what that tab actually holds.
+
+Three smoke-test checks guard all of this, so the palette can't quietly drift
+again.
+
+## 11. The dragon
+
+Two problems, one of them a straightforward bug.
+
+**It never flapped.** The wing phase was
+
+```js
+Math.sin((d.flapT > 0 ? d.flapT : Date.now() / 120) * 0.5)
+```
+
+`flapT` is set to 6 on a tap and counts down to 0, so during a flap the phase
+ran `sin(3)` to `sin(0)` — a total travel of 0.14, which is nothing. Between
+flaps it switched to a completely different time base. The net effect was a
+wing that drifted slowly while gliding and then froze the instant you tapped:
+exactly backwards. There is now one continuous `wingPhase` advanced by the
+game loop, fast while a flap is live and slow between taps, and each tap
+starts it at the top of the downstroke so the beat lines up with your finger.
+
+**It was chubby because it was an ellipse.** The body was 16x12 with a single
+small wing drawn in the outline colour, which merged into the body and
+vanished. It's now 16x8 with a tapered chest, a spine ridge, a longer neck
+with a proper snout, swept-back horns, a tail that tapers to a spade, and two
+wings — a near one and a dimmed far one, which is most of what makes a
+silhouette read as a dragon rather than a bird.
+
+Each wing is now a fixed membrane shape **rotated about the shoulder** rather
+than a tip position interpolated between extremes. The interpolated version
+collapsed into a spike at the top and bottom of the stroke; rotation is how a
+wing actually moves, and it holds its shape through the whole beat.
+
+I rendered it off-device at several phases and at true in-game size before
+shipping it, rather than guessing.
+
+## 12. The Seal
+
+Seven taps on the title still opens the Sanctum, but the only feedback used to
+be a faint text-shadow at tap five. There was no sense of working a lock.
+
+`src/sanctum/seal.js` draws a sigil that fills as you tap: each tap traces
+another seventh of the outer ring and lights another rune, the rings spin
+faster from tap five, the keyhole at the centre widens, and the seventh tap
+flares and breaks it open. It fades out with the three-second tap streak, so a
+stray double-tap on the title never leaves it hanging on screen.
+
+Pure SVG, `pointer-events: none`, sits below the Sanctum's z-index so it
+doesn't touch that hierarchy. It respects `prefers-reduced-motion`.
+
+## 13. A load-order trap, found by accident
+
+Building a preview harness for the seal threw `Cannot destructure property
+'useState' of 'React'`. `src/vault/vault.js` was binding hooks at module scope,
+which made it silently dependent on `modules.js` loading after the React
+vendor script. True in `index.html` today; a trap for whoever reorders it.
+Hooks are now resolved at call time.
+
+## 14. The art
+
+**Mana pips.** R was a brown blob with squiggles and G a dark smear, because
+every glyph was drawn in a colour close to its own background. Real pips are
+spheres — lit from the upper left, darker at the lower right, with a
+high-contrast glyph. All six now have that shading, and R is a flame, G a
+tree, B a skull with a jaw, C a faceted gem. Each one was rendered and checked
+rather than guessed.
+
+**Token fallbacks.** These were the weakest thing in the app: the zombie was a
+rounded rectangle with two dots, the goblin an orange blob with a smiley face.
+Each was a handful of primitives floating in an otherwise empty 500x700 card.
+All twelve are now heraldic medallions — a bold silhouette inside an engraved
+ring, filling the art box, sharing one visual language.
+
+Worth being straight about the ceiling here: these only ever appear when the
+Scryfall fetch fails, and hand-drawn vector creatures will never match real
+card art. The job of a fallback is to look *deliberate* rather than broken,
+and the medallion framing does that where the old blobs didn't. The goblin and
+the wolf are still the weakest of the set.
+
+## 15. The pet
+
+Three things, in order of how much they mattered.
+
+**The frame.** The companion sat in a flat 2px box — the one thing in the app
+meant to feel owned, presented as a cropped image. It now has a gradient frame
+running from bright gold through the pet's own colour, an inset hairline and
+an interior vignette. The insets had to be folded into the glow animation's
+custom properties, because that animation owns `box-shadow` outright and would
+otherwise have wiped them on the first keyframe.
+
+**The nameplate.** The creature's name was a 7px label tucked into a corner of
+the art at 60% opacity. There's now a proper plate below the frame: a mood pip
+that shifts from the pet's own colour through gold to red as mood drops, the
+name in tracked Cinzel, and the mood value in mono on the right. The old
+separate corner dot is gone — it was duplicating what the pip now says.
+
+**The Hatchery.** The empty state was a dashed rectangle, an egg and two lines
+of text, and it's the first thing anyone sees in there. `src/pet/hatchery.js`
+draws a carved plinth under a runic arch, lit by a pool of light, with the
+same seven-part seal the Sanctum unlock uses — so the two secrets read as
+related rather than unconnected. The seven runes light as you unlock orbs, so
+the backdrop tracks your progress instead of sitting inert. It's generated as
+a data URI, which means no structural change to the compiled `app.js`.
+
+## 16. Card scanning
+
+`src/scan/` reads a card from a photo and resolves it against Scryfall.
+
+**OCR has to be native.** Tesseract in a WebView means shipping megabytes of
+wasm and waiting seconds a frame on a mid-range phone. ML Kit is on-device,
+free and fast. `src/scan/ocr.js` is an adapter that detects whichever
+Capacitor wrapper is installed at runtime — `@jcesarmobile/capacitor-ocr`,
+`@capacitor-community/image-to-text`, or the Pantrist ML Kit plugin — and
+normalises their three different result shapes into lines with bounding boxes.
+Until one is installed the scanner opens and explains itself rather than
+failing silently. The two packages are now in `package.json`; they need
+`npx cap sync android` to take effect.
+
+**The identification logic is where the work is**, and it's pure, so it's
+testable without a camera. Two paths:
+
+1. *Set code and collector number.* Modern cards print both bottom-left, and
+   the pair identifies an exact printing.
+2. *The card name.* Weighted by position — the name sits in the top eighth of
+   the card, which is a far stronger signal than anything about the text
+   itself — then fuzzy-matched with OCR-confusion variants generated for it.
+
+**A failure mode my own test caught.** The collector-number path originally
+returned at confidence 1.00 with no cross-check. Feeding it a plausible-but-
+wrong number returned *Vampire Interloper* for a photo of Grimgrin, at full
+confidence. Confidently wrong is much worse than no match, so the printing
+result is now checked against the name we read and discarded if they disagree.
+
+**Variant ordering mattered more than expected.** "Cralerhoof Behemolh"
+wouldn't resolve because the I/l/1 rule ran first and spent the whole variant
+budget on useless permutations before reaching t/l/i, which is the rule that
+actually fixes a blurred photo. Reordering by how often each rule rescues a
+name fixed it.
+
+Verified live against Scryfall: Grimgrin resolves from a misread name with a
+contradictory collector line, Sol Ring from "5ol Ring" with no geometry at
+all, Craterhoof Behemoth from "Cralerhoof Behemolh".
+
+Scanned cards accumulate into a list and land in the Vault's deck-list field,
+which the Odds tab already reads — so a deck can go from a pile of cards to a
+consistency score without typing anything. Every result is shown for
+confirmation first; silently adding the wrong card is worse than asking.
+
+## 17. Fanned-pile scanning
+
+Scanning a hundred cards one at a time is not a feature anyone would use
+twice. `identifyMany()` reads several cards from a single photo: fan the pile
+so each title bar shows, shoot once, and it clusters the OCR lines into
+per-card bands by vertical gap — a fanned pile is a stack of name-height bands
+separated by gaps, and the median line height sets the scale for what counts
+as a gap.
+
+It needs bounding boxes. Without geometry there's no way to tell two cards
+from two lines of the same card, so it returns one band and the caller falls
+back to single-card mode.
+
+Confident hits are added straight off; anything doubtful still gets shown for
+confirmation.
+
+**Variant ordering, again.** "Cultlvate" wouldn't resolve, and Scryfall's own
+fuzzy match refuses it too — one character out. Global substitution can't fix
+a single-character misread: replacing every t/l/i in "Cultlvate" gives
+"Cutttvate". Single-position swaps were the answer, but walking positions left
+to right spent the whole budget on the first three characters and never
+reached the one swap that works. Round-robin by rank — every position's most
+likely swap before any position's second — fixed it, at rank 9 of 12.
+
+Five fanned cards including two misreads: five out of five.
+
+## 18. Simulator: the mulligan
+
+The biggest source of the engine's optimism was that it kept on land count
+alone — seven lands and a six-drop was a keep, which it is in no real game. A
+hand now also needs something to do with the mana: at least one castable spell
+and at least one costing three or under. On six or fewer the bar drops to one
+castable card, because at that point you keep and hope.
+
+Tuning mattered. Requiring two castable spells put a well-built deck's keep
+rate at 67%, which is far too harsh — real Commander keep rates sit around
+80-85%. One castable plus one cheap spell lands Goreclaw at 84.3% and Grimgrin
+at 85.1%, which matches experience.
+
+**On the draw** is now a toggle rather than a buried parameter. At a
+four-player table you're on the draw three games in four, so the on-the-play
+figure is the optimistic one — and the gap is not small. Goreclaw scores 84.6
+on the play and 89.2 on the draw; its commander lands by turn four in 85% of
+games against 91%.
+
 ## What changed in this pass
 
 - `src/simulator/` — the simulator as real ES module source (engine, card
@@ -208,7 +449,17 @@ rather than hiding it — the feature stays discoverable.
 - `smoke-test.js` — three new checks covering the tab.
 - `package.json` — esbuild as a dev dependency.
 - Dead Android package removed.
-- `www/app.js` — Sanctum tap counter moved to a ref.
+- `www/app.js` — Sanctum tap counter moved to a ref; 419 colour literals and
+  the type floor moved onto tokens; six-tab nav fixed.
+- `src/theme/tokens.js` — 17 design tokens; 522 of 615 colour literals in
+  app.js now reference them (137 raw values left, nearly all single-use, plus
+  the canvas palette which must stay literal).
+- `src/sanctum/seal.js` — the unlock sigil.
+- `src/pet/hatchery.js` — the hatchery backdrop.
+- `src/scan/` — card scanning: OCR adapter, identification, scanner panel.
+- `gen-mana-svg.js`, `gen-svg-fallbacks.js` — pips and token art redrawn.
+- `www/app.js` — dragon renderer rewritten; wing beat driven from the loop.
+- `www/index.html` — tokens declared up front, global 44px tap minimum.
 - `android/app/build.gradle` — fixed signing key, `versionCode` from the
   environment.
 - `android/app/tokenqueen-debug.keystore` — new, committed on purpose.

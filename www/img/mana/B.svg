@@ -1,18 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="48" fill="#cfc7c0" stroke="#7a716a" stroke-width="3"/>
-  <circle cx="50" cy="50" r="44" fill="none" stroke="#7a716a" stroke-width="0.8" opacity="0.5"/>
-  <g transform="translate(50 50)" fill="#0a0506">
-      <!-- Skull shape -->
-      <ellipse cx="0" cy="-2" rx="20" ry="22"/>
-      <rect x="-12" y="14" width="24" height="14" rx="3"/>
-      <!-- Eye sockets -->
-      <ellipse cx="-7" cy="-4" rx="5" ry="6" fill="#cfc7c0"/>
-      <ellipse cx="7" cy="-4" rx="5" ry="6" fill="#cfc7c0"/>
-      <!-- Teeth gaps -->
-      <line x1="-6" y1="14" x2="-6" y2="28" stroke="#cfc7c0" stroke-width="1.5"/>
-      <line x1="0" y1="14" x2="0" y2="28" stroke="#cfc7c0" stroke-width="1.5"/>
-      <line x1="6" y1="14" x2="6" y2="28" stroke="#cfc7c0" stroke-width="1.5"/>
-      <!-- Nose -->
-      <polygon points="0,8 -3,14 3,14"/>
+  <circle cx="50" cy="50" r="48" fill="#cdc6bd" stroke="undefined" stroke-width="3"/>
+  <circle cx="50" cy="50" r="44" fill="none" stroke="undefined" stroke-width="0.8" opacity="0.5"/>
+  <g transform="translate(50 52)" fill="#13100e">
+      <path d="M0,-28 C-16,-28 -25,-17 -25,-4 C-25,5 -20,12 -14,15 L-14,22
+               C-14,25 -11,27 -8,27 L8,27 C11,27 14,25 14,22 L14,15
+               C20,12 25,5 25,-4 C25,-17 16,-28 0,-28 Z"/>
+      <ellipse cx="-9.5" cy="-6" rx="6.5" ry="7.5" fill="#cdc6bd"/>
+      <ellipse cx="9.5" cy="-6" rx="6.5" ry="7.5" fill="#cdc6bd"/>
+      <path d="M0,4 L-3.5,11 L3.5,11 Z" fill="#cdc6bd"/>
+      <g fill="#cdc6bd">
+        <rect x="-9" y="17" width="3.6" height="10" rx="1.2"/>
+        <rect x="-1.8" y="17" width="3.6" height="10" rx="1.2"/>
+        <rect x="5.4" y="17" width="3.6" height="10" rx="1.2"/>
+      </g>
     </g>
 </svg>

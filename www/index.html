@@ -16,6 +16,46 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   
   <style>
+    :root {
+      /* Design tokens - see src/theme/tokens.js for why these nine colours. */
+      --tq-bg: #05030a;
+      --tq-surface-deep: #0a0604;
+      --tq-surface: #1a110a;
+      --tq-surface-raised: #241809;
+      --tq-ink: #e8dcc4;
+      --tq-ink-dim: #9a8765;
+      --tq-ink-faint: #6a5a42;
+      --tq-gold: #c9a961;
+      --tq-gold-deep: #d4b87a;
+      --tq-gold-bright: #f5d98f;
+      --tq-danger: #d48a86;
+      --tq-info: #9fc7e6;  /* info blue, used across counters and hints */
+      --tq-ink-mid: #8a7555;  /* between dim and faint */
+      --tq-life: #b4d4a0;  /* life gain */
+      --tq-life-deep: #8fbc8f;  /* life gain, deeper */
+      --tq-ink-warm: #b09870;  /* raised label */
+      --tq-danger-soft: #e8947a;  /* damage, lighter */
+      --tq-danger-deep: #a0302c;  /* damage, deeper */
+      --tq-brass: #8a6f3a;  /* inactive metal */
+      --tq-edge: rgba(201, 169, 97, 0.22);
+      --tq-edge-strong: rgba(201, 169, 97, 0.45);
+      --tq-panel: rgba(201, 169, 97, 0.05);
+      --tq-label: 11px;
+      --tq-body-sm: 13px;
+      --tq-body: 15px;
+      --tq-figure-sm: 20px;
+      --tq-figure: 28px;
+      --tq-figure-lg: 40px;
+      --tq-display: 'Cinzel', serif;
+      --tq-text: 'Crimson Pro', serif;
+      --tq-mono: 'JetBrains Mono', monospace;
+      --tq-tap: 44px;
+    }
+    /* Nothing tappable smaller than a thumb. */
+    button, [role="button"] { min-height: var(--tq-tap); }
+    nav button, .tq-chip, .tq-pip-btn { min-height: 0; }
+  </style>
+  <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body { width: 100%; min-height: 100%; }
     body { font-family: 'Crimson Pro', serif; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #05030a; color: #e8dcc4; }

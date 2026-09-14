@@ -36,9 +36,10 @@ export async function simulate(text, opts = {}) {
 
   const { deck, commander } = buildDeck(canonEntries, commanders, data);
   const compiled = new CompiledDeck(deck, commander);
-  const results = opts.onProgress
-    ? await runChunked(deck, commander, { ...opts, deck: compiled })
-    : run(deck, commander, { ...opts, deck: compiled });
+  const runOpts = { ...opts, onPlay: !opts.on_draw };
+  const results = runOpts.onProgress
+    ? await runChunked(deck, commander, { ...runOpts, deck: compiled })
+    : run(deck, commander, { ...runOpts, deck: compiled });
 
   const s = summarise(opts.name || commanders[0] || 'Deck', deck, commander, results);
   s.totalCards = canonEntries.reduce((a, e) => a + e.qty, 0) + commanders.length;

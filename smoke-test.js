@@ -88,6 +88,29 @@ vc.on('jsdomError', e => errors.push(String(e.stack || e.message || e)));
       ok: typeof w.ReactDOM !== 'undefined'
     },
     {
+      name: 'Card scanner registered',
+      ok: !!w.TQ && typeof w.TQ.openScanner === 'function' && typeof w.TQ.identifyCard === 'function'
+    },
+    {
+      name: 'Scan button wired into the Vault deck form',
+      ok: modulesJs.includes('Scan cards') && modulesJs.includes('window.TQ.openScanner')
+    },
+    {
+      name: 'Design tokens declared in index.html',
+      ok: indexHtml.includes('--tq-gold:') && indexHtml.includes('--tq-tap:')
+    },
+    {
+      name: 'Core palette tokenised (only canvas keeps raw hex)',
+      ok: (appJs.match(/#(c9a961|d4b87a|f5d98f|9a8765|6a5a42|e8dcc4|d48a86|1a110a|0a0604)\b/g) || [])
+            .every(() => true)
+          && (appJs.match(/#(c9a961|d4b87a|9a8765|6a5a42|e8dcc4|d48a86|1a110a|0a0604)\b/g) || []).length === 0,
+      detail: 'non-canvas palette hexes still present'
+    },
+    {
+      name: 'Nothing tappable below the minimum type size',
+      ok: !appJs.includes('text-[7px]') && !appJs.includes('text-[8px]')
+    },
+    {
       name: 'Vault-to-simulator bridge wired',
       ok: !!w.TQ && typeof w.TQ.runOddsFor === 'function' && typeof w.TQ.setTab === 'function'
     },

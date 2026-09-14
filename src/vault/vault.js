@@ -11,8 +11,12 @@
  */
 import { _objectSpread, _toConsumableArray } from './helpers.js';
 
+// Resolved at call time, not import time. Binding the hooks at module scope
+// made the Vault silently dependent on modules.js loading after the React
+// vendor script - true today, but a trap for whoever reorders index.html.
 const React = window.React;
-const { useState, useEffect } = React;
+const useState = (...a) => window.React.useState(...a);
+const useEffect = (...a) => window.React.useEffect(...a);
 
 var COLORS = {
   W: {
@@ -519,13 +523,17 @@ function CommanderVault() {
   if (sortMode && sortMode !== 'manual' && window.TQ && window.TQ.sortDecks) {
     filtered = window.TQ.sortDecks(filtered, sortMode);
   }
-  var BG = "#0d0d0f";
-  var SURFACE = "#141418";
-  var SURFACE2 = "#1c1c22";
-  var ACCENT = "#c8a84b";
+  // The Vault used to carry its own palette - a cooler gold (#c8a84b) and a
+  // grey muted (#6b6870) against the warm brown everything else uses. That
+  // drift is why it read as a different app. Now it takes the shared tokens.
+  var BG = "var(--tq-bg)";
+  var SURFACE = "var(--tq-surface)";
+  var SURFACE2 = "var(--tq-surface-raised)";
+  var ACCENT = "var(--tq-gold)";
   var ACCENT2 = "#7b5ea7";
-  var TEXT = "#e8e4d8";
-  var MUTED = "#6b6870";
+  var ACCENT_EDGE = "1px solid var(--tq-edge-strong)";
+  var TEXT = "var(--tq-ink)";
+  var MUTED = "var(--tq-ink-dim)";
   var tabs = [{
     id: "decks",
     label: "🃏 Decks"
@@ -769,7 +777,7 @@ function CommanderVault() {
       padding: "10px 10px",
       borderRadius: 8,
       background: SURFACE,
-      border: "1px solid " + ACCENT + "66",
+      border: ACCENT_EDGE,
       color: ACCENT,
       fontFamily: "inherit",
       fontSize: 12,
@@ -968,7 +976,24 @@ function CommanderVault() {
       color: MUTED,
       marginTop: 4
     }
-  }, "Paste an export here and the deck can be simulated from its card."), React.createElement("textarea", {
+  }, "Paste an export here, or scan cards in, and the deck can be simulated from its card."),
+  React.createElement("button", {
+    onClick: function () {
+      if (window.TQ && window.TQ.openScanner) {
+        window.TQ.openScanner(function (text) {
+          if (text) setFormList(function (prev) { return prev ? prev + "\n" + text : text; });
+        });
+      }
+    },
+    style: {
+      marginTop: 8, minHeight: "var(--tq-tap)", padding: "0 14px",
+      borderRadius: 4, background: "transparent", cursor: "pointer",
+      border: "1px solid var(--tq-edge-strong)", color: "var(--tq-gold)",
+      fontFamily: "var(--tq-display)", fontSize: 11, letterSpacing: "0.16em",
+      textTransform: "uppercase"
+    }
+  }, "Scan cards"),
+  React.createElement("textarea", {
     value: formList,
     onChange: function onChange(e) {
       return setFormList(e.target.value);
@@ -1131,25 +1156,25 @@ function VaultDeckCard({ deck, onEdit, onDelete, SURFACE, SURFACE2, ACCENT, MUTE
           });
         }
       },
-      style: { padding: "6px 12px", borderRadius: 6, border: "1px solid " + ACCENT + "66", background: "transparent", color: ACCENT, fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+      style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: ACCENT_EDGE, background: "transparent", color: ACCENT, fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
     }, "📋 Export"),
     React.createElement("button", {
       onClick: function () {
         if (window.TQ && window.TQ.validateDeck) window.TQ.validateDeck(deck);
       },
-      style: { padding: "6px 12px", borderRadius: 6, border: "1px solid " + ACCENT + "66", background: "transparent", color: ACCENT, fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+      style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: ACCENT_EDGE, background: "transparent", color: ACCENT, fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
     }, "✓ Validate"),
     React.createElement("button", {
       onClick: function () { if (window.TQ && window.TQ.openInMoxfield) window.TQ.openInMoxfield(deck.commander); },
-      style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #553a99", background: "transparent", color: "#9a8acf", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+      style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: "1px solid #553a99", background: "transparent", color: "#9a8acf", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
     }, "Moxfield"),
     React.createElement("button", {
       onClick: function () { if (window.TQ && window.TQ.openInEDHREC) window.TQ.openInEDHREC(deck.commander); },
-      style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #993a3a", background: "transparent", color: "#cf8a8a", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+      style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: "1px solid #993a3a", background: "transparent", color: "#cf8a8a", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
     }, "EDHREC"),
     React.createElement("button", {
       onClick: function () { if (window.TQ && window.TQ.openInScryfall) window.TQ.openInScryfall(deck.commander); },
-      style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #3a6a99", background: "transparent", color: "#8aaacf", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+      style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: "1px solid #3a6a99", background: "transparent", color: "#8aaacf", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
     }, "Scryfall"),
     React.createElement("button", {
       onClick: function () {
@@ -1157,15 +1182,15 @@ function VaultDeckCard({ deck, onEdit, onDelete, SURFACE, SURFACE2, ACCENT, MUTE
       },
       disabled: !deck.list,
       title: deck.list ? "Simulate this deck" : "Add a deck list in Edit to simulate this deck",
-      style: { padding: "6px 12px", borderRadius: 6, border: "1px solid " + (deck.list ? ACCENT + "66" : "#3a3a3a"), background: "transparent", color: deck.list ? ACCENT : "#555", fontFamily: "inherit", fontSize: 11, cursor: deck.list ? "pointer" : "not-allowed" }
+      style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: "1px solid " + (deck.list ? "var(--tq-edge-strong)" : "var(--tq-edge)"), background: "transparent", color: deck.list ? ACCENT : "#555", fontFamily: "inherit", fontSize: 11, cursor: deck.list ? "pointer" : "not-allowed" }
     }, deck.simScore != null ? "Odds \u00b7 " + deck.simScore : "Odds"),
     React.createElement("button", {
       onClick: onEdit,
-      style: { padding: "6px 12px", borderRadius: 6, border: "1px solid " + ACCENT + "66", background: "transparent", color: ACCENT, fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+      style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: ACCENT_EDGE, background: "transparent", color: ACCENT, fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
     }, "Edit"),
     React.createElement("button", {
       onClick: onDelete,
-      style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #553333", background: "transparent", color: "#cc6666", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+      style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: "1px solid #553333", background: "transparent", color: "#cc6666", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
     }, "Remove")
   )));
 }
@@ -1271,7 +1296,7 @@ function VaultCoverageView({ decks, coveredIds, SURFACE, SURFACE2, ACCENT, ACCEN
         }).join(", ") : "Missing: ".concat(combo.name),
         style: {
           background: have ? "".concat(ACCENT, "18") : SURFACE,
-          border: "1px solid ".concat(have ? ACCENT + "55" : "#2a2a32"),
+          border: "1px solid ".concat(have ? "var(--tq-edge-strong)" : "var(--tq-edge)"),
           borderRadius: 8,
           padding: "8px 12px",
           minWidth: 80,

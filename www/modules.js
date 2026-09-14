@@ -19,6 +19,76 @@
   };
   var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 
+  // src/theme/tokens.js
+  var tokens = {
+    // Surfaces, darkest first
+    "--tq-bg": "#05030a",
+    "--tq-surface-deep": "#0a0604",
+    "--tq-surface": "#1a110a",
+    "--tq-surface-raised": "#241809",
+    // Ink
+    "--tq-ink": "#e8dcc4",
+    // parchment — body text
+    "--tq-ink-dim": "#9a8765",
+    // warm brown — secondary
+    "--tq-ink-faint": "#6a5a42",
+    // captions, disabled
+    // Gold. The signature; used for anything active, chosen or emphasised.
+    "--tq-gold": "#c9a961",
+    "--tq-gold-deep": "#d4b87a",
+    "--tq-gold-bright": "#f5d98f",
+    // States
+    "--tq-danger": "#d48a86",
+    "--tq-info": "#9fc7e6",
+    // info blue, used across counters and hints
+    "--tq-ink-mid": "#8a7555",
+    // between dim and faint
+    "--tq-life": "#b4d4a0",
+    // life gain
+    "--tq-life-deep": "#8fbc8f",
+    // life gain, deeper
+    "--tq-ink-warm": "#b09870",
+    // raised label
+    "--tq-danger-soft": "#e8947a",
+    // damage, lighter
+    "--tq-danger-deep": "#a0302c",
+    // damage, deeper
+    "--tq-brass": "#8a6f3a",
+    // inactive metal
+    "--tq-edge": "rgba(201, 169, 97, 0.22)",
+    "--tq-edge-strong": "rgba(201, 169, 97, 0.45)",
+    "--tq-panel": "rgba(201, 169, 97, 0.05)",
+    // Type. The old scale was 7/8/9/10/11px — five sizes inside four pixels,
+    // which produced no hierarchy and was genuinely hard to read at arm's length
+    // in low light. This has a legible floor and real steps between levels.
+    "--tq-label": "11px",
+    // Cinzel, tracked uppercase
+    "--tq-body-sm": "13px",
+    "--tq-body": "15px",
+    "--tq-figure-sm": "20px",
+    "--tq-figure": "28px",
+    "--tq-figure-lg": "40px",
+    // Families
+    "--tq-display": "'Cinzel', serif",
+    "--tq-text": "'Crimson Pro', serif",
+    "--tq-mono": "'JetBrains Mono', monospace",
+    // The smallest comfortable tap target for a thumb, one-handed, holding cards
+    // in the other hand. Several button rows were sitting at about 28px.
+    "--tq-tap": "44px"
+  };
+  var T = Object.fromEntries(
+    Object.entries(tokens).map(([k, v]) => [k.replace("--tq-", "").replace(/-(\w)/g, (_, c) => c.toUpperCase()), `var(${k})`])
+  );
+  var raw = Object.fromEntries(
+    Object.entries(tokens).map(([k, v]) => [k.replace("--tq-", "").replace(/-(\w)/g, (_, c) => c.toUpperCase()), v])
+  );
+  function install() {
+    const root = document.documentElement;
+    for (const [k, v] of Object.entries(tokens)) {
+      if (!root.style.getPropertyValue(k)) root.style.setProperty(k, v);
+    }
+  }
+
   // src/simulator/cards.js
   var SKIP_SECTION = /sideboard|maybe|considering|wishlist|token|sticker|attraction|buy\s*list|cut|leftover|pool|acquire/i;
   var COMMANDER_SECTION = /commander|general|partner|companion/i;
@@ -37,8 +107,8 @@
     const entries = [];
     const commanders = [];
     let mode = "deck";
-    for (const raw of String(text).split("\n")) {
-      const line = raw.trim();
+    for (const raw2 of String(text).split("\n")) {
+      const line = raw2.trim();
       if (!line || SB_PREFIX.test(line)) continue;
       if (!LINE.test(line)) {
         const bare = line.replace(/^[#/*\-= ]+/, "").trim();
@@ -74,8 +144,8 @@
     let generic = 0;
     const pips = {};
     const syms = String(manaCost || "").match(PIP) || [];
-    for (const raw of syms) {
-      const s = raw.slice(1, -1).toUpperCase();
+    for (const raw2 of syms) {
+      const s = raw2.slice(1, -1).toUpperCase();
       if (/^\d+$/.test(s)) generic += parseInt(s, 10);
       else if (s === "X" || s === "Y" || s === "Z") continue;
       else if (s === "C") generic += 1;
@@ -123,8 +193,8 @@
       const tail = oracle.slice(addMatch.index, addMatch.index + 40);
       const syms = tail.match(PIP) || [];
       let amount = 0;
-      for (const raw of syms.slice(0, 3)) {
-        const s = raw.slice(1, -1);
+      for (const raw2 of syms.slice(0, 3)) {
+        const s = raw2.slice(1, -1);
         amount += /^\d+$/.test(s) ? parseInt(s, 10) : 1;
       }
       c.ramp = Math.max(1, Math.min(amount, 3));
@@ -477,13 +547,20 @@
       hand = order.slice(0, 7);
       library = order.slice(7);
       const size = 7 - mull;
-      let lands = 0, hasRamp = false;
+      let lands = 0, hasRamp = false, castable = 0, cheap = 0;
       for (const i of hand) {
-        if (D.isLand[i]) lands++;
-        else if (D.ramp[i] && D.mv[i] <= 3) hasRamp = true;
+        if (D.isLand[i]) {
+          lands++;
+          continue;
+        }
+        if (D.ramp[i] && D.mv[i] <= 3) hasRamp = true;
+        if (D.mv[i] <= lands + 2) castable++;
+        if (D.mv[i] <= 3) cheap++;
       }
       const lo = Math.max(1, minLands - Math.floor((7 - size) / 2));
-      if (mull === 3 || lo <= lands + (hasRamp ? 1 : 0) && lands <= maxLands) {
+      const landsOk = lo <= lands + (hasRamp ? 1 : 0) && lands <= maxLands;
+      const hasPlan = size <= 6 ? castable >= 1 : castable >= 1 && cheap >= 1;
+      if (mull === 3 || landsOk && hasPlan) {
         if (mull) hand = bottomCards(hand, mull, D);
         res.mulligans = mull;
         break;
@@ -731,7 +808,8 @@
     }
     const { deck, commander } = buildDeck(canonEntries, commanders, data);
     const compiled = new CompiledDeck(deck, commander);
-    const results = opts.onProgress ? await runChunked(deck, commander, __spreadProps(__spreadValues({}, opts), { deck: compiled })) : run(deck, commander, __spreadProps(__spreadValues({}, opts), { deck: compiled }));
+    const runOpts = __spreadProps(__spreadValues({}, opts), { onPlay: !opts.on_draw });
+    const results = runOpts.onProgress ? await runChunked(deck, commander, __spreadProps(__spreadValues({}, runOpts), { deck: compiled })) : run(deck, commander, __spreadProps(__spreadValues({}, runOpts), { deck: compiled }));
     const s = summarise(opts.name || commanders[0] || "Deck", deck, commander, results);
     s.totalCards = canonEntries.reduce((a, e) => a + e.qty, 0) + commanders.length;
     s.unresolved = misses;
@@ -743,19 +821,19 @@
   // src/simulator/ui.js
   var h = () => window.React.createElement;
   var C = {
-    bg: "#0d0d0f",
-    panel: "rgba(201, 169, 97, 0.05)",
-    edge: "rgba(201, 169, 97, 0.22)",
-    ink: "#e8dcc4",
-    dim: "#9a8765",
-    faint: "#6a5a42",
-    gold: "#d4b87a",
-    goldBright: "#f5d98f",
-    warn: "#c9705a"
+    bg: "var(--tq-bg)",
+    panel: "var(--tq-panel)",
+    edge: "var(--tq-edge)",
+    ink: "var(--tq-ink)",
+    dim: "var(--tq-ink-dim)",
+    faint: "var(--tq-ink-faint)",
+    gold: "var(--tq-gold-deep)",
+    goldBright: "var(--tq-gold-bright)",
+    warn: "var(--tq-danger)"
   };
-  var DISPLAY = "'Cinzel', serif";
-  var BODY = "'Crimson Pro', serif";
-  var MONO = "'JetBrains Mono', monospace";
+  var DISPLAY = "var(--tq-display)";
+  var BODY = "var(--tq-text)";
+  var MONO = "var(--tq-mono)";
   var PIP2 = { W: "#f8f0d8", U: "#a8cce8", B: "#9a8fa0", R: "#e89a86", G: "#9dc4a0" };
   var PIP_NAME = { W: "White", U: "Blue", B: "Black", R: "Red", G: "Green" };
   function Label(text) {
@@ -763,7 +841,7 @@
     return e("div", {
       style: {
         fontFamily: DISPLAY,
-        fontSize: 9,
+        fontSize: 11,
         letterSpacing: "0.18em",
         textTransform: "uppercase",
         color: C.dim,
@@ -796,7 +874,7 @@
       e("div", {
         style: {
           fontFamily: DISPLAY,
-          fontSize: 8.5,
+          fontSize: 11,
           letterSpacing: "0.14em",
           textTransform: "uppercase",
           color: C.dim,
@@ -844,7 +922,7 @@
           })
         ),
         e("div", {
-          style: { fontFamily: MONO, fontSize: 9, color: C.faint }
+          style: { fontFamily: MONO, fontSize: 11, color: C.faint }
         }, `T${i + 1}`)
       );
     }));
@@ -873,7 +951,7 @@
         }
       }, `${Math.round(cmdBy[t])}%`),
       e("div", {
-        style: { fontFamily: DISPLAY, fontSize: 8, letterSpacing: "0.12em", color: C.dim, marginTop: 4 }
+        style: { fontFamily: DISPLAY, fontSize: 11, letterSpacing: "0.12em", color: C.dim, marginTop: 4 }
       }, `BY T${t}`)
     ));
     if (avgTurn) {
@@ -892,7 +970,7 @@
         },
         e("div", { style: { fontFamily: MONO, fontSize: 15, fontWeight: 700, color: C.ink } }, avgTurn.toFixed(1)),
         e("div", {
-          style: { fontFamily: DISPLAY, fontSize: 8, letterSpacing: "0.12em", color: C.dim, marginTop: 4 }
+          style: { fontFamily: DISPLAY, fontSize: 11, letterSpacing: "0.12em", color: C.dim, marginTop: 4 }
         }, "AVERAGE")
       ));
     }
@@ -928,6 +1006,7 @@
     const [summary, setSummary] = useState2(props.initialSummary || null);
     const [error, setError] = useState2(null);
     const [deck, setDeck] = useState2(props.initialDeck || null);
+    const [onDraw, setOnDraw] = useState2(false);
     React2.useEffect(() => {
       const onDeck = (ev) => {
         const d = ev.detail;
@@ -951,6 +1030,7 @@
           store: props.store,
           name: deck ? deck.commander : void 0,
           commander: deck ? deck.commander : void 0,
+          on_draw: onDraw,
           onProgress: (done, total) => setProgress(done / total)
         });
         setSummary(s2);
@@ -963,7 +1043,7 @@
       } finally {
         setBusy(false);
       }
-    }, [text, games, props, deck]);
+    }, [text, games, props, deck, onDraw]);
     const s = summary;
     const kids = [];
     if (deck) {
@@ -991,11 +1071,12 @@
           },
           style: {
             marginLeft: 10,
-            padding: 0,
+            padding: "0 8px",
+            minHeight: "var(--tq-tap)",
             background: "none",
             border: "none",
             fontFamily: DISPLAY,
-            fontSize: 9,
+            fontSize: 11,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
             color: C.dim,
@@ -1036,6 +1117,26 @@
         resize: "vertical"
       }
     }));
+    kids.push(e("div", {
+      key: "onplay",
+      style: { display: "flex", gap: 6, marginTop: 10 }
+    }, [false, true].map((v) => e("button", {
+      key: String(v),
+      onClick: () => setOnDraw(v),
+      style: {
+        flex: 1,
+        minHeight: 38,
+        borderRadius: 4,
+        cursor: "pointer",
+        fontFamily: DISPLAY,
+        fontSize: 10,
+        letterSpacing: "0.14em",
+        textTransform: "uppercase",
+        background: "transparent",
+        border: `1px solid ${onDraw === v ? "var(--tq-edge-strong)" : C.edge}`,
+        color: onDraw === v ? C.goldBright : C.dim
+      }
+    }, v ? "On the draw" : "On the play"))));
     kids.push(e("button", {
       key: "run",
       onClick: runSim,
@@ -1044,6 +1145,7 @@
       style: {
         marginTop: 10,
         width: "100%",
+        minHeight: "var(--tq-tap)",
         padding: "13px 16px",
         fontFamily: DISPLAY,
         fontSize: 11,
@@ -1176,7 +1278,7 @@
     }
     return e("div", { style: { padding: "16px 14px 90px", color: C.ink } }, kids);
   }
-  function install() {
+  function install2() {
     const roots = /* @__PURE__ */ new WeakMap();
     window.TQ = window.TQ || {};
     window.TQ.runOddsFor = function(deck) {
@@ -1185,8 +1287,8 @@
       window.dispatchEvent(new CustomEvent("tq:sim-deck", { detail: deck }));
       if (typeof window.TQ.setTab === "function") window.TQ.setTab("odds");
     };
-    window.TQ.mountSimulator = function(el) {
-      if (!el || roots.has(el)) return;
+    window.TQ.mountSimulator = function(el3) {
+      if (!el3 || roots.has(el3)) return;
       const React2 = window.React;
       const ReactDOM = window.ReactDOM;
       if (!React2 || !ReactDOM) return;
@@ -1219,8 +1321,8 @@
         initialSummary: readLast(),
         initialDeck: window.TQ._pendingDeck || null
       };
-      const root = ReactDOM.createRoot ? ReactDOM.createRoot(el) : { render: (node) => ReactDOM.render(node, el) };
-      roots.set(el, root);
+      const root = ReactDOM.createRoot ? ReactDOM.createRoot(el3) : { render: (node) => ReactDOM.render(node, el3) };
+      roots.set(el3, root);
       root.render(React2.createElement(SimulatorTab, props));
     };
   }
@@ -1258,7 +1360,8 @@
 
   // src/vault/vault.js
   var React = window.React;
-  var { useState, useEffect } = React;
+  var useState = (...a) => window.React.useState(...a);
+  var useEffect = (...a) => window.React.useEffect(...a);
   var COLORS = {
     W: {
       label: "White",
@@ -1757,13 +1860,14 @@
     if (sortMode && sortMode !== "manual" && window.TQ && window.TQ.sortDecks) {
       filtered = window.TQ.sortDecks(filtered, sortMode);
     }
-    var BG = "#0d0d0f";
-    var SURFACE = "#141418";
-    var SURFACE2 = "#1c1c22";
-    var ACCENT = "#c8a84b";
+    var BG = "var(--tq-bg)";
+    var SURFACE = "var(--tq-surface)";
+    var SURFACE2 = "var(--tq-surface-raised)";
+    var ACCENT = "var(--tq-gold)";
     var ACCENT2 = "#7b5ea7";
-    var TEXT = "#e8e4d8";
-    var MUTED = "#6b6870";
+    var ACCENT_EDGE2 = "1px solid var(--tq-edge-strong)";
+    var TEXT = "var(--tq-ink)";
+    var MUTED = "var(--tq-ink-dim)";
     var tabs = [{
       id: "decks",
       label: "\u{1F0CF} Decks"
@@ -2012,7 +2116,7 @@
           padding: "10px 10px",
           borderRadius: 8,
           background: SURFACE,
-          border: "1px solid " + ACCENT + "66",
+          border: ACCENT_EDGE2,
           color: ACCENT,
           fontFamily: "inherit",
           fontSize: 12,
@@ -2081,195 +2185,234 @@
       onClick: function onClick(e) {
         if (e.target === e.currentTarget) setShowAdd(false);
       }
-    }, React.createElement("div", {
-      style: {
-        background: SURFACE,
-        border: "1px solid ".concat(ACCENT, "44"),
-        borderRadius: 14,
-        padding: 28,
-        width: "100%",
-        maxWidth: 440,
-        boxShadow: "0 20px 60px rgba(0,0,0,0.6)"
-      }
-    }, React.createElement("h2", {
-      style: {
-        margin: "0 0 20px",
-        fontSize: 20,
-        color: ACCENT
-      }
-    }, editId ? "Edit Deck" : "Add New Deck"), React.createElement("label", {
-      style: {
-        fontSize: 12,
-        color: MUTED,
-        letterSpacing: 1,
-        textTransform: "uppercase"
-      }
-    }, "Commander"), React.createElement("input", {
-      value: formCommander,
-      onChange: function onChange(e) {
-        return setFormCommander(e.target.value);
-      },
-      placeholder: "e.g. Atraxa, Praetors' Voice",
-      style: {
-        width: "100%",
-        marginTop: 6,
-        marginBottom: 16,
-        padding: "10px 12px",
-        background: SURFACE2,
-        border: "1px solid #444",
-        borderRadius: 8,
-        color: TEXT,
-        fontFamily: "inherit",
-        fontSize: 15,
-        outline: "none",
-        boxSizing: "border-box"
-      }
-    }), React.createElement("label", {
-      style: {
-        fontSize: 12,
-        color: MUTED,
-        letterSpacing: 1,
-        textTransform: "uppercase"
-      }
-    }, "Colour Identity"), React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 8,
-        marginTop: 8,
-        marginBottom: 16
-      }
-    }, ["W", "U", "B", "R", "G", "C"].map(function(c) {
-      var on = formColors.includes(c);
-      return React.createElement("button", {
-        key: c,
-        onClick: function onClick() {
-          return toggleFormColor(c);
-        },
-        title: COLORS[c].label,
+    }, React.createElement(
+      "div",
+      {
         style: {
-          width: 38,
-          height: 38,
-          borderRadius: "50%",
-          background: on ? COLORS[c].hex : SURFACE2,
-          border: "2px solid ".concat(on ? COLORS[c].border : "#555"),
-          cursor: "pointer",
-          padding: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: on ? "0 0 12px ".concat(COLORS[c].border, "88") : "none",
-          transition: "all 0.15s",
-          opacity: on ? 1 : 0.55
+          background: SURFACE,
+          border: "1px solid ".concat(ACCENT, "44"),
+          borderRadius: 14,
+          padding: 28,
+          width: "100%",
+          maxWidth: 440,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.6)"
         }
-      }, React.createElement("img", {
-        src: "https://svgs.scryfall.io/card-symbols/" + c + ".svg",
-        alt: "{" + c + "}",
-        onError: function onError(e) {
-          if (e.currentTarget.dataset.tqFb === "1") return;
-          e.currentTarget.dataset.tqFb = "1";
-          e.currentTarget.src = "img/mana/" + c + ".svg";
+      },
+      React.createElement("h2", {
+        style: {
+          margin: "0 0 20px",
+          fontSize: 20,
+          color: ACCENT
+        }
+      }, editId ? "Edit Deck" : "Add New Deck"),
+      React.createElement("label", {
+        style: {
+          fontSize: 12,
+          color: MUTED,
+          letterSpacing: 1,
+          textTransform: "uppercase"
+        }
+      }, "Commander"),
+      React.createElement("input", {
+        value: formCommander,
+        onChange: function onChange(e) {
+          return setFormCommander(e.target.value);
         },
-        style: { width: 24, height: 24, display: "block" }
-      }));
-    })), React.createElement("label", {
-      style: {
-        fontSize: 12,
-        color: MUTED,
-        letterSpacing: 1,
-        textTransform: "uppercase"
-      }
-    }, "Theme / Strategy"), React.createElement("input", {
-      value: formTheme,
-      onChange: function onChange(e) {
-        return setFormTheme(e.target.value);
-      },
-      placeholder: "e.g. Elf Tribal Combo",
-      style: {
-        width: "100%",
-        marginTop: 6,
-        marginBottom: 20,
-        padding: "10px 12px",
-        background: SURFACE2,
-        border: "1px solid #444",
-        borderRadius: 8,
-        color: TEXT,
-        fontFamily: "inherit",
-        fontSize: 15,
-        outline: "none",
-        boxSizing: "border-box"
-      }
-    }), React.createElement("label", {
-      style: {
-        fontSize: 12,
-        color: MUTED,
-        letterSpacing: 1,
-        textTransform: "uppercase"
-      }
-    }, "Deck list (optional)"), React.createElement("div", {
-      style: {
-        fontSize: 12,
-        color: MUTED,
-        marginTop: 4
-      }
-    }, "Paste an export here and the deck can be simulated from its card."), React.createElement("textarea", {
-      value: formList,
-      onChange: function onChange(e) {
-        return setFormList(e.target.value);
-      },
-      spellCheck: false,
-      placeholder: "1 Sol Ring\n14 Swamp\n\u2026",
-      style: {
-        width: "100%",
-        marginTop: 6,
-        marginBottom: 24,
-        minHeight: 96,
-        padding: "10px 12px",
-        background: SURFACE2,
-        border: "1px solid #444",
-        borderRadius: 8,
-        color: TEXT,
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 12,
-        lineHeight: 1.5,
-        outline: "none",
-        resize: "vertical",
-        boxSizing: "border-box"
-      }
-    }), React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 10,
-        justifyContent: "flex-end"
-      }
-    }, React.createElement("button", {
-      onClick: function onClick() {
-        return setShowAdd(false);
-      },
-      style: {
-        padding: "10px 20px",
-        borderRadius: 8,
-        border: "1px solid #444",
-        background: "transparent",
-        color: MUTED,
-        fontFamily: "inherit",
-        fontSize: 14,
-        cursor: "pointer"
-      }
-    }, "Cancel"), React.createElement("button", {
-      onClick: saveForm,
-      disabled: !formCommander.trim() || formColors.length === 0,
-      style: {
-        padding: "10px 24px",
-        borderRadius: 8,
-        border: "none",
-        background: formCommander.trim() && formColors.length > 0 ? "linear-gradient(135deg, ".concat(ACCENT, ", #a8762e)") : "#333",
-        color: formCommander.trim() && formColors.length > 0 ? "#1a1200" : MUTED,
-        fontFamily: "inherit",
-        fontSize: 14,
-        fontWeight: 700,
-        cursor: "pointer"
-      }
-    }, editId ? "Save Changes" : "Add Deck")))));
+        placeholder: "e.g. Atraxa, Praetors' Voice",
+        style: {
+          width: "100%",
+          marginTop: 6,
+          marginBottom: 16,
+          padding: "10px 12px",
+          background: SURFACE2,
+          border: "1px solid #444",
+          borderRadius: 8,
+          color: TEXT,
+          fontFamily: "inherit",
+          fontSize: 15,
+          outline: "none",
+          boxSizing: "border-box"
+        }
+      }),
+      React.createElement("label", {
+        style: {
+          fontSize: 12,
+          color: MUTED,
+          letterSpacing: 1,
+          textTransform: "uppercase"
+        }
+      }, "Colour Identity"),
+      React.createElement("div", {
+        style: {
+          display: "flex",
+          gap: 8,
+          marginTop: 8,
+          marginBottom: 16
+        }
+      }, ["W", "U", "B", "R", "G", "C"].map(function(c) {
+        var on = formColors.includes(c);
+        return React.createElement("button", {
+          key: c,
+          onClick: function onClick() {
+            return toggleFormColor(c);
+          },
+          title: COLORS[c].label,
+          style: {
+            width: 38,
+            height: 38,
+            borderRadius: "50%",
+            background: on ? COLORS[c].hex : SURFACE2,
+            border: "2px solid ".concat(on ? COLORS[c].border : "#555"),
+            cursor: "pointer",
+            padding: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: on ? "0 0 12px ".concat(COLORS[c].border, "88") : "none",
+            transition: "all 0.15s",
+            opacity: on ? 1 : 0.55
+          }
+        }, React.createElement("img", {
+          src: "https://svgs.scryfall.io/card-symbols/" + c + ".svg",
+          alt: "{" + c + "}",
+          onError: function onError(e) {
+            if (e.currentTarget.dataset.tqFb === "1") return;
+            e.currentTarget.dataset.tqFb = "1";
+            e.currentTarget.src = "img/mana/" + c + ".svg";
+          },
+          style: { width: 24, height: 24, display: "block" }
+        }));
+      })),
+      React.createElement("label", {
+        style: {
+          fontSize: 12,
+          color: MUTED,
+          letterSpacing: 1,
+          textTransform: "uppercase"
+        }
+      }, "Theme / Strategy"),
+      React.createElement("input", {
+        value: formTheme,
+        onChange: function onChange(e) {
+          return setFormTheme(e.target.value);
+        },
+        placeholder: "e.g. Elf Tribal Combo",
+        style: {
+          width: "100%",
+          marginTop: 6,
+          marginBottom: 20,
+          padding: "10px 12px",
+          background: SURFACE2,
+          border: "1px solid #444",
+          borderRadius: 8,
+          color: TEXT,
+          fontFamily: "inherit",
+          fontSize: 15,
+          outline: "none",
+          boxSizing: "border-box"
+        }
+      }),
+      React.createElement("label", {
+        style: {
+          fontSize: 12,
+          color: MUTED,
+          letterSpacing: 1,
+          textTransform: "uppercase"
+        }
+      }, "Deck list (optional)"),
+      React.createElement("div", {
+        style: {
+          fontSize: 12,
+          color: MUTED,
+          marginTop: 4
+        }
+      }, "Paste an export here, or scan cards in, and the deck can be simulated from its card."),
+      React.createElement("button", {
+        onClick: function() {
+          if (window.TQ && window.TQ.openScanner) {
+            window.TQ.openScanner(function(text) {
+              if (text) setFormList(function(prev) {
+                return prev ? prev + "\n" + text : text;
+              });
+            });
+          }
+        },
+        style: {
+          marginTop: 8,
+          minHeight: "var(--tq-tap)",
+          padding: "0 14px",
+          borderRadius: 4,
+          background: "transparent",
+          cursor: "pointer",
+          border: "1px solid var(--tq-edge-strong)",
+          color: "var(--tq-gold)",
+          fontFamily: "var(--tq-display)",
+          fontSize: 11,
+          letterSpacing: "0.16em",
+          textTransform: "uppercase"
+        }
+      }, "Scan cards"),
+      React.createElement("textarea", {
+        value: formList,
+        onChange: function onChange(e) {
+          return setFormList(e.target.value);
+        },
+        spellCheck: false,
+        placeholder: "1 Sol Ring\n14 Swamp\n\u2026",
+        style: {
+          width: "100%",
+          marginTop: 6,
+          marginBottom: 24,
+          minHeight: 96,
+          padding: "10px 12px",
+          background: SURFACE2,
+          border: "1px solid #444",
+          borderRadius: 8,
+          color: TEXT,
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 12,
+          lineHeight: 1.5,
+          outline: "none",
+          resize: "vertical",
+          boxSizing: "border-box"
+        }
+      }),
+      React.createElement("div", {
+        style: {
+          display: "flex",
+          gap: 10,
+          justifyContent: "flex-end"
+        }
+      }, React.createElement("button", {
+        onClick: function onClick() {
+          return setShowAdd(false);
+        },
+        style: {
+          padding: "10px 20px",
+          borderRadius: 8,
+          border: "1px solid #444",
+          background: "transparent",
+          color: MUTED,
+          fontFamily: "inherit",
+          fontSize: 14,
+          cursor: "pointer"
+        }
+      }, "Cancel"), React.createElement("button", {
+        onClick: saveForm,
+        disabled: !formCommander.trim() || formColors.length === 0,
+        style: {
+          padding: "10px 24px",
+          borderRadius: 8,
+          border: "none",
+          background: formCommander.trim() && formColors.length > 0 ? "linear-gradient(135deg, ".concat(ACCENT, ", #a8762e)") : "#333",
+          color: formCommander.trim() && formColors.length > 0 ? "#1a1200" : MUTED,
+          fontFamily: "inherit",
+          fontSize: 14,
+          fontWeight: 700,
+          cursor: "pointer"
+        }
+      }, editId ? "Save Changes" : "Add Deck"))
+    )));
   }
   function VaultDeckCard({ deck, onEdit, onDelete, SURFACE, SURFACE2, ACCENT, MUTED, TEXT }) {
     const [expanded, setExpanded] = useState(false);
@@ -2376,31 +2519,31 @@
             });
           }
         },
-        style: { padding: "6px 12px", borderRadius: 6, border: "1px solid " + ACCENT + "66", background: "transparent", color: ACCENT, fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+        style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: ACCENT_EDGE, background: "transparent", color: ACCENT, fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
       }, "\u{1F4CB} Export"),
       React.createElement("button", {
         onClick: function() {
           if (window.TQ && window.TQ.validateDeck) window.TQ.validateDeck(deck);
         },
-        style: { padding: "6px 12px", borderRadius: 6, border: "1px solid " + ACCENT + "66", background: "transparent", color: ACCENT, fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+        style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: ACCENT_EDGE, background: "transparent", color: ACCENT, fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
       }, "\u2713 Validate"),
       React.createElement("button", {
         onClick: function() {
           if (window.TQ && window.TQ.openInMoxfield) window.TQ.openInMoxfield(deck.commander);
         },
-        style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #553a99", background: "transparent", color: "#9a8acf", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+        style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: "1px solid #553a99", background: "transparent", color: "#9a8acf", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
       }, "Moxfield"),
       React.createElement("button", {
         onClick: function() {
           if (window.TQ && window.TQ.openInEDHREC) window.TQ.openInEDHREC(deck.commander);
         },
-        style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #993a3a", background: "transparent", color: "#cf8a8a", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+        style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: "1px solid #993a3a", background: "transparent", color: "#cf8a8a", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
       }, "EDHREC"),
       React.createElement("button", {
         onClick: function() {
           if (window.TQ && window.TQ.openInScryfall) window.TQ.openInScryfall(deck.commander);
         },
-        style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #3a6a99", background: "transparent", color: "#8aaacf", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+        style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: "1px solid #3a6a99", background: "transparent", color: "#8aaacf", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
       }, "Scryfall"),
       React.createElement("button", {
         onClick: function() {
@@ -2408,15 +2551,15 @@
         },
         disabled: !deck.list,
         title: deck.list ? "Simulate this deck" : "Add a deck list in Edit to simulate this deck",
-        style: { padding: "6px 12px", borderRadius: 6, border: "1px solid " + (deck.list ? ACCENT + "66" : "#3a3a3a"), background: "transparent", color: deck.list ? ACCENT : "#555", fontFamily: "inherit", fontSize: 11, cursor: deck.list ? "pointer" : "not-allowed" }
+        style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: "1px solid " + (deck.list ? "var(--tq-edge-strong)" : "var(--tq-edge)"), background: "transparent", color: deck.list ? ACCENT : "#555", fontFamily: "inherit", fontSize: 11, cursor: deck.list ? "pointer" : "not-allowed" }
       }, deck.simScore != null ? "Odds \xB7 " + deck.simScore : "Odds"),
       React.createElement("button", {
         onClick: onEdit,
-        style: { padding: "6px 12px", borderRadius: 6, border: "1px solid " + ACCENT + "66", background: "transparent", color: ACCENT, fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+        style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: ACCENT_EDGE, background: "transparent", color: ACCENT, fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
       }, "Edit"),
       React.createElement("button", {
         onClick: onDelete,
-        style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #553333", background: "transparent", color: "#cc6666", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
+        style: { padding: "0 14px", minHeight: "var(--tq-tap)", borderRadius: 6, border: "1px solid #553333", background: "transparent", color: "#cc6666", fontFamily: "inherit", fontSize: 11, cursor: "pointer" }
       }, "Remove")
     )));
   }
@@ -2520,7 +2663,7 @@
           }).join(", ") : "Missing: ".concat(combo.name),
           style: {
             background: have ? "".concat(ACCENT, "18") : SURFACE,
-            border: "1px solid ".concat(have ? ACCENT + "55" : "#2a2a32"),
+            border: "1px solid ".concat(have ? "var(--tq-edge-strong)" : "var(--tq-edge)"),
             borderRadius: 8,
             padding: "8px 12px",
             minWidth: 80,
@@ -2786,22 +2929,823 @@
   }
 
   // src/vault/mount.js
-  function install2() {
+  function install3() {
     const roots = /* @__PURE__ */ new WeakMap();
     window.TQ = window.TQ || {};
     window.TQ.CommanderVault = CommanderVault;
-    window.TQ.mountVault = function(el) {
-      if (!el || roots.has(el)) return;
+    window.TQ.mountVault = function(el3) {
+      if (!el3 || roots.has(el3)) return;
       const React2 = window.React;
       const ReactDOM = window.ReactDOM;
       if (!React2 || !ReactDOM) return;
-      const root = ReactDOM.createRoot ? ReactDOM.createRoot(el) : { render: (node) => ReactDOM.render(node, el) };
-      roots.set(el, root);
+      const root = ReactDOM.createRoot ? ReactDOM.createRoot(el3) : { render: (node) => ReactDOM.render(node, el3) };
+      roots.set(el3, root);
       root.render(React2.createElement(CommanderVault, null));
     };
+  }
+
+  // src/sanctum/seal.js
+  var NS = "http://www.w3.org/2000/svg";
+  var STEPS = 7;
+  var R_OUTER = 92;
+  var R_INNER = 60;
+  var ID = "tq-seal";
+  var el = null;
+  var fadeTimer = null;
+  function svg(tag, attrs) {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    return n;
+  }
+  function styles() {
+    if (document.getElementById("tq-seal-style")) return;
+    const s = document.createElement("style");
+    s.id = "tq-seal-style";
+    s.textContent = `
+    #${ID} {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none; opacity: 0;
+      transition: opacity 420ms ease-out;
+    }
+    #${ID}.tq-seal-on { opacity: 1; }
+    #${ID} .ring-outer { transform-origin: center; animation: tqSealSpin 24s linear infinite; }
+    #${ID} .ring-inner { transform-origin: center; animation: tqSealSpin 16s linear infinite reverse; }
+    #${ID}.near .ring-outer { animation-duration: 7s; }
+    #${ID}.near .ring-inner { animation-duration: 4s; }
+    #${ID} .rune { opacity: 0.12; transition: opacity 260ms ease-out; }
+    #${ID} .rune.lit { opacity: 1; }
+    #${ID} .arc { transition: stroke-dashoffset 340ms cubic-bezier(.22,1,.36,1); }
+    #${ID} .core { transform-origin: center; transition: transform 300ms ease-out, opacity 300ms; }
+    #${ID}.near .core { animation: tqSealPulse 900ms ease-in-out infinite; }
+    @keyframes tqSealSpin { to { transform: rotate(360deg); } }
+    @keyframes tqSealPulse { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
+    @keyframes tqSealBreak {
+      0%   { transform: scale(1);    opacity: 1; filter: brightness(1); }
+      35%  { transform: scale(1.08); opacity: 1; filter: brightness(2.4); }
+      100% { transform: scale(2.2);  opacity: 0; filter: brightness(1); }
+    }
+    #${ID}.breaking .stack { animation: tqSealBreak 620ms cubic-bezier(.3,0,.2,1) forwards; }
+    #${ID} .flash { opacity: 0; }
+    #${ID}.breaking .flash { animation: tqSealFlash 520ms ease-out forwards; }
+    @keyframes tqSealFlash { 0% { opacity: 0 } 18% { opacity: .8 } 100% { opacity: 0 } }
+    @media (prefers-reduced-motion: reduce) {
+      #${ID} .ring-outer, #${ID} .ring-inner, #${ID} .core { animation: none !important; }
+    }
+  `;
+    document.head.appendChild(s);
+  }
+  function build() {
+    styles();
+    const host = document.createElement("div");
+    host.id = ID;
+    const s = svg("svg", { width: 260, height: 260, viewBox: "-130 -130 260 260" });
+    const stack = svg("g", { class: "stack" });
+    stack.appendChild(svg("circle", {
+      class: "flash",
+      r: 126,
+      fill: "var(--tq-gold-bright)",
+      opacity: 0
+    }));
+    const outer = svg("g", { class: "ring-outer" });
+    outer.appendChild(svg("circle", {
+      r: R_OUTER,
+      fill: "none",
+      stroke: "var(--tq-gold)",
+      "stroke-opacity": 0.16,
+      "stroke-width": 1
+    }));
+    for (let i = 0; i < STEPS; i++) {
+      const a = i / STEPS * Math.PI * 2 - Math.PI / 2;
+      outer.appendChild(svg("line", {
+        x1: Math.cos(a) * (R_OUTER - 7),
+        y1: Math.sin(a) * (R_OUTER - 7),
+        x2: Math.cos(a) * (R_OUTER + 7),
+        y2: Math.sin(a) * (R_OUTER + 7),
+        stroke: "var(--tq-gold)",
+        "stroke-opacity": 0.3,
+        "stroke-width": 1
+      }));
+    }
+    stack.appendChild(outer);
+    const circumference = 2 * Math.PI * R_OUTER;
+    const arc = svg("circle", {
+      class: "arc",
+      r: R_OUTER,
+      fill: "none",
+      stroke: "var(--tq-gold-bright)",
+      "stroke-width": 2.5,
+      "stroke-linecap": "round",
+      "stroke-dasharray": circumference,
+      "stroke-dashoffset": circumference,
+      transform: "rotate(-90)",
+      filter: "drop-shadow(0 0 6px rgba(245,217,143,0.65))"
+    });
+    stack.appendChild(arc);
+    const inner = svg("g", { class: "ring-inner" });
+    inner.appendChild(svg("circle", {
+      r: R_INNER,
+      fill: "none",
+      stroke: "var(--tq-gold)",
+      "stroke-opacity": 0.12,
+      "stroke-width": 1,
+      "stroke-dasharray": "3 7"
+    }));
+    const runes = [];
+    for (let i = 0; i < STEPS; i++) {
+      const a = i / STEPS * Math.PI * 2 - Math.PI / 2;
+      const g = svg("g", {
+        class: "rune",
+        transform: `translate(${Math.cos(a) * R_INNER} ${Math.sin(a) * R_INNER}) rotate(${a * 180 / Math.PI + 90})`
+      });
+      g.appendChild(svg("path", {
+        d: "M0,-7 L5,0 L0,7 L-5,0 Z M0,-3 L0,3",
+        fill: "none",
+        stroke: "var(--tq-gold-bright)",
+        "stroke-width": 1.6,
+        "stroke-linejoin": "round",
+        filter: "drop-shadow(0 0 4px rgba(245,217,143,0.8))"
+      }));
+      inner.appendChild(g);
+      runes.push(g);
+    }
+    stack.appendChild(inner);
+    const core = svg("g", { class: "core" });
+    core.appendChild(svg("circle", {
+      r: 15,
+      fill: "none",
+      stroke: "var(--tq-gold)",
+      "stroke-width": 1.4,
+      "stroke-opacity": 0.7
+    }));
+    core.appendChild(svg("path", {
+      d: "M0,-6 a6,6 0 1,1 -0.01,0 M-3.2,4 L3.2,4 L1.8,13 L-1.8,13 Z",
+      fill: "var(--tq-gold-bright)",
+      opacity: 0.9
+    }));
+    stack.appendChild(core);
+    s.appendChild(stack);
+    host.appendChild(s);
+    document.body.appendChild(host);
+    return { host, arc, runes, core, circumference };
+  }
+  function ensure() {
+    if (el && document.body.contains(el.host)) return el;
+    el = build();
+    return el;
+  }
+  function sealProgress(n) {
+    const e = ensure();
+    clearTimeout(fadeTimer);
+    e.host.classList.remove("breaking");
+    e.host.classList.add("tq-seal-on");
+    e.host.classList.toggle("near", n >= 5);
+    const frac = Math.min(n, STEPS) / STEPS;
+    e.arc.setAttribute("stroke-dashoffset", String(e.circumference * (1 - frac)));
+    e.runes.forEach((r, i) => r.classList.toggle("lit", i < n));
+    e.core.setAttribute("transform", `scale(${1 + frac * 0.5})`);
+    fadeTimer = setTimeout(() => hide(), 3200);
+  }
+  function sealBreak() {
+    const e = ensure();
+    clearTimeout(fadeTimer);
+    e.host.classList.add("tq-seal-on", "breaking");
+    fadeTimer = setTimeout(() => hide(), 700);
+  }
+  function hide() {
+    if (!el) return;
+    el.host.classList.remove("tq-seal-on", "near", "breaking");
+    el.arc.setAttribute("stroke-dashoffset", String(el.circumference));
+    el.runes.forEach((r) => r.classList.remove("lit"));
+    el.core.setAttribute("transform", "scale(1)");
+  }
+  function install4() {
+    window.TQ = window.TQ || {};
+    window.TQ.sealProgress = sealProgress;
+    window.TQ.sealBreak = sealBreak;
+    window.TQ.sealHide = hide;
+  }
+
+  // src/pet/hatchery.js
+  function hatcheryBackdropSvg({ lit = 0 } = {}) {
+    const g = "#c9a961";
+    const gb = "#f5d98f";
+    const runes = [];
+    for (let i = 0; i < 7; i++) {
+      const a = i / 7 * Math.PI * 2 - Math.PI / 2;
+      const x = 200 + Math.cos(a) * 96;
+      const y = 132 + Math.sin(a) * 58;
+      const on = i < lit;
+      runes.push(
+        `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})" opacity="${on ? 0.85 : 0.18}">
+         <path d="M0,-6 L4,0 L0,6 L-4,0 Z M0,-2.5 L0,2.5" fill="none"
+               stroke="${on ? gb : g}" stroke-width="1.4" stroke-linejoin="round"/>
+       </g>`
+      );
+    }
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <radialGradient id="vault" cx="50%" cy="38%" r="72%">
+      <stop offset="0%" stop-color="#241809"/>
+      <stop offset="55%" stop-color="#120c06"/>
+      <stop offset="100%" stop-color="#05030a"/>
+    </radialGradient>
+    <linearGradient id="stone" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3a2c1a"/>
+      <stop offset="55%" stop-color="#241a10"/>
+      <stop offset="100%" stop-color="#150e07"/>
+    </linearGradient>
+    <linearGradient id="brass" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="${g}" stop-opacity="0.15"/>
+      <stop offset="50%" stop-color="${gb}" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="${g}" stop-opacity="0.15"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="300" fill="url(#vault)"/>
+
+  <!-- Arch behind the egg -->
+  <path d="M92,232 L92,150 A108,108 0 0 1 308,150 L308,232"
+        fill="none" stroke="${g}" stroke-width="1.6" opacity="0.28"/>
+  <path d="M108,232 L108,152 A92,92 0 0 1 292,152 L292,232"
+        fill="none" stroke="${g}" stroke-width="0.8" opacity="0.16"/>
+
+  <!-- Seven-part seal, echoing the Sanctum -->
+  <ellipse cx="200" cy="132" rx="96" ry="58" fill="none"
+           stroke="${g}" stroke-width="0.9" opacity="0.22" stroke-dasharray="4 8"/>
+  ${runes.join("\n  ")}
+
+  <!-- Plinth -->
+  <path d="M128,238 L272,238 L286,266 L114,266 Z" fill="url(#stone)"/>
+  <path d="M114,266 L286,266 L292,282 L108,282 Z" fill="url(#stone)"/>
+  <path d="M128,238 L272,238" stroke="url(#brass)" stroke-width="1.6"/>
+  <path d="M114,266 L286,266" stroke="url(#brass)" stroke-width="1.2"/>
+  <g opacity="0.3" stroke="${g}" stroke-width="0.7">
+    <line x1="157" y1="238" x2="150" y2="266"/>
+    <line x1="200" y1="238" x2="200" y2="266"/>
+    <line x1="243" y1="238" x2="250" y2="266"/>
+  </g>
+
+  <!-- Carved sigil on the plinth face -->
+  <g transform="translate(200 254)" opacity="0.55">
+    <circle r="9" fill="none" stroke="${g}" stroke-width="1"/>
+    <path d="M0,-5 a5,5 0 1,1 -0.01,0 M-2.4,3.2 L2.4,3.2 L1.4,9 L-1.4,9 Z"
+          fill="${g}" opacity="0.8"/>
+  </g>
+
+  <!-- Motes -->
+  <g fill="${gb}">
+    <circle cx="128" cy="104" r="1.5" opacity="0.5"/>
+    <circle cx="286" cy="86" r="1.2" opacity="0.4"/>
+    <circle cx="96" cy="176" r="1" opacity="0.35"/>
+    <circle cx="310" cy="170" r="1.6" opacity="0.45"/>
+    <circle cx="168" cy="64" r="1" opacity="0.3"/>
+    <circle cx="246" cy="58" r="1.3" opacity="0.35"/>
+  </g>
+
+  <!-- Floor pool of light under the plinth -->
+  <ellipse cx="200" cy="284" rx="120" ry="14" fill="${g}" opacity="0.07"/>
+</svg>`;
+  }
+  function hatcheryBackdropUrl(opts) {
+    return `url("data:image/svg+xml,${encodeURIComponent(hatcheryBackdropSvg(opts))}")`;
+  }
+  function install5() {
+    window.TQ = window.TQ || {};
+    window.TQ.hatcheryBackdrop = hatcheryBackdropUrl;
+    window.TQ.hatcheryBackdropSvg = hatcheryBackdropSvg;
+  }
+
+  // src/scan/identify.js
+  var SCRYFALL = "https://api.scryfall.com";
+  var NOT_A_NAME = [
+    /^\s*$/,
+    /^[\d\s/|.,:;'"*+\-—–]+$/,
+    // pure numbers/punctuation
+    /^(legendary\s+)?(creature|instant|sorcery|artifact|enchantment|land|planeswalker|battle|kindred|tribal)\b/i,
+    /^(basic|snow|world)\s+(land|enchantment)/i,
+    /\b(illus|illustrated by|artist)\b/i,
+    /™|©|\bwizards of the coast\b|\bhasbro\b/i,
+    /^\d+\s*\/\s*\d+$/,
+    // power/toughness
+    /^[A-Z]{2,6}\s*[•·]\s*[A-Z]{2}$/,
+    // "MH3 • EN"
+    /^\d{1,4}\s*\/\s*\d{1,4}\s*[A-Z]?$/,
+    // collector number
+    /^(NOT FOR SALE|PROXY)$/i,
+    /^[WUBRGCXYZ0-9/{}()\[\]\s]{1,10}$/i
+    // a bare mana cost
+  ];
+  function normaliseLine(s) {
+    return String(s).replace(/[’‘`´]/g, "'").replace(/[—–]/g, "-").replace(/\s+/g, " ").trim();
+  }
+  function stripManaCost(name) {
+    return name.replace(/\s*[({\[][WUBRGCXYZ0-9/]{1,6}[)}\]]\s*/gi, " ").replace(/\s+[WUBRGC0-9]{1,8}\s*$/i, "").trim();
+  }
+  function nameCandidates(lines, { imageHeight } = {}) {
+    const items = lines.map((l, i) => typeof l === "string" ? { text: l, index: i } : __spreadProps(__spreadValues({}, l), { index: i })).map((l) => __spreadProps(__spreadValues({}, l), { text: normaliseLine(l.text) })).filter((l) => l.text.length >= 2 && l.text.length <= 40).filter((l) => !NOT_A_NAME.some((re) => re.test(l.text))).filter((l) => /[A-Za-z]/.test(l.text));
+    const scored = items.map((l) => {
+      let score = 0;
+      if (l.box && imageHeight) {
+        const rel = (l.box.y + (l.box.height || 0) / 2) / imageHeight;
+        if (rel < 0.12) score += 60;
+        else if (rel < 0.2) score += 40;
+        else if (rel < 0.3) score += 10;
+        else score -= 30;
+      } else {
+        score += Math.max(0, 24 - l.index * 8);
+      }
+      const words = l.text.split(" ");
+      const capped = words.filter((w) => /^[A-Z]/.test(w)).length;
+      if (capped / words.length > 0.6) score += 14;
+      if (words.length <= 5) score += 8;
+      if (l.text.length > 28) score -= 10;
+      if (/[.:;]$/.test(l.text)) score -= 14;
+      if (/\b(when|whenever|target|each|you may|enters|draw|destroy)\b/i.test(l.text)) score -= 25;
+      return { text: stripManaCost(l.text), score };
+    });
+    const seen = /* @__PURE__ */ new Set();
+    return scored.sort((a, b) => b.score - a.score).filter((c) => c.text && !seen.has(c.text.toLowerCase()) && seen.add(c.text.toLowerCase())).slice(0, 5);
+  }
+  function findPrinting(lines) {
+    const text = lines.map((l) => normaliseLine(typeof l === "string" ? l : l.text));
+    let number = null;
+    let set = null;
+    for (const line of text) {
+      const n = line.match(/\b(\d{1,4})\s*\/\s*\d{1,4}\b/);
+      if (n && !number) number = String(parseInt(n[1], 10));
+      const s = line.match(/\b([A-Z0-9]{3,5})\s*[•·*]\s*[A-Z]{2}\b/);
+      if (s && !set) set = s[1].toLowerCase();
+    }
+    return set && number ? { set, number } : null;
+  }
+  function norm2(s) {
+    return String(s).toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+  function similarity2(a, b) {
+    a = norm2(a);
+    b = norm2(b);
+    if (!a || !b) return 0;
+    if (a === b) return 1;
+    const grams = (s) => {
+      const g = /* @__PURE__ */ new Map();
+      for (let i = 0; i < s.length - 1; i++) {
+        const k = s.slice(i, i + 2);
+        g.set(k, (g.get(k) || 0) + 1);
+      }
+      return g;
+    };
+    const ga = grams(a), gb = grams(b);
+    let hits = 0;
+    for (const [k, v] of ga) if (gb.has(k)) hits += Math.min(v, gb.get(k));
+    const total = a.length - 1 + (b.length - 1);
+    return total ? 2 * hits / total : 0;
+  }
+  var DIGIT_TO_LETTER = { 0: "O", 1: "l", 5: "S", 8: "B", 6: "G", 2: "Z" };
+  var SWAP_CLASSES = ["tli1I", "oO0Q", "sS5", "bB8", "gG69", "cC(", "uUvV", "nNh", "eEc"];
+  function variants(name, limit = 12) {
+    const out = [name];
+    const push = (v) => {
+      if (v && v !== name && !out.includes(v) && out.length < limit) out.push(v);
+    };
+    push(name.replace(new RegExp("(?<=[A-Za-z])\\d|\\d(?=[A-Za-z])", "g"), (d) => DIGIT_TO_LETTER[d] || d));
+    push(name.replace(/^\d/, (d) => DIGIT_TO_LETTER[d] || d));
+    push(name.replace(/rn/g, "m"));
+    const slots = [];
+    for (let i = 1; i < name.length; i++) {
+      const ch = name[i];
+      if (!/[A-Za-z0-9]/.test(ch) || name[i - 1] === " ") continue;
+      const cls = SWAP_CLASSES.find((c) => c.includes(ch));
+      if (cls) slots.push({ i, ch, alts: [...cls].filter((a) => a !== ch) });
+    }
+    const deepest = Math.max(0, ...slots.map((s) => s.alts.length));
+    for (let rank = 0; rank < deepest && out.length < limit; rank++) {
+      for (const slot of slots) {
+        const alt = slot.alts[rank];
+        if (!alt) continue;
+        const cased = slot.ch === slot.ch.toLowerCase() ? alt.toLowerCase() : alt.toUpperCase();
+        push(name.slice(0, slot.i) + cased + name.slice(slot.i + 1));
+        if (out.length >= limit) break;
+      }
+    }
+    return out;
+  }
+  var sleep2 = (ms) => new Promise((r) => setTimeout(r, ms));
+  var HEADERS2 = { Accept: "application/json", "User-Agent": "TokenQueen/2.0 (card scanner)" };
+  async function getJson(url) {
+    const r = await fetch(url, { headers: HEADERS2 });
+    if (!r.ok) return null;
+    const j = await r.json();
+    return j && j.object === "error" ? null : j;
+  }
+  async function identify(lines, opts = {}) {
+    const { imageHeight, minConfidence = 0.62 } = opts;
+    const candidates = nameCandidates(lines, { imageHeight });
+    const printing = findPrinting(lines);
+    if (printing) {
+      const card = await getJson(`${SCRYFALL}/cards/${printing.set}/${printing.number}`);
+      await sleep2(110);
+      if (card) {
+        const agreement = candidates.length ? Math.max(...candidates.map((c) => similarity2(c.text, card.name))) : 0;
+        if (!candidates.length || agreement >= 0.55) {
+          return {
+            card,
+            confidence: candidates.length ? Math.max(0.9, agreement) : 0.8,
+            via: "collector-number",
+            uncertain: !candidates.length,
+            alternatives: []
+          };
+        }
+      }
+    }
+    const results = [];
+    for (const cand of candidates.slice(0, 3)) {
+      for (const v of variants(cand.text, 12)) {
+        const card = await getJson(`${SCRYFALL}/cards/named?fuzzy=${encodeURIComponent(v)}`);
+        await sleep2(110);
+        if (!card) continue;
+        const conf = similarity2(cand.text, card.name);
+        results.push({ card, confidence: conf, via: "name", matched: cand.text });
+        if (conf > 0.95) break;
+      }
+      if (results.some((r) => r.confidence > 0.95)) break;
+    }
+    if (!results.length) return null;
+    results.sort((a, b) => b.confidence - a.confidence);
+    const best = results[0];
+    if (best.confidence < minConfidence) {
+      return __spreadProps(__spreadValues({}, best), { uncertain: true, alternatives: results.slice(1, 4) });
+    }
+    return __spreadProps(__spreadValues({}, best), { alternatives: results.slice(1, 4).filter((r) => r.card.id !== best.card.id) });
+  }
+  function nameBands(lines, { gapFactor = 0.9 } = {}) {
+    const boxed = lines.map((l) => typeof l === "string" ? { text: l } : l).filter((l) => l.box && l.box.height).map((l) => __spreadProps(__spreadValues({}, l), { text: normaliseLine(l.text) })).filter((l) => l.text && !NOT_A_NAME.some((re) => re.test(l.text))).sort((a, b) => a.box.y - b.box.y);
+    if (boxed.length < 2) return [lines];
+    const heights = boxed.map((l) => l.box.height).sort((a, b) => a - b);
+    const median = heights[Math.floor(heights.length / 2)];
+    const threshold = median * (1 + gapFactor);
+    const bands = [[boxed[0]]];
+    for (let i = 1; i < boxed.length; i++) {
+      const prev = boxed[i - 1];
+      const gap = boxed[i].box.y - (prev.box.y + prev.box.height);
+      if (gap > threshold) bands.push([boxed[i]]);
+      else bands[bands.length - 1].push(boxed[i]);
+    }
+    return bands;
+  }
+  async function identifyMany(lines, opts = {}) {
+    const bands = nameBands(lines, opts);
+    const out = [];
+    for (const band of bands) {
+      const stripped = band.map((l) => typeof l === "string" ? l : l.text);
+      const result = await identify(stripped, __spreadProps(__spreadValues({}, opts), { imageHeight: void 0 }));
+      if (result) out.push(result);
+    }
+    return out;
+  }
+
+  // src/scan/ocr.js
+  function plugins() {
+    const cap = window.Capacitor;
+    return cap && cap.Plugins || {};
+  }
+  var INSTALL = [
+    "npm i @capacitor/camera @jcesarmobile/capacitor-ocr",
+    "npx cap sync android"
+  ].join("\n");
+  function available() {
+    const p = plugins();
+    return !!(p.Ocr || p.MlKitTextRecognition || p.CapacitorOcr);
+  }
+  function cameraAvailable() {
+    return !!plugins().Camera;
+  }
+  async function capture() {
+    const { Camera } = plugins();
+    if (!Camera) throw new Error("Camera plugin not installed.");
+    const photo = await Camera.getPhoto({
+      quality: 88,
+      allowEditing: false,
+      resultType: "dataUrl",
+      source: "CAMERA",
+      correctOrientation: true,
+      width: 1400
+    });
+    return { dataUrl: photo.dataUrl, path: photo.path };
+  }
+  async function recognise({ dataUrl, path }) {
+    const p = plugins();
+    if (p.Ocr && p.Ocr.process) {
+      const res = await p.Ocr.process({ image: dataUrl || path });
+      return flatten(res);
+    }
+    if (p.Ocr && p.Ocr.detectText) {
+      const res = await p.Ocr.detectText({ filename: path });
+      return (res.textDetections || []).map((d) => ({ text: d.text }));
+    }
+    if (p.MlKitTextRecognition) {
+      const res = await p.MlKitTextRecognition.detectText({
+        base64Image: (dataUrl || "").replace(/^data:image\/\w+;base64,/, "")
+      });
+      return flatten(res);
+    }
+    throw new Error("No OCR plugin installed.");
+  }
+  function flatten(res) {
+    const out = [];
+    const push = (text, frame) => {
+      if (!text) return;
+      const b = frame && (frame.boundingBox || frame.bounds || frame.frame || frame.cornerPoints);
+      out.push(b && b.height != null ? { text, box: { x: b.x || b.left || 0, y: b.y || b.top || 0, width: b.width, height: b.height } } : { text });
+    };
+    const blocks = res.blocks || res.textBlocks || res.results || [];
+    for (const block of blocks) {
+      const lines = block.lines || [block];
+      for (const line of lines) push(line.text, line);
+    }
+    if (!out.length && typeof res.text === "string") {
+      res.text.split("\n").forEach((t) => push(t.trim()));
+    }
+    return out;
+  }
+  function imageHeightFrom(lines) {
+    const ys = lines.filter((l) => l.box).map((l) => l.box.y + (l.box.height || 0));
+    return ys.length ? Math.max(...ys) * 1.06 : void 0;
+  }
+
+  // src/scan/ui.js
+  var C2 = {
+    ink: "var(--tq-ink)",
+    dim: "var(--tq-ink-dim)",
+    faint: "var(--tq-ink-faint)",
+    gold: "var(--tq-gold)",
+    bright: "var(--tq-gold-bright)",
+    warn: "var(--tq-danger)",
+    panel: "var(--tq-surface)",
+    deep: "var(--tq-surface-deep)",
+    edge: "var(--tq-edge)"
+  };
+  var DISPLAY2 = "var(--tq-display)";
+  var BODY2 = "var(--tq-text)";
+  var MONO2 = "var(--tq-mono)";
+  function el2(tag, style, ...kids) {
+    const n = document.createElement(tag);
+    Object.assign(n.style, style || {});
+    for (const k of kids) if (k) n.append(k);
+    return n;
+  }
+  function button(label, primary, onClick) {
+    const b = el2("button", {
+      minHeight: "var(--tq-tap)",
+      padding: "0 16px",
+      borderRadius: "4px",
+      fontFamily: DISPLAY2,
+      fontSize: "11px",
+      letterSpacing: "0.16em",
+      textTransform: "uppercase",
+      cursor: "pointer",
+      border: "1px solid " + C2.edge,
+      background: primary ? "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))" : "transparent",
+      color: primary ? "#1a1208" : C2.dim
+    }, label);
+    b.onclick = onClick;
+    return b;
+  }
+  function openScanner(onDone) {
+    const found = [];
+    let fanned = false;
+    const overlay = el2("div", {
+      position: "fixed",
+      inset: "0",
+      zIndex: "140",
+      display: "flex",
+      flexDirection: "column",
+      background: "rgba(5,3,4,0.96)",
+      backdropFilter: "blur(6px)",
+      WebkitBackdropFilter: "blur(6px)"
+    });
+    const head = el2("div", {
+      padding: "16px 16px 10px",
+      textAlign: "center",
+      borderBottom: "1px solid " + C2.edge
+    });
+    head.append(el2("div", {
+      fontFamily: DISPLAY2,
+      fontSize: "11px",
+      letterSpacing: "0.25em",
+      textTransform: "uppercase",
+      color: C2.gold
+    }, "Scan Cards"));
+    const status = el2("div", {
+      fontFamily: BODY2,
+      fontSize: "14px",
+      color: C2.dim,
+      marginTop: "6px"
+    }, "Point at a card and hold steady.");
+    head.append(status);
+    const modes = el2("div", { display: "flex", gap: "6px", marginTop: "10px", justifyContent: "center" });
+    const modeBtn = (label, isFan) => {
+      const b = el2("button", {
+        minHeight: "34px",
+        padding: "0 14px",
+        borderRadius: "3px",
+        cursor: "pointer",
+        fontFamily: DISPLAY2,
+        fontSize: "10px",
+        letterSpacing: "0.14em",
+        textTransform: "uppercase",
+        border: "1px solid " + C2.edge,
+        background: "transparent",
+        color: C2.dim
+      }, label);
+      b.onclick = () => {
+        fanned = isFan;
+        [...modes.children].forEach((c) => {
+          c.style.color = C2.dim;
+          c.style.borderColor = C2.edge;
+        });
+        b.style.color = C2.bright;
+        b.style.borderColor = "var(--tq-edge-strong)";
+        status.textContent = isFan ? "Fan the pile so every title bar shows, then shoot once." : "Point at a card and hold steady.";
+        status.style.color = C2.dim;
+      };
+      return b;
+    };
+    const single = modeBtn("One card", false);
+    modes.append(single, modeBtn("Fanned pile", true));
+    head.append(modes);
+    single.style.color = C2.bright;
+    single.style.borderColor = "var(--tq-edge-strong)";
+    const list = el2("div", { flex: "1", overflowY: "auto", padding: "12px 16px" });
+    const foot = el2("div", {
+      padding: "12px 16px",
+      display: "flex",
+      gap: "8px",
+      borderTop: "1px solid " + C2.edge
+    });
+    const render = () => {
+      list.textContent = "";
+      if (!found.length) {
+        list.append(el2("p", {
+          fontFamily: BODY2,
+          fontSize: "14px",
+          color: C2.faint,
+          textAlign: "center",
+          marginTop: "28px"
+        }, "Nothing scanned yet."));
+        return;
+      }
+      for (const entry of found) {
+        const row = el2("div", {
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          padding: "9px 0",
+          borderBottom: "1px solid " + C2.edge
+        });
+        row.append(el2("span", { fontFamily: MONO2, fontSize: "13px", color: C2.gold, width: "26px" }, String(entry.qty)));
+        row.append(el2("span", { fontFamily: BODY2, fontSize: "15px", color: C2.ink, flex: "1" }, entry.name));
+        const rm = button("\xD7", false, () => {
+          found.splice(found.indexOf(entry), 1);
+          render();
+        });
+        Object.assign(rm.style, { minHeight: "34px", padding: "0 12px", fontSize: "15px" });
+        row.append(rm);
+        list.append(row);
+      }
+    };
+    const add = (name) => {
+      const hit = found.find((f) => f.name.toLowerCase() === name.toLowerCase());
+      if (hit) hit.qty += 1;
+      else found.unshift({ name, qty: 1 });
+      render();
+    };
+    const confirm = (result) => {
+      const card = result.card;
+      const box = el2("div", {
+        margin: "10px 0 14px",
+        padding: "12px",
+        borderRadius: "4px",
+        background: C2.panel,
+        border: "1px solid " + (result.uncertain ? C2.warn : C2.edge)
+      });
+      box.append(el2("div", {
+        fontFamily: DISPLAY2,
+        fontSize: "11px",
+        letterSpacing: "0.14em",
+        textTransform: "uppercase",
+        color: result.uncertain ? C2.warn : C2.gold
+      }, result.uncertain ? "Not sure \u2014 is this right?" : "Found"));
+      box.append(el2("div", { fontFamily: BODY2, fontSize: "17px", color: C2.ink, margin: "6px 0 2px" }, card.name));
+      box.append(el2(
+        "div",
+        { fontFamily: MONO2, fontSize: "11px", color: C2.faint },
+        `${(card.set || "").toUpperCase()} ${card.collector_number || ""} \xB7 ${Math.round(result.confidence * 100)}% \xB7 ${result.via}`
+      ));
+      const row = el2("div", { display: "flex", gap: "8px", marginTop: "10px" });
+      row.append(button("Add", true, () => {
+        add(card.name);
+        box.remove();
+      }));
+      for (const alt of (result.alternatives || []).slice(0, 2)) {
+        row.append(button(alt.card.name.slice(0, 18), false, () => {
+          add(alt.card.name);
+          box.remove();
+        }));
+      }
+      row.append(button("Discard", false, () => box.remove()));
+      box.append(row);
+      list.prepend(box);
+    };
+    const scan = async () => {
+      if (!available()) {
+        status.textContent = "No OCR plugin installed on this build.";
+        status.style.color = C2.warn;
+        return;
+      }
+      try {
+        status.textContent = fanned ? "Reading the pile\u2026" : "Reading\u2026";
+        status.style.color = C2.dim;
+        const shot = await capture();
+        const lines = await recognise(shot);
+        if (!lines.length) {
+          status.textContent = "Could not read any text. Try more light, less angle.";
+          status.style.color = C2.warn;
+          return;
+        }
+        if (fanned) {
+          status.textContent = "Matching\u2026";
+          const results = await identifyMany(lines);
+          if (!results.length) {
+            status.textContent = "No cards matched. Spread the pile wider and try again.";
+            status.style.color = C2.warn;
+            return;
+          }
+          let added = 0;
+          for (const r of results.reverse()) {
+            if (r.uncertain || r.confidence < 0.8) confirm(r);
+            else {
+              add(r.card.name);
+              added += 1;
+            }
+          }
+          status.textContent = `${results.length} read, ${added} added straight off.`;
+          status.style.color = C2.dim;
+          return;
+        }
+        const result = await identify(lines, { imageHeight: imageHeightFrom(lines) });
+        if (!result) {
+          status.textContent = "Read the text but could not match a card. Try again or type it in.";
+          status.style.color = C2.warn;
+          return;
+        }
+        status.textContent = "Point at the next card.";
+        status.style.color = C2.dim;
+        confirm(result);
+      } catch (err) {
+        status.textContent = err.message || String(err);
+        status.style.color = C2.warn;
+      }
+    };
+    const close = (commit) => {
+      overlay.remove();
+      if (commit && onDone) {
+        onDone(found.map((f) => `${f.qty} ${f.name}`).join("\n"), found);
+      }
+    };
+    foot.append(button("Done", true, () => close(true)));
+    const scanBtn = button("Scan a card", false, scan);
+    scanBtn.style.flex = "1";
+    foot.prepend(scanBtn);
+    foot.append(button("Cancel", false, () => close(false)));
+    if (!available() || !cameraAvailable()) {
+      status.textContent = "Scanning needs the camera and OCR plugins in this build.";
+      status.style.color = C2.warn;
+      const hint = el2("pre", {
+        fontFamily: MONO2,
+        fontSize: "11px",
+        color: C2.faint,
+        whiteSpace: "pre-wrap",
+        marginTop: "10px",
+        textAlign: "left"
+      }, INSTALL);
+      head.append(hint);
+    }
+    overlay.append(head, list, foot);
+    document.body.append(overlay);
+    render();
+  }
+  function install6() {
+    window.TQ = window.TQ || {};
+    window.TQ.openScanner = openScanner;
+    window.TQ.identifyCard = identify;
   }
 
   // src/main.js
   install();
   install2();
+  install3();
+  install4();
+  install5();
+  install6();
 })();

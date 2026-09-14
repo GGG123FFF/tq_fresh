@@ -227,13 +227,22 @@ export function playOne(D, rnd, opts) {
     hand = order.slice(0, 7);
     library = order.slice(7);
     const size = 7 - mull;
-    let lands = 0, hasRamp = false;
+    let lands = 0, hasRamp = false, castable = 0, cheap = 0;
     for (const i of hand) {
-      if (D.isLand[i]) lands++;
-      else if (D.ramp[i] && D.mv[i] <= 3) hasRamp = true;
+      if (D.isLand[i]) { lands++; continue; }
+      if (D.ramp[i] && D.mv[i] <= 3) hasRamp = true;
+      // Roughly: could this be cast off the lands in hand plus a couple of
+      // draws? Counting lands alone kept seven-lands-and-a-six-drop, which is
+      // a mulligan in any real game and was the engine's biggest optimism.
+      if (D.mv[i] <= lands + 2) castable++;
+      if (D.mv[i] <= 3) cheap++;
     }
     const lo = Math.max(1, minLands - Math.floor((7 - size) / 2));
-    if (mull === 3 || (lo <= lands + (hasRamp ? 1 : 0) && lands <= maxLands)) {
+    const landsOk = lo <= lands + (hasRamp ? 1 : 0) && lands <= maxLands;
+    // A hand also needs something to do with the mana. On six or fewer we
+    // relax this, because at that point you keep and hope.
+    const hasPlan = size <= 6 ? castable >= 1 : (castable >= 1 && cheap >= 1);
+    if (mull === 3 || (landsOk && hasPlan)) {
       if (mull) hand = bottomCards(hand, mull, D);
       res.mulligans = mull;
       break;

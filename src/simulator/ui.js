@@ -13,21 +13,22 @@ import { simulate } from './index.js';
 
 const h = () => window.React.createElement;
 
+// Shared tokens - see src/theme/tokens.js.
 const C = {
-  bg: '#0d0d0f',
-  panel: 'rgba(201, 169, 97, 0.05)',
-  edge: 'rgba(201, 169, 97, 0.22)',
-  ink: '#e8dcc4',
-  dim: '#9a8765',
-  faint: '#6a5a42',
-  gold: '#d4b87a',
-  goldBright: '#f5d98f',
-  warn: '#c9705a',
+  bg: 'var(--tq-bg)',
+  panel: 'var(--tq-panel)',
+  edge: 'var(--tq-edge)',
+  ink: 'var(--tq-ink)',
+  dim: 'var(--tq-ink-dim)',
+  faint: 'var(--tq-ink-faint)',
+  gold: 'var(--tq-gold-deep)',
+  goldBright: 'var(--tq-gold-bright)',
+  warn: 'var(--tq-danger)',
 };
 
-const DISPLAY = "'Cinzel', serif";
-const BODY = "'Crimson Pro', serif";
-const MONO = "'JetBrains Mono', monospace";
+const DISPLAY = 'var(--tq-display)';
+const BODY = 'var(--tq-text)';
+const MONO = 'var(--tq-mono)';
 
 const PIP = { W: '#f8f0d8', U: '#a8cce8', B: '#9a8fa0', R: '#e89a86', G: '#9dc4a0' };
 const PIP_NAME = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green' };
@@ -38,7 +39,7 @@ function Label(text) {
   const e = h();
   return e('div', {
     style: {
-      fontFamily: DISPLAY, fontSize: 9, letterSpacing: '0.18em',
+      fontFamily: DISPLAY, fontSize: 11, letterSpacing: '0.18em',
       textTransform: 'uppercase', color: C.dim, marginBottom: 8,
     },
   }, text);
@@ -61,7 +62,7 @@ function Stat(key, label, value, warn) {
   }, value),
   e('div', {
     style: {
-      fontFamily: DISPLAY, fontSize: 8.5, letterSpacing: '0.14em',
+      fontFamily: DISPLAY, fontSize: 11, letterSpacing: '0.14em',
       textTransform: 'uppercase', color: C.dim, marginTop: 5,
     },
   }, label));
@@ -102,7 +103,7 @@ function ManaCurve(avail, spent) {
       },
     })),
     e('div', {
-      style: { fontFamily: MONO, fontSize: 9, color: C.faint },
+      style: { fontFamily: MONO, fontSize: 11, color: C.faint },
     }, `T${i + 1}`));
   }));
 }
@@ -123,7 +124,7 @@ function CommanderOdds(cmdBy, avgTurn) {
     },
   }, `${Math.round(cmdBy[t])}%`),
   e('div', {
-    style: { fontFamily: DISPLAY, fontSize: 8, letterSpacing: '0.12em', color: C.dim, marginTop: 4 },
+    style: { fontFamily: DISPLAY, fontSize: 11, letterSpacing: '0.12em', color: C.dim, marginTop: 4 },
   }, `BY T${t}`)));
 
   if (avgTurn) {
@@ -136,7 +137,7 @@ function CommanderOdds(cmdBy, avgTurn) {
     },
     e('div', { style: { fontFamily: MONO, fontSize: 15, fontWeight: 700, color: C.ink } }, avgTurn.toFixed(1)),
     e('div', {
-      style: { fontFamily: DISPLAY, fontSize: 8, letterSpacing: '0.12em', color: C.dim, marginTop: 4 },
+      style: { fontFamily: DISPLAY, fontSize: 11, letterSpacing: '0.12em', color: C.dim, marginTop: 4 },
     }, 'AVERAGE')));
   }
   return e('div', { style: { display: 'flex', gap: 6 } }, cells);
@@ -169,6 +170,9 @@ export function SimulatorTab(props) {
   const [summary, setSummary] = useState(props.initialSummary || null);
   const [error, setError] = useState(null);
   const [deck, setDeck] = useState(props.initialDeck || null);
+  // At a four-player table you are on the draw three games in four, so the
+  // on-the-play figure is the optimistic one. Worth being able to see both.
+  const [onDraw, setOnDraw] = useState(false);
 
   // The Vault's Odds button hands a deck over and jumps to this tab.
   React.useEffect(() => {
@@ -195,6 +199,7 @@ export function SimulatorTab(props) {
         store: props.store,
         name: deck ? deck.commander : undefined,
         commander: deck ? deck.commander : undefined,
+        on_draw: onDraw,
         onProgress: (done, total) => setProgress(done / total),
       });
       setSummary(s);
@@ -207,7 +212,7 @@ export function SimulatorTab(props) {
     } finally {
       setBusy(false);
     }
-  }, [text, games, props, deck]);
+  }, [text, games, props, deck, onDraw]);
 
   const s = summary;
   const kids = [];
@@ -224,8 +229,9 @@ export function SimulatorTab(props) {
     e('button', {
       onClick: () => { setDeck(null); setText(''); setSummary(null); },
       style: {
-        marginLeft: 10, padding: 0, background: 'none', border: 'none',
-        fontFamily: DISPLAY, fontSize: 9, letterSpacing: '0.14em',
+        marginLeft: 10, padding: '0 8px', minHeight: 'var(--tq-tap)',
+        background: 'none', border: 'none',
+        fontFamily: DISPLAY, fontSize: 11, letterSpacing: '0.14em',
         textTransform: 'uppercase', color: C.dim, cursor: 'pointer',
       },
     }, 'Clear')));
@@ -254,13 +260,28 @@ export function SimulatorTab(props) {
     },
   }));
 
+  kids.push(e('div', {
+    key: 'onplay',
+    style: { display: 'flex', gap: 6, marginTop: 10 },
+  }, [false, true].map((v) => e('button', {
+    key: String(v),
+    onClick: () => setOnDraw(v),
+    style: {
+      flex: 1, minHeight: 38, borderRadius: 4, cursor: 'pointer',
+      fontFamily: DISPLAY, fontSize: 10, letterSpacing: '0.14em',
+      textTransform: 'uppercase', background: 'transparent',
+      border: `1px solid ${onDraw === v ? 'var(--tq-edge-strong)' : C.edge}`,
+      color: onDraw === v ? C.goldBright : C.dim,
+    },
+  }, v ? 'On the draw' : 'On the play'))));
+
   kids.push(e('button', {
     key: 'run',
     onClick: runSim,
     disabled: busy || !text.trim(),
     className: 'active:scale-95 transition-all',
     style: {
-      marginTop: 10, width: '100%', padding: '13px 16px',
+      marginTop: 10, width: '100%', minHeight: 'var(--tq-tap)', padding: '13px 16px',
       fontFamily: DISPLAY, fontSize: 11, fontWeight: 700,
       letterSpacing: '0.2em', textTransform: 'uppercase',
       color: '#1a1208',

@@ -500,14 +500,14 @@ function StarterCard(_ref2) {
       fontWeight: 700,
       letterSpacing: '0.22em',
       textTransform: 'uppercase',
-      color: selected ? cd.symbol : '#e8dcc4'
+      color: selected ? cd.symbol : 'var(--tq-ink)'
     }
   }, typeData.name), /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: "'Crimson Pro', serif",
       fontSize: '0.62rem',
       fontStyle: 'italic',
-      color: selected ? '#d4b87a' : '#8a7555',
+      color: selected ? 'var(--tq-gold-deep)' : 'var(--tq-ink-mid)',
       textAlign: 'center',
       lineHeight: 1.35,
       letterSpacing: '0.02em'
@@ -518,7 +518,7 @@ var COLOR_DATA = {
   W: {
     name: 'White',
     bg: '#f5f0d8',
-    symbol: '#c9a961',
+    symbol: 'var(--tq-gold)',
     glow: 'rgba(245,217,143,0.6)',
     textOnBg: '#5a4a2a'
   },
@@ -816,7 +816,7 @@ var PetEgg = function PetEgg(_ref3) {
     style: {
       width: '100%',
       paddingBottom: '120%',
-      background: 'radial-gradient(ellipse at 40% 30%, #fff8e4, #d4b87a 50%, #6a4a20)'
+      background: 'radial-gradient(ellipse at 40% 30%, #fff8e4, var(--tq-gold-deep) 50%, #6a4a20)'
     }
   }) : artUrl ? /*#__PURE__*/React.createElement("img", {
     src: artUrl,
@@ -834,7 +834,7 @@ var PetEgg = function PetEgg(_ref3) {
     style: {
       width: '100%',
       paddingBottom: '120%',
-      background: 'radial-gradient(ellipse at 40% 30%, #fff8e4, #d4b87a 50%, #6a4a20)'
+      background: 'radial-gradient(ellipse at 40% 30%, #fff8e4, var(--tq-gold-deep) 50%, #6a4a20)'
     }
   }), /*#__PURE__*/React.createElement("svg", {
     style: {
@@ -868,14 +868,14 @@ var PetEgg = function PetEgg(_ref3) {
   }, /*#__PURE__*/React.createElement("path", {
     d: "M 42 38 L 46 30 L 51 40",
     fill: "none",
-    stroke: "#f5d98f",
+    stroke: "var(--tq-gold-bright)",
     strokeWidth: "2.5",
     strokeLinecap: "round",
     filter: "url(#crack-glow)"
   }), /*#__PURE__*/React.createElement("path", {
     d: "M 58 34 L 62 27 L 59 39",
     fill: "none",
-    stroke: "#f5d98f",
+    stroke: "var(--tq-gold-bright)",
     strokeWidth: "1.8",
     strokeLinecap: "round",
     filter: "url(#crack-glow)"
@@ -926,7 +926,7 @@ var PetEgg = function PetEgg(_ref3) {
         position: 'absolute',
         inset: '30%',
         borderRadius: '50%',
-        background: '#f5d98f',
+        background: 'var(--tq-gold-bright)',
         opacity: 0.9
       }
     }));
@@ -1174,7 +1174,7 @@ var PetParticles = function PetParticles(_ref8) {
       cy: "0%",
       rx: "1.5",
       ry: "4",
-      fill: "#9fc7e6",
+      fill: "var(--tq-info)",
       opacity: opacity,
       style: {
         '--pdx': '0px',
@@ -1230,7 +1230,7 @@ var PetParticles = function PetParticles(_ref8) {
       delay = "".concat(i * 0.45, "s"),
       dur = "".concat(1.2 + i * 0.25, "s");
     var dx = i % 2 === 0 ? '5px' : '-5px';
-    var col = i % 3 === 0 ? '#fff8e4' : i % 3 === 1 ? '#e8947a' : '#f5d98f';
+    var col = i % 3 === 0 ? '#fff8e4' : i % 3 === 1 ? 'var(--tq-danger-soft)' : 'var(--tq-gold-bright)';
     return /*#__PURE__*/React.createElement("circle", {
       key: i,
       cx: "".concat(x, "%"),
@@ -1267,7 +1267,7 @@ var PetParticles = function PetParticles(_ref8) {
       cy: "".concat(y, "%"),
       rx: "4",
       ry: "2.5",
-      fill: "#8fbc8f",
+      fill: "var(--tq-life-deep)",
       opacity: opacity * 0.9,
       transform: "rotate(".concat(i * 25, ")"),
       style: {
@@ -1416,8 +1416,9 @@ var PetCreature = function PetCreature(_ref9) {
       if (typeof fetchTimer !== 'undefined') clearTimeout(fetchTimer);
     };
   }, [cardName]);
-  var glowMin = "0 0 6px ".concat(cd.glow, ", 0 0 12px ").concat(cd.glow);
-  var glowMax = "0 0 14px ".concat(cd.glow, ", 0 0 28px ").concat(cd.glow);
+  var FRAME_INSET = "inset 0 0 0 1px rgba(201,169,97,0.30), inset 0 0 30px rgba(0,0,0,0.55)";
+  var glowMin = FRAME_INSET + ", 0 0 6px ".concat(cd.glow, ", 0 0 12px ").concat(cd.glow);
+  var glowMax = FRAME_INSET + ", 0 0 16px ".concat(cd.glow, ", 0 0 34px ").concat(cd.glow);
   var imgFilter = mood < 25 ? 'grayscale(70%) brightness(0.55)' : mood < 50 ? 'grayscale(25%) brightness(0.8) saturate(0.7)' : mood < 70 ? 'brightness(0.9) saturate(0.9)' : 'brightness(1.02) saturate(1.1)';
   var floatDur = mood < 30 ? '7s' : mood < 60 ? '5s' : '4s';
   return /*#__PURE__*/React.createElement("div", {
@@ -1433,9 +1434,12 @@ var PetCreature = function PetCreature(_ref9) {
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      borderRadius: '3px',
+      borderRadius: '4px',
       overflow: 'hidden',
-      border: "2px solid ".concat(cd.symbol),
+      border: '2px solid transparent',
+      backgroundImage: "linear-gradient(var(--tq-surface-deep), var(--tq-surface-deep)), linear-gradient(155deg, var(--tq-gold-bright) 0%, ".concat(cd.symbol, " 42%, var(--tq-gold) 78%, ").concat(cd.symbol, " 100%)"),
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
       '--pet-glow-min': glowMin,
       '--pet-glow-max': glowMax,
       animation: 'petGlowBox 3s ease-in-out infinite',
@@ -1512,32 +1516,55 @@ var PetCreature = function PetCreature(_ref9) {
       bottom: 0,
       left: 0,
       right: 0,
-      background: 'linear-gradient(transparent, rgba(5,3,10,0.7))',
-      padding: '10px 6px 3px',
-      textAlign: 'right',
+      background: 'linear-gradient(transparent, rgba(5,3,10,0.55) 35%, rgba(5,3,10,0.92))',
+      padding: '18px 8px 3px',
       pointerEvents: 'none'
     }
+  })), !loading && !failed && artUrl && /*#__PURE__*/React.createElement("div", {
+    // The nameplate. It used to be a 7px label tucked in a corner of the art;
+    // the companion deserves to be presented as a card, not a crop.
+    style: {
+      marginTop: '6px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '7px',
+      padding: '5px 9px',
+      borderRadius: '3px',
+      background: 'linear-gradient(180deg, rgba(58,44,26,0.9), rgba(21,14,7,0.95))',
+      border: '1px solid rgba(201,169,97,0.32)',
+      boxShadow: 'inset 0 1px 0 rgba(245,217,143,0.14)'
+    }
   }, /*#__PURE__*/React.createElement("span", {
+    title: "Mood " + Math.round(mood),
+    style: {
+      width: '7px',
+      height: '7px',
+      flexShrink: 0,
+      borderRadius: '50%',
+      background: mood < 25 ? 'var(--tq-danger)' : mood < 50 ? 'var(--tq-gold-deep)' : cd.symbol,
+      boxShadow: "0 0 7px ".concat(mood < 25 ? 'rgba(212,138,134,0.85)' : cd.glow)
+    }
+  }), /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: "'Cinzel', serif",
-      color: cd.symbol,
-      fontSize: '0.45rem',
-      letterSpacing: '0.08em',
-      opacity: 0.6
+      color: 'var(--tq-ink)',
+      fontSize: '10px',
+      letterSpacing: '0.12em',
+      textTransform: 'uppercase',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      flex: 1,
+      textAlign: 'left'
     }
-  }, cardName)), mood < 50 && /*#__PURE__*/React.createElement("div", {
+  }, cardName), /*#__PURE__*/React.createElement("span", {
     style: {
-      position: 'absolute',
-      top: '5px',
-      right: '5px',
-      width: '8px',
-      height: '8px',
-      borderRadius: '50%',
-      background: mood < 25 ? '#d48a86' : '#d4b87a',
-      boxShadow: "0 0 6px ".concat(mood < 25 ? 'rgba(212,138,134,0.8)' : 'rgba(212,184,122,0.8)'),
-      opacity: 0.9
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: '9px',
+      color: 'var(--tq-ink-faint)',
+      flexShrink: 0
     }
-  })));
+  }, Math.round(mood))));
 };
 var GUILD_NAMES = {
   WU: 'Azorius',
@@ -1884,7 +1911,7 @@ var PetPanel = function PetPanel(_ref10) {
       fontSize: responseType === 'tap' ? '0.95rem' : '0.75rem',
       letterSpacing: responseType === 'tap' ? '0' : '0.15em',
       textTransform: responseType === 'tap' ? 'none' : 'uppercase',
-      color: responseType === 'cooldown' ? '#8a7555' : responseType === 'feed' ? '#b4d4a0' : responseType === 'play' ? '#9fc7e6' : coreData.symbol,
+      color: responseType === 'cooldown' ? 'var(--tq-ink-mid)' : responseType === 'feed' ? 'var(--tq-life)' : responseType === 'play' ? 'var(--tq-info)' : coreData.symbol,
       background: 'rgba(5, 3, 10, 0.85)',
       border: "1px solid ".concat(coreData.symbol, "55"),
       borderRadius: '3px',
@@ -1895,7 +1922,7 @@ var PetPanel = function PetPanel(_ref10) {
   }, response), !response && /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-[9px] italic text-center",
     style: {
-      color: "#8a7555",
+      color: "var(--tq-ink-mid)",
       fontFamily: "'Crimson Pro', serif",
       opacity: 0.75,
       letterSpacing: '0.05em'
@@ -1920,7 +1947,7 @@ var PetPanel = function PetPanel(_ref10) {
     className: "text-sm italic",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#8a7555",
+      color: "var(--tq-ink-mid)",
       opacity: 0.7
     }
   }, "unnamed companion"), /*#__PURE__*/React.createElement("div", {
@@ -1953,7 +1980,7 @@ var PetPanel = function PetPanel(_ref10) {
     className: "text-[9px] mt-0.5 italic",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, identityLabel)), /*#__PURE__*/React.createElement("div", {
     className: "px-4 mb-3 grid grid-cols-2 gap-2"
@@ -1970,7 +1997,7 @@ var PetPanel = function PetPanel(_ref10) {
     className: "text-[9px] tracking-[0.2em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#b09870",
+      color: "var(--tq-ink-warm)",
       fontWeight: 600
     }
   }, "Happy"), /*#__PURE__*/React.createElement("span", {
@@ -1991,7 +2018,7 @@ var PetPanel = function PetPanel(_ref10) {
     style: {
       height: '100%',
       width: "".concat(happy, "%"),
-      background: happy < 30 ? 'linear-gradient(90deg, #d48a86, #e09a96)' : 'linear-gradient(90deg, #d4b87a, #f5d98f)',
+      background: happy < 30 ? 'linear-gradient(90deg, var(--tq-danger), #e09a96)' : 'linear-gradient(90deg, var(--tq-gold-deep), var(--tq-gold-bright))',
       transition: 'width 0.4s',
       boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15)'
     }
@@ -2008,7 +2035,7 @@ var PetPanel = function PetPanel(_ref10) {
     className: "text-[9px] tracking-[0.2em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#b09870",
+      color: "var(--tq-ink-warm)",
       fontWeight: 600
     }
   }, "Fed"), /*#__PURE__*/React.createElement("span", {
@@ -2029,7 +2056,7 @@ var PetPanel = function PetPanel(_ref10) {
     style: {
       height: '100%',
       width: "".concat(hunger, "%"),
-      background: hunger < 30 ? 'linear-gradient(90deg, #d48a86, #e09a96)' : 'linear-gradient(90deg, #8fbc8f, #b4d4a0)',
+      background: hunger < 30 ? 'linear-gradient(90deg, var(--tq-danger), #e09a96)' : 'linear-gradient(90deg, var(--tq-life-deep), var(--tq-life))',
       transition: 'width 0.4s',
       boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15)'
     }
@@ -2037,7 +2064,7 @@ var PetPanel = function PetPanel(_ref10) {
     className: "text-center text-sm italic mx-4 mb-3 px-3 py-2",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       lineHeight: 1.5,
       background: 'rgba(5, 3, 10, 0.4)',
       borderRadius: '3px',
@@ -2052,14 +2079,14 @@ var PetPanel = function PetPanel(_ref10) {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 700,
-      color: feedReady(pet) ? "#0a0604" : "#6a5a42",
-      background: feedReady(pet) ? "linear-gradient(180deg, #b4d4a0, #8fbc8f)" : "rgba(154, 135, 101, 0.08)",
+      color: feedReady(pet) ? "var(--tq-surface-deep)" : "var(--tq-ink-faint)",
+      background: feedReady(pet) ? "linear-gradient(180deg, var(--tq-life), var(--tq-life-deep))" : "rgba(154, 135, 101, 0.08)",
       border: "1px solid ".concat(feedReady(pet) ? "#7faf7f" : "rgba(154, 135, 101, 0.18)"),
       borderRadius: "3px",
       boxShadow: feedReady(pet) ? "inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 8px rgba(143, 188, 143, 0.2)" : "none"
     }
   }, /*#__PURE__*/React.createElement("div", null, "FEED"), /*#__PURE__*/React.createElement("div", {
-    className: "text-[8px] tracking-[0.15em] mt-1",
+    className: "text-[10px] tracking-[0.15em] mt-1",
     style: {
       opacity: 0.75
     }
@@ -2070,14 +2097,14 @@ var PetPanel = function PetPanel(_ref10) {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 700,
-      color: playReady(pet) ? "#0a0604" : "#6a5a42",
-      background: playReady(pet) ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "rgba(154, 135, 101, 0.08)",
+      color: playReady(pet) ? "var(--tq-surface-deep)" : "var(--tq-ink-faint)",
+      background: playReady(pet) ? "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))" : "rgba(154, 135, 101, 0.08)",
       border: "1px solid ".concat(playReady(pet) ? "#b09850" : "rgba(154, 135, 101, 0.18)"),
       borderRadius: "3px",
       boxShadow: playReady(pet) ? "inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 8px rgba(201, 169, 97, 0.25)" : "none"
     }
   }, /*#__PURE__*/React.createElement("div", null, "PLAY"), /*#__PURE__*/React.createElement("div", {
-    className: "text-[8px] tracking-[0.15em] mt-1",
+    className: "text-[10px] tracking-[0.15em] mt-1",
     style: {
       opacity: 0.75
     }
@@ -2091,7 +2118,7 @@ var PetPanel = function PetPanel(_ref10) {
     className: "text-[9px] tracking-[0.2em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#8a7555"
+      color: "var(--tq-ink-mid)"
     }
   }, ageDays >= 1 ? "".concat(ageDays, " day").concat(ageDays === 1 ? '' : 's') : "".concat(ageHours, "h"), " . stage ", stage + 1, "/3"), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -2120,7 +2147,7 @@ var PetPanel = function PetPanel(_ref10) {
     className: "flex-1 py-2 text-[9px] tracking-[0.2em] uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       background: "rgba(201, 169, 97, 0.06)",
       border: "1px solid rgba(201, 169, 97, 0.3)",
       borderRadius: "3px"
@@ -2130,7 +2157,7 @@ var PetPanel = function PetPanel(_ref10) {
     className: "flex-1 py-2 text-[9px] tracking-[0.2em] uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#d48a86",
+      color: "var(--tq-danger)",
       background: "rgba(160, 48, 44, 0.06)",
       border: "1px solid rgba(160, 48, 44, 0.3)",
       borderRadius: "3px"
@@ -2141,7 +2168,7 @@ var PetPanel = function PetPanel(_ref10) {
       borderTop: "1px solid rgba(201, 169, 97, 0.1)"
     }
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[8px] tracking-[0.3em] uppercase mb-1.5",
+    className: "text-[10px] tracking-[0.3em] uppercase mb-1.5",
     style: {
       fontFamily: "'Cinzel', serif",
       color: "#6a5042"
@@ -2156,15 +2183,15 @@ var PetPanel = function PetPanel(_ref10) {
       borderRadius: "2px"
     }
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[7px] uppercase tracking-widest",
+    className: "text-[10px] uppercase tracking-widest",
     style: {
-      color: "#6a5a42",
+      color: "var(--tq-ink-faint)",
       fontFamily: "'Cinzel', serif"
     }
   }, "XP"), /*#__PURE__*/React.createElement("p", {
     style: {
       fontFamily: "'JetBrains Mono', monospace",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontSize: "0.75rem",
       fontWeight: 700
     }
@@ -2176,15 +2203,15 @@ var PetPanel = function PetPanel(_ref10) {
       borderRadius: "2px"
     }
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[7px] uppercase tracking-widest",
+    className: "text-[10px] uppercase tracking-widest",
     style: {
-      color: "#6a5a42",
+      color: "var(--tq-ink-faint)",
       fontFamily: "'Cinzel', serif"
     }
   }, "Age"), /*#__PURE__*/React.createElement("p", {
     style: {
       fontFamily: "'JetBrains Mono', monospace",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontSize: "0.75rem",
       fontWeight: 700
     }
@@ -2192,20 +2219,20 @@ var PetPanel = function PetPanel(_ref10) {
     className: "grid grid-cols-2 gap-1 mb-1"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: onDevJuvenile,
-    className: "py-1.5 text-[8px] tracking-widest uppercase active:scale-95",
+    className: "py-1.5 text-[10px] tracking-widest uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9fc7e6",
+      color: "var(--tq-info)",
       background: "rgba(63,100,140,0.15)",
       border: "1px solid rgba(63,100,140,0.35)",
       borderRadius: "2px"
     }
   }, "-> Juvenile"), /*#__PURE__*/React.createElement("button", {
     onClick: onDevAdult,
-    className: "py-1.5 text-[8px] tracking-widest uppercase active:scale-95",
+    className: "py-1.5 text-[10px] tracking-widest uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       background: "rgba(201,169,97,0.1)",
       border: "1px solid rgba(201,169,97,0.3)",
       borderRadius: "2px"
@@ -2214,17 +2241,17 @@ var PetPanel = function PetPanel(_ref10) {
     className: "grid grid-cols-2 gap-1"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: onDevFeed,
-    className: "py-1.5 text-[8px] tracking-widest uppercase active:scale-95",
+    className: "py-1.5 text-[10px] tracking-widest uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#8fbc8f",
+      color: "var(--tq-life-deep)",
       background: "rgba(107,142,90,0.1)",
       border: "1px solid rgba(107,142,90,0.25)",
       borderRadius: "2px"
     }
   }, "Reset Feed CD"), /*#__PURE__*/React.createElement("button", {
     onClick: onDevPlay,
-    className: "py-1.5 text-[8px] tracking-widest uppercase active:scale-95",
+    className: "py-1.5 text-[10px] tracking-widest uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
       color: "#c9a9c9",
@@ -2284,10 +2311,10 @@ var Ornament = function Ornament(_ref11) {
 var QUICK_SEARCHES = ["Treasure", "Clue", "Food", "Blood", "Map", "Soldier", "Zombie", "Saproling", "Goblin", "Spirit", "Angel", "Dragon", "Wolf", "Insect", "Elf Warrior"];
 var COLOR_DOTS = {
   W: "#f9f4d4",
-  U: "#9fc7e6",
+  U: "var(--tq-info)",
   B: "#4a4a4a",
-  R: "#e8947a",
-  G: "#8fbc8f"
+  R: "var(--tq-danger-soft)",
+  G: "var(--tq-life-deep)"
 };
 var normalizeCard = function normalizeCard(card) {
   var _card$image_uris, _card$image_uris2, _card$card_faces, _card$image_uris3, _card$image_uris4, _card$card_faces2, _ref12, _card$power, _card$card_faces3, _ref13, _card$toughness, _card$card_faces4;
@@ -2363,7 +2390,7 @@ var STANDARD_COUNTERS = [{
   id: 'energy',
   name: 'Energy',
   short: 'E',
-  color: '#d4b87a',
+  color: 'var(--tq-gold-deep)',
   glow: 'rgba(212, 184, 122, 0.3)',
   text: '{E}. Energy reserves. Pay {E} as costs of activated abilities or spells.'
 }, {
@@ -2377,7 +2404,7 @@ var STANDARD_COUNTERS = [{
   id: 'experience',
   name: 'Experience',
   short: 'XP',
-  color: '#9fc7e6',
+  color: 'var(--tq-info)',
   glow: 'rgba(159, 199, 230, 0.3)',
   text: 'Experience counters track a permanent benefit across the game.'
 }, {
@@ -2426,18 +2453,18 @@ var STANDARD_COUNTERS = [{
   id: 'wish',
   name: 'Wish',
   short: 'W',
-  color: '#f5d98f',
+  color: 'var(--tq-gold-bright)',
   glow: 'rgba(245, 217, 143, 0.3)',
   text: 'Wish counters and other tokens used for one-shot effects.'
 }];
 var COUNTER_TYPES = [{
   id: 'plusOne',
   short: '+1/+1',
-  color: '#8fbc8f'
+  color: 'var(--tq-life-deep)'
 }, {
   id: 'minusOne',
   short: '-1/-1',
-  color: '#a0302c'
+  color: 'var(--tq-danger-deep)'
 }];
 var storage = {
   get: function get(key) {
@@ -2544,7 +2571,7 @@ function useLongPress(onClick, onLongPress) {
 
 // ============ Memory Game ============
 var MEMORY_BEST_KEY = 'tq_memory_best';
-var CARD_BACK_COLOR = '#1a110a';
+var CARD_BACK_COLOR = 'var(--tq-surface)';
 var MemoryGame = function MemoryGame(_ref14) {
   var onClose = _ref14.onClose,
     pet = _ref14.pet,
@@ -2739,7 +2766,7 @@ var MemoryGame = function MemoryGame(_ref14) {
   return /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[120] flex flex-col",
     style: {
-      background: "radial-gradient(ellipse at top, #1a110a 0%, #05030a 100%)"
+      background: "radial-gradient(ellipse at top, var(--tq-surface) 0%, #05030a 100%)"
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between px-4 py-3",
@@ -2750,21 +2777,21 @@ var MemoryGame = function MemoryGame(_ref14) {
     className: "text-sm uppercase tracking-[0.3em]",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontWeight: 600
     }
   }, "Memory"), /*#__PURE__*/React.createElement("p", {
     className: "text-[9px]",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#6a5a42"
+      color: "var(--tq-ink-faint)"
     }
   }, pairCount, " pairs . ", matched.size, "/", pairCount, " matched")), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3"
   }, startTime && !complete && /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: "'JetBrains Mono', monospace",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontSize: "1rem",
       fontWeight: 700
     }
@@ -2775,7 +2802,7 @@ var MemoryGame = function MemoryGame(_ref14) {
     },
     className: "w-8 h-8 flex items-center justify-center active:scale-90",
     style: {
-      color: "#9a8765",
+      color: "var(--tq-ink-dim)",
       border: "1px solid rgba(154,135,101,0.4)",
       borderRadius: "2px"
     }
@@ -2790,52 +2817,52 @@ var MemoryGame = function MemoryGame(_ref14) {
   }, /*#__PURE__*/React.createElement(Loader2, {
     className: "animate-spin",
     style: {
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontSize: '2rem'
     }
   }), /*#__PURE__*/React.createElement("p", {
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#6a5a42",
+      color: "var(--tq-ink-faint)",
       fontStyle: "italic"
     }
   }, "Summoning tokens...")) : complete ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center justify-center h-full gap-4 p-6 text-center"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     style: {
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontSize: '2.5rem'
     }
   }), /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#f5d98f",
+      color: "var(--tq-gold-bright)",
       fontSize: "1.3rem",
       fontWeight: 700
     }
   }, "Complete!"), /*#__PURE__*/React.createElement("p", {
     style: {
       fontFamily: "'JetBrains Mono', monospace",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontSize: "2rem",
       fontWeight: 700
     }
   }, fmtTime(finalTime)), finalTime < parseInt(localStorage.getItem(MEMORY_BEST_KEY) || '999999', 10) + 1 && /*#__PURE__*/React.createElement("p", {
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontStyle: "italic"
     }
   }, "New best time!"), best < 999999 && /*#__PURE__*/React.createElement("p", {
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#6a5a42",
+      color: "var(--tq-ink-faint)",
       fontSize: "0.7rem"
     }
   }, "Best: ", fmtTime(parseInt(localStorage.getItem(MEMORY_BEST_KEY), 10))), /*#__PURE__*/React.createElement("p", {
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#9a8765",
+      color: "var(--tq-ink-dim)",
       fontSize: "0.8rem",
       fontStyle: "italic"
     }
@@ -2849,7 +2876,7 @@ var MemoryGame = function MemoryGame(_ref14) {
     className: "px-4 py-2 text-xs tracking-widest uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       border: "1px solid rgba(201,169,97,0.4)",
       borderRadius: "2px"
     }
@@ -2870,9 +2897,9 @@ var MemoryGame = function MemoryGame(_ref14) {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 600,
-      color: "#1a110a",
-      background: "linear-gradient(180deg,#f5d98f,#c9a961)",
-      border: "1px solid #c9a961",
+      color: "var(--tq-surface)",
+      background: "linear-gradient(180deg,var(--tq-gold-bright),var(--tq-gold))",
+      border: "1px solid var(--tq-gold)",
       borderRadius: "2px"
     }
   }, "Play Again"))) : /*#__PURE__*/React.createElement("div", {
@@ -2896,7 +2923,7 @@ var MemoryGame = function MemoryGame(_ref14) {
         borderRadius: '3px',
         overflow: 'hidden',
         cursor: 'pointer',
-        border: "1.5px solid ".concat(isMatched ? '#c9a961' : 'rgba(154,135,101,0.3)'),
+        border: "1.5px solid ".concat(isMatched ? 'var(--tq-gold)' : 'rgba(154,135,101,0.3)'),
         boxShadow: isMatched ? '0 0 8px rgba(201,169,97,0.4)' : 'none',
         transition: 'all 0.3s ease'
       }
@@ -2929,11 +2956,11 @@ var MemoryGame = function MemoryGame(_ref14) {
       rx: "14",
       ry: "20",
       fill: "none",
-      stroke: "#c9a961",
+      stroke: "var(--tq-gold)",
       strokeWidth: "1.5"
     }), /*#__PURE__*/React.createElement("path", {
       d: "M 20 8 L 20 48 M 6 28 L 34 28",
-      stroke: "#c9a961",
+      stroke: "var(--tq-gold)",
       strokeWidth: "0.8",
       opacity: "0.5"
     }), /*#__PURE__*/React.createElement("circle", {
@@ -2941,7 +2968,7 @@ var MemoryGame = function MemoryGame(_ref14) {
       cy: "28",
       r: "4",
       fill: "none",
-      stroke: "#c9a961",
+      stroke: "var(--tq-gold)",
       strokeWidth: "1"
     }))));
   }))));
@@ -3575,7 +3602,8 @@ var FlappyDragon = function FlappyDragon(_ref16) {
         y: H * 0.45,
         vy: 0,
         rot: 0,
-        flapT: 0
+        flapT: 0,
+        wingPhase: 0
       },
       pipes: [],
       coins: [],
@@ -3638,6 +3666,8 @@ var FlappyDragon = function FlappyDragon(_ref16) {
       var targetRot = Math.max(-0.5, Math.min(1.0, s.dragon.vy * 0.10));
       s.dragon.rot += (targetRot - s.dragon.rot) * 0.18 * dt;
       s.dragon.flapT = Math.max(0, s.dragon.flapT - dt);
+      // A real beat: fast while the flap is live, slow glide between taps.
+      s.dragon.wingPhase += dt * (s.dragon.flapT > 0 ? 0.42 : 0.12);
 
       // Spawn pipes
       s.spawnTimer -= diff.speed * dt;
@@ -3681,7 +3711,7 @@ var FlappyDragon = function FlappyDragon(_ref16) {
               vy: -Math.random() * 2 - 1,
               life: 30,
               max: 30,
-              color: '#f5d98f',
+              color: 'var(--tq-gold-bright)',
               size: 2 + Math.random() * 2
             });
           }
@@ -3709,7 +3739,7 @@ var FlappyDragon = function FlappyDragon(_ref16) {
               vy: (Math.random() - 0.5) * 3.5,
               life: 25,
               max: 25,
-              color: '#f5d98f',
+              color: 'var(--tq-gold-bright)',
               size: 2 + Math.random() * 2
             });
           }
@@ -4006,99 +4036,211 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     ctx.translate(d.x, d.y);
     ctx.rotate(d.rot);
 
+    // One continuous wing phase, advanced by the game loop. The old code
+    // switched time bases between flapping and gliding, which froze the wing
+    // at the top of its arc the moment you tapped - so it never looked like
+    // it was beating.
+    var beat = Math.sin(d.wingPhase || 0);
+    var shoulderX = -1, shoulderY = -3;
+
     // Glow
-    var glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 28);
+    var glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 30);
     glow.addColorStop(0, color.glow);
     glow.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = glow;
-    ctx.fillRect(-28, -28, 56, 56);
+    ctx.fillRect(-32, -32, 64, 64);
 
-    // Tail
+    // ---- Far wing, behind the body. Two wings is most of what makes a
+    // silhouette read as a dragon rather than a bird.
+    drawWing(ctx, shoulderX - 3, shoulderY - 2, beat * 0.85, color, 0.8, -1);
+
+    // ---- Tail: longer than before, with a spade tip.
     ctx.fillStyle = color.wing;
     ctx.beginPath();
-    ctx.moveTo(-12, 0);
-    ctx.quadraticCurveTo(-22, -2, -28, -8);
-    ctx.lineTo(-26, 0);
-    ctx.quadraticCurveTo(-22, 4, -12, 4);
+    var tw = -2 + beat * 2;           // tail sways against the wing beat
+    ctx.beginPath();
+    ctx.moveTo(-12, -3);
+    ctx.quadraticCurveTo(-22, 1 + tw, -31, -2 + tw * 2);
+    ctx.quadraticCurveTo(-25, 3 + tw, -12, 4);
+    ctx.closePath();
+    ctx.fill();
+    // spade tip
+    ctx.beginPath();
+    ctx.moveTo(-30, -2 + tw * 2);
+    ctx.lineTo(-39, -8 + tw * 2);
+    ctx.lineTo(-36, -1 + tw * 2);
+    ctx.lineTo(-39, 5 + tw * 2);
     ctx.closePath();
     ctx.fill();
 
-    // Body
+    // ---- Body: slimmer and longer. The old ellipse was 16x12, which is why
+    // it read as chubby; this is 16x8 with a tapered chest.
     ctx.fillStyle = color.body;
     ctx.beginPath();
-    ctx.ellipse(0, 0, 16, 12, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, 16, 8, -0.06, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = color.wing;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1.4;
     ctx.stroke();
 
-    // Belly highlight
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+    // Belly
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
     ctx.beginPath();
-    ctx.ellipse(-2, 3, 9, 6, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 3, 9, 3, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Wing (flapping animation)
-    var flapPhase = Math.sin((d.flapT > 0 ? d.flapT : Date.now() / 120) * 0.5);
-    var wingY = -6 - flapPhase * 6;
+    // Back ridge
     ctx.fillStyle = color.wing;
-    ctx.beginPath();
-    ctx.moveTo(-2, -4);
-    ctx.quadraticCurveTo(0, wingY - 4, 10, wingY);
-    ctx.quadraticCurveTo(4, wingY + 6, -2, 2);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    for (var r = 0; r < 3; r++) {
+      var rx = -8 + r * 6;
+      ctx.beginPath();
+      ctx.moveTo(rx - 2, -6);
+      ctx.lineTo(rx, -10);
+      ctx.lineTo(rx + 2, -6);
+      ctx.closePath();
+      ctx.fill();
+    }
 
-    // Head
+    // ---- Neck and head, set forward and slightly raised.
     ctx.fillStyle = color.body;
     ctx.beginPath();
-    ctx.ellipse(12, -2, 8, 7, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = color.wing;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Horn
-    ctx.fillStyle = color.wing;
-    ctx.beginPath();
-    ctx.moveTo(11, -7);
-    ctx.lineTo(13, -13);
-    ctx.lineTo(15, -7);
+    ctx.moveTo(9, -4);
+    ctx.quadraticCurveTo(16, -8, 19, -8);
+    ctx.lineTo(19, -2);
+    ctx.quadraticCurveTo(14, -1, 10, 3);
     ctx.closePath();
     ctx.fill();
 
-    // Eye
+    ctx.beginPath();
+    ctx.ellipse(21, -7, 7, 5, -0.12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = color.wing;
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+
+    // Snout
+    ctx.fillStyle = color.body;
+    ctx.beginPath();
+    ctx.moveTo(25, -9);
+    ctx.quadraticCurveTo(31, -8, 31, -5);
+    ctx.quadraticCurveTo(28, -3.5, 24, -4);
+    ctx.closePath();
+    ctx.fill();
+
+    // Horns, swept back
+    ctx.fillStyle = color.wing;
+    ctx.beginPath();
+    ctx.moveTo(19.5, -11);
+    ctx.quadraticCurveTo(14, -17, 9, -19);
+    ctx.quadraticCurveTo(15, -14, 16.5, -10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(23, -10.5);
+    ctx.quadraticCurveTo(18, -16, 13, -17.5);
+    ctx.quadraticCurveTo(19, -13, 20.5, -9.5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Hind leg
+    ctx.fillStyle = color.wing;
+    ctx.beginPath();
+    ctx.ellipse(-4, 7, 4.5, 3, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ---- Near wing, in front of the body.
+    drawWing(ctx, shoulderX, shoulderY, beat, color, 1, 1);
+
+    // ---- Eye
     ctx.fillStyle = color.eye;
     ctx.beginPath();
-    ctx.arc(15, -3, 1.6, 0, Math.PI * 2);
+    ctx.arc(23, -8, 1.7, 0, Math.PI * 2);
     ctx.fill();
     if (!dead) {
       ctx.fillStyle = '#fff';
       ctx.beginPath();
-      ctx.arc(15.5, -3.5, 0.6, 0, Math.PI * 2);
+      ctx.arc(23.6, -8.6, 0.7, 0, Math.PI * 2);
       ctx.fill();
     } else {
-      // X eye
       ctx.strokeStyle = color.eye;
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(13.5, -4.5);
-      ctx.lineTo(16.5, -1.5);
-      ctx.moveTo(16.5, -4.5);
-      ctx.lineTo(13.5, -1.5);
+      ctx.moveTo(21.5, -9.5);
+      ctx.lineTo(24.5, -6.5);
+      ctx.moveTo(24.5, -9.5);
+      ctx.lineTo(21.5, -6.5);
       ctx.stroke();
     }
 
-    // Mouth (when flapping)
+    // Mouth opens on the downbeat of a flap
     if (d.flapT > 0 && !dead) {
       ctx.fillStyle = '#3a1a1a';
       ctx.beginPath();
-      ctx.ellipse(18, 1, 2, 1.2, 0, 0, Math.PI * 2);
+      ctx.ellipse(28, -4.5, 2.4, 1.3, 0, 0, Math.PI * 2);
       ctx.fill();
     }
+    ctx.restore();
+  };
+
+  /**
+   * One wing. Drawn as a fixed membrane shape and rotated about the shoulder,
+   * which is how a wing actually moves - the earlier attempts interpolated the
+   * tip position and the fan collapsed into a spike at the extremes.
+   * `beat` is -1 (up) to +1 (down).
+   */
+  var drawWing = function drawWing(ctx, sx, sy, beat, color, scale, side) {
+    ctx.save();
+    ctx.translate(sx, sy);
+    ctx.scale(scale, scale);
+    ctx.rotate(-beat * 0.85);
+    ctx.globalAlpha = side < 0 ? 0.45 : 1;
+
+    // Membrane: leading arm out to the tip, then three scallops back to the
+    // shoulder along the trailing edge.
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(-12, -16, -30, -15);
+    ctx.quadraticCurveTo(-22, -6, -19, -3);
+    ctx.quadraticCurveTo(-15, 4, -11, 1);
+    ctx.quadraticCurveTo(-7, 8, -3, 4);
+    ctx.quadraticCurveTo(-1, 3, 0, 0);
+    ctx.closePath();
+    ctx.fillStyle = color.body;
+    ctx.fill();
+    var a = ctx.globalAlpha;
+    ctx.globalAlpha = a * 0.28;
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.globalAlpha = a;
+
+    // Finger struts
+    ctx.strokeStyle = color.wing;
+    ctx.lineWidth = 1;
+    var fingers = [[-19, -3], [-11, 1], [-3, 4]];
+    for (var f = 0; f < fingers.length; f++) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(-6, -6, fingers[f][0], fingers[f][1]);
+      ctx.stroke();
+    }
+
+    // Leading arm, the heaviest line on the wing
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(-12, -16, -30, -15);
+    ctx.stroke();
+
+    // Wrist claw
+    ctx.fillStyle = color.wing;
+    ctx.beginPath();
+    ctx.moveTo(-30, -15);
+    ctx.lineTo(-36, -18);
+    ctx.lineTo(-29, -12);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.globalAlpha = 1;
     ctx.restore();
   };
 
@@ -4113,6 +4255,7 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     lastFlapAtRef.current = now;
     s.dragon.vy = s.diff.jump;
     s.dragon.flapT = 6;
+    s.dragon.wingPhase = Math.PI / 2;
     sfx.flap();
     haptic(10);
   };
@@ -4224,7 +4367,7 @@ var FlappyDragon = function FlappyDragon(_ref16) {
       background: 'rgba(10, 6, 4, 0.8)',
       border: '1px solid rgba(201, 169, 97, 0.4)',
       borderRadius: '3px',
-      color: '#c9a961',
+      color: 'var(--tq-gold)',
       cursor: 'pointer'
     },
     "aria-label": "Close"
@@ -4233,15 +4376,15 @@ var FlappyDragon = function FlappyDragon(_ref16) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-center"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[8px] tracking-[0.25em] uppercase",
+    className: "text-[10px] tracking-[0.25em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: '#8a7555'
+      color: 'var(--tq-ink-mid)'
     }
   }, "Best"), /*#__PURE__*/React.createElement("p", {
     style: {
       fontFamily: "'JetBrains Mono', monospace",
-      color: '#d4b87a',
+      color: 'var(--tq-gold-deep)',
       fontSize: '1rem',
       fontWeight: 700
     }
@@ -4261,7 +4404,7 @@ var FlappyDragon = function FlappyDragon(_ref16) {
       background: 'rgba(10, 6, 4, 0.8)',
       border: '1px solid rgba(201, 169, 97, 0.4)',
       borderRadius: '3px',
-      color: muted ? '#6a5a42' : '#c9a961',
+      color: muted ? 'var(--tq-ink-faint)' : 'var(--tq-gold)',
       cursor: 'pointer'
     },
     "aria-label": muted ? 'Unmute' : 'Mute'
@@ -4301,7 +4444,7 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     className: "text-lg mb-1",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: '#f5d98f',
+      color: 'var(--tq-gold-bright)',
       fontWeight: 700,
       letterSpacing: '0.15em'
     }
@@ -4309,13 +4452,13 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     className: "text-[10px] italic mb-5",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: '#8a7555'
+      color: 'var(--tq-ink-mid)'
     }
   }, "Soar through crystal pillars . Collect starlight"), /*#__PURE__*/React.createElement("p", {
     className: "text-[9px] tracking-[0.2em] uppercase mb-2",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: '#b09870'
+      color: 'var(--tq-ink-warm)'
     }
   }, "Dragon"), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center gap-1.5 mb-5"
@@ -4332,7 +4475,7 @@ var FlappyDragon = function FlappyDragon(_ref16) {
       className: "w-10 h-10 active:scale-90",
       style: {
         background: dragonColor === key ? "radial-gradient(circle at 30% 30%, ".concat(c.body, ", ").concat(c.wing, ")") : c.body,
-        border: dragonColor === key ? '2px solid #f5d98f' : '1px solid rgba(201, 169, 97, 0.3)',
+        border: dragonColor === key ? '2px solid var(--tq-gold-bright)' : '1px solid rgba(201, 169, 97, 0.3)',
         borderRadius: '50%',
         boxShadow: dragonColor === key ? "0 0 16px ".concat(c.glow) : 'none',
         cursor: 'pointer'
@@ -4343,7 +4486,7 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     className: "text-[9px] tracking-[0.2em] uppercase mb-2",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: '#b09870'
+      color: 'var(--tq-ink-warm)'
     }
   }, "Difficulty"), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-3 gap-1.5 mb-6"
@@ -4359,9 +4502,9 @@ var FlappyDragon = function FlappyDragon(_ref16) {
       style: {
         fontFamily: "'Cinzel', serif",
         fontWeight: active ? 700 : 500,
-        color: active ? '#0a0604' : '#c9a961',
-        background: active ? 'linear-gradient(180deg, #f5d98f, #c9a961)' : 'transparent',
-        border: "1px solid ".concat(active ? '#c9a961' : 'rgba(201, 169, 97, 0.3)'),
+        color: active ? 'var(--tq-surface-deep)' : 'var(--tq-gold)',
+        background: active ? 'linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))' : 'transparent',
+        border: "1px solid ".concat(active ? 'var(--tq-gold)' : 'rgba(201, 169, 97, 0.3)'),
         borderRadius: '2px',
         cursor: 'pointer'
       }
@@ -4372,9 +4515,9 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 700,
-      color: '#0a0604',
-      background: 'linear-gradient(180deg, #f5d98f, #c9a961)',
-      border: '1px solid #c9a961',
+      color: 'var(--tq-surface-deep)',
+      background: 'linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))',
+      border: '1px solid var(--tq-gold)',
       borderRadius: '3px',
       boxShadow: '0 4px 12px rgba(201, 169, 97, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
       cursor: 'pointer'
@@ -4397,14 +4540,14 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     className: "text-[10px] tracking-[0.3em] uppercase mb-1",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: '#d48a86',
+      color: 'var(--tq-danger)',
       fontWeight: 600
     }
   }, finalScore > bestScore - 1 && finalScore >= bestScore ? '✦ New Best ✦' : 'The dragon falls'), /*#__PURE__*/React.createElement("p", {
     className: "text-5xl mb-2",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: '#f5d98f',
+      color: 'var(--tq-gold-bright)',
       fontWeight: 800,
       letterSpacing: '0.05em'
     }
@@ -4412,13 +4555,13 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     className: "text-[10px] tracking-[0.2em] uppercase mb-3",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: '#8a7555'
+      color: 'var(--tq-ink-mid)'
     }
   }, "Score"), xpEarned > 0 && pet && /*#__PURE__*/React.createElement("p", {
     className: "text-xs mb-4",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: '#b4d4a0',
+      color: 'var(--tq-life)',
       fontStyle: 'italic'
     }
   }, "Your companion gained +", xpEarned, " XP"), /*#__PURE__*/React.createElement("div", {
@@ -4432,7 +4575,7 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 600,
-      color: '#c9a961',
+      color: 'var(--tq-gold)',
       background: 'transparent',
       border: '1px solid rgba(201, 169, 97, 0.4)',
       borderRadius: '2px',
@@ -4444,9 +4587,9 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 700,
-      color: '#0a0604',
-      background: 'linear-gradient(180deg, #f5d98f, #c9a961)',
-      border: '1px solid #c9a961',
+      color: 'var(--tq-surface-deep)',
+      background: 'linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))',
+      border: '1px solid var(--tq-gold)',
       borderRadius: '2px',
       boxShadow: '0 2px 8px rgba(201, 169, 97, 0.3)',
       cursor: 'pointer'
@@ -4462,7 +4605,7 @@ var FlappyDragon = function FlappyDragon(_ref16) {
     className: "text-[10px] italic tracking-widest uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: '#c9a961'
+      color: 'var(--tq-gold)'
     }
   }, "tap to flap")));
 };
@@ -4644,7 +4787,7 @@ var KeywordIndex = function KeywordIndex() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      background: "linear-gradient(180deg, var(--tq-gold-deep), var(--tq-gold) 50%, transparent)",
       borderRadius: "1px",
       boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
@@ -4652,13 +4795,13 @@ var KeywordIndex = function KeywordIndex() {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontWeight: 600
     }
   }, "Keyword Index"), /*#__PURE__*/React.createElement("span", {
     className: "text-[9px]",
     style: {
-      color: "#6a5a42",
+      color: "var(--tq-ink-faint)",
       fontFamily: "'JetBrains Mono', monospace"
     }
   }, filtered.length)), /*#__PURE__*/React.createElement("div", {
@@ -4684,7 +4827,7 @@ var KeywordIndex = function KeywordIndex() {
       left: '0.625rem',
       top: '50%',
       transform: 'translateY(-50%)',
-      color: "#6a5a42",
+      color: "var(--tq-ink-faint)",
       fontSize: '0.875rem'
     }
   })), /*#__PURE__*/React.createElement("div", {
@@ -4707,14 +4850,14 @@ var KeywordIndex = function KeywordIndex() {
     }, /*#__PURE__*/React.createElement("span", {
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#d4b87a",
+        color: "var(--tq-gold-deep)",
         fontSize: "0.8rem",
         fontWeight: 600,
         letterSpacing: "0.05em"
       }
     }, kw.k), /*#__PURE__*/React.createElement("span", {
       style: {
-        color: "#6a5a42",
+        color: "var(--tq-ink-faint)",
         fontSize: "0.7rem",
         transition: 'transform 0.2s',
         transform: expanded === kw.k ? 'rotate(180deg)' : 'none'
@@ -4733,7 +4876,7 @@ var KeywordIndex = function KeywordIndex() {
   }), filtered.length === 0 && /*#__PURE__*/React.createElement("p", {
     className: "text-center py-4 italic text-sm",
     style: {
-      color: "#6a5a42",
+      color: "var(--tq-ink-faint)",
       fontFamily: "'Crimson Pro', serif"
     }
   }, "No keywords found.")));
@@ -4997,7 +5140,7 @@ function TokenTracker() {
         id: "p".concat(i + 1),
         name: "Player ".concat(i + 1),
         life: 40,
-        color: ["#d48a86", "#9fc7e6", "#d4b87a", "#b4d4a0"][i % 4],
+        color: ["var(--tq-danger)", "var(--tq-info)", "var(--tq-gold-deep)", "var(--tq-life)"][i % 4],
         poison: 0,
         energy: 0,
         experience: 0,
@@ -5563,17 +5706,17 @@ function TokenTracker() {
     id: 'charge',
     label: 'Charge',
     short: 'CHG',
-    color: '#9fc7e6'
+    color: 'var(--tq-info)'
   }, {
     id: 'loyalty',
     label: 'Loyalty',
     short: 'LOY',
-    color: '#d4b87a'
+    color: 'var(--tq-gold-deep)'
   }, {
     id: 'poison',
     label: 'Poison',
     short: 'PSN',
-    color: '#8fbc8f'
+    color: 'var(--tq-life-deep)'
   }, {
     id: 'time',
     label: 'Time',
@@ -5583,12 +5726,12 @@ function TokenTracker() {
     id: 'lore',
     label: 'Lore',
     short: 'LORE',
-    color: '#e8dcc4'
+    color: 'var(--tq-ink)'
   }, {
     id: 'quest',
     label: 'Quest',
     short: 'QST',
-    color: '#e8947a'
+    color: 'var(--tq-danger-soft)'
   }];
   var debounceRef = useRef(null);
   var copyDebounceRef = useRef(null);
@@ -6448,9 +6591,12 @@ function TokenTracker() {
     var next = titleTapRef.current + 1;
     titleTapRef.current = next;
     setTitleTapCount(next);
+    // The seal traces another seventh with every tap (src/sanctum/seal.js).
+    if (window.TQ && window.TQ.sealProgress) window.TQ.sealProgress(next);
     // Progressive haptics -- quiet at first, intensifying near the unlock
     if (next < 4) haptic(8);else if (next < 6) haptic(15);else if (next === 6) haptic(25);else if (next >= 7) {
       haptic([40, 60, 40, 60, 80]);
+      if (window.TQ && window.TQ.sealBreak) window.TQ.sealBreak();
       setSanctumOpen(true);
       titleTapRef.current = 0;
       setTitleTapCount(0);
@@ -6460,6 +6606,7 @@ function TokenTracker() {
     titleTapResetRef.current = setTimeout(function () {
       titleTapRef.current = 0;
       setTitleTapCount(0);
+      if (window.TQ && window.TQ.sealHide) window.TQ.sealHide();
     }, 3000);
   };
 
@@ -6526,7 +6673,7 @@ function TokenTracker() {
   return /*#__PURE__*/React.createElement("div", {
     className: "min-h-screen w-full tq-font-".concat(settings.fontSize),
     style: {
-      background: "radial-gradient(ellipse at top, #1a110a 0%, #0a0604 50%, #05030a 100%)"
+      background: "radial-gradient(ellipse at top, var(--tq-surface) 0%, var(--tq-surface-deep) 50%, #05030a 100%)"
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "pointer-events-none fixed inset-0 opacity-30 mix-blend-overlay",
@@ -6570,9 +6717,9 @@ function TokenTracker() {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 600,
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       textShadow: titleTapCount >= 5 ? "0 0 12px rgba(212, 184, 122, 0.6), 0 1px 2px rgba(0,0,0,0.7)" : "0 1px 2px rgba(0,0,0,0.7)",
-      background: "linear-gradient(180deg, #f5d98f 0%, #d4b87a 50%, #8a6f3a 100%)",
+      background: "linear-gradient(180deg, var(--tq-gold-bright) 0%, var(--tq-gold-deep) 50%, var(--tq-brass) 100%)",
       WebkitBackgroundClip: "text",
       WebkitTextFillColor: "transparent",
       backgroundClip: "text",
@@ -6589,12 +6736,12 @@ function TokenTracker() {
     className: "text-base font-bold",
     style: {
       fontFamily: "'JetBrains Mono', monospace",
-      color: "#d4b87a"
+      color: "var(--tq-gold-deep)"
     }
   }, totalTokens), /*#__PURE__*/React.createElement("span", {
-    className: "text-[7px] tracking-[0.2em] uppercase mt-0.5",
+    className: "text-[10px] tracking-[0.2em] uppercase mt-0.5",
     style: {
-      color: "#9a8765",
+      color: "var(--tq-ink-dim)",
       fontFamily: "'Cinzel', serif"
     }
   }, "token", totalTokens === 1 ? "" : "s")), /*#__PURE__*/React.createElement("div", {
@@ -6608,18 +6755,18 @@ function TokenTracker() {
     className: "text-base font-bold",
     style: {
       fontFamily: "'JetBrains Mono', monospace",
-      color: "#d4b87a"
+      color: "var(--tq-gold-deep)"
     }
   }, uniqueTypes), /*#__PURE__*/React.createElement("span", {
-    className: "text-[7px] tracking-[0.2em] uppercase mt-0.5",
+    className: "text-[10px] tracking-[0.2em] uppercase mt-0.5",
     style: {
-      color: "#9a8765",
+      color: "var(--tq-ink-dim)",
       fontFamily: "'Cinzel', serif"
     }
   }, "type", uniqueTypes === 1 ? "" : "s"))) : /*#__PURE__*/React.createElement("span", {
     className: "text-[10px] italic",
     style: {
-      color: "#6a5a42",
+      color: "var(--tq-ink-faint)",
       fontFamily: "'Crimson Pro', serif"
     }
   }, "Empty battlefield")), /*#__PURE__*/React.createElement("div", {
@@ -6661,7 +6808,7 @@ function TokenTracker() {
     onClick: undo,
     className: "flex items-center justify-center w-8 h-8 active:scale-90 transition-all",
     style: {
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       background: "linear-gradient(180deg, rgba(201, 169, 97, 0.1), rgba(201, 169, 97, 0.02))",
       border: "1px solid rgba(201, 169, 97, 0.35)",
       borderRadius: "2px"
@@ -6679,7 +6826,7 @@ function TokenTracker() {
     },
     className: "flex items-center justify-center w-8 h-8 active:scale-90 transition-all",
     style: {
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       background: "linear-gradient(180deg, rgba(201, 169, 97, 0.15), rgba(201, 169, 97, 0.05))",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "2px"
@@ -6694,7 +6841,7 @@ function TokenTracker() {
     onClick: requestWipe,
     className: "flex items-center justify-center w-8 h-8 active:scale-90 transition-all",
     style: {
-      color: "#d48a86",
+      color: "var(--tq-danger)",
       background: "linear-gradient(180deg, rgba(160, 48, 44, 0.15), rgba(160, 48, 44, 0.05))",
       border: "1px solid rgba(160, 48, 44, 0.4)",
       borderRadius: "2px"
@@ -6712,7 +6859,7 @@ function TokenTracker() {
     },
     className: "flex items-center justify-center w-8 h-8 active:scale-90 transition-all",
     style: {
-      color: "#9a8765",
+      color: "var(--tq-ink-dim)",
       background: "linear-gradient(180deg, rgba(154, 135, 101, 0.08), rgba(154, 135, 101, 0.02))",
       border: "1px solid rgba(154, 135, 101, 0.3)",
       borderRadius: "2px"
@@ -6734,7 +6881,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      background: "linear-gradient(180deg, var(--tq-gold-deep), var(--tq-gold) 50%, transparent)",
       borderRadius: "1px",
       boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
@@ -6742,13 +6889,13 @@ function TokenTracker() {
     className: "text-[10px] tracking-[0.3em] uppercase flex items-center gap-1.5",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontWeight: 600
     }
   }, /*#__PURE__*/React.createElement(Star, {
-    fill: "#c9a961",
+    fill: "var(--tq-gold)",
     style: {
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontSize: '0.75rem'
     }
   }), "Favourites")), /*#__PURE__*/React.createElement("div", {
@@ -6779,7 +6926,7 @@ function TokenTracker() {
       className: "aspect-[5/7] flex items-center justify-center text-[9px] p-1 text-center",
       style: {
         background: "#2a1f14",
-        color: "#c9a961"
+        color: "var(--tq-gold)"
       }
     }, f.name)), /*#__PURE__*/React.createElement("button", {
       onClick: function onClick(e) {
@@ -6791,7 +6938,7 @@ function TokenTracker() {
         background: "rgba(10, 6, 4, 0.95)",
         border: "1px solid rgba(201, 169, 97, 0.7)",
         borderRadius: "50%",
-        color: "#c9a961",
+        color: "var(--tq-gold)",
         boxShadow: "0 2px 6px rgba(0,0,0,0.4)"
       },
       "aria-label": "Unfavourite ".concat(f.name)
@@ -6813,7 +6960,7 @@ function TokenTracker() {
     }
   }, /*#__PURE__*/React.createElement(Search, {
     style: {
-      color: "#b09870",
+      color: "var(--tq-ink-warm)",
       fontSize: '1rem',
       position: 'absolute',
       left: '0.85rem',
@@ -6845,7 +6992,7 @@ function TokenTracker() {
     },
     className: "absolute right-2 top-1/2 -translate-y-1/2 p-1.5 active:scale-90",
     style: {
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     },
     "aria-label": "Clear search"
   }, /*#__PURE__*/React.createElement(XIcon, null))), /*#__PURE__*/React.createElement("div", {
@@ -6861,9 +7008,9 @@ function TokenTracker() {
       style: {
         fontFamily: "'Cinzel', serif",
         fontWeight: active ? 600 : 500,
-        color: active ? "#1a110a" : "#c9a961",
-        background: active ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "linear-gradient(180deg, rgba(201, 169, 97, 0.06), rgba(201, 169, 97, 0.01))",
-        border: "1px solid ".concat(active ? "#c9a961" : "rgba(201, 169, 97, 0.3)"),
+        color: active ? "var(--tq-surface)" : "var(--tq-gold)",
+        background: active ? "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))" : "linear-gradient(180deg, rgba(201, 169, 97, 0.06), rgba(201, 169, 97, 0.01))",
+        border: "1px solid ".concat(active ? "var(--tq-gold)" : "rgba(201, 169, 97, 0.3)"),
         borderRadius: "2px",
         boxShadow: active ? "0 2px 8px rgba(201, 169, 97, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)" : "inset 0 1px 0 rgba(255, 255, 255, 0.03)"
       }
@@ -6875,7 +7022,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      background: "linear-gradient(180deg, var(--tq-gold-deep), var(--tq-gold) 50%, transparent)",
       borderRadius: "1px",
       boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
@@ -6883,7 +7030,7 @@ function TokenTracker() {
     className: "text-[10px] tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontWeight: 600
     }
   }, "Counters")), /*#__PURE__*/React.createElement("div", {
@@ -6949,7 +7096,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      background: "linear-gradient(180deg, var(--tq-gold-deep), var(--tq-gold) 50%, transparent)",
       borderRadius: "1px",
       boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
@@ -6957,7 +7104,7 @@ function TokenTracker() {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontWeight: 600
     }
   }, loading ? "Searching&hellip;" : "Tap to summon")), results.length > 0 && !loading && /*#__PURE__*/React.createElement("button", {
@@ -6967,20 +7114,20 @@ function TokenTracker() {
     className: "text-[10px] tracking-widest uppercase px-2 py-1 active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "Hide")), loading && /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center py-6"
   }, /*#__PURE__*/React.createElement(Loader2, {
     className: "animate-spin",
     style: {
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontSize: '1.25rem'
     }
   })), error && !loading && /*#__PURE__*/React.createElement("p", {
     className: "italic text-center py-4 text-sm",
     style: {
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, error), !loading && results.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2"
@@ -7008,7 +7155,7 @@ function TokenTracker() {
       className: "aspect-[5/7] flex items-center justify-center text-[10px] p-2 text-center",
       style: {
         background: "#2a1f14",
-        color: "#c9a961"
+        color: "var(--tq-gold)"
       }
     }, card.name)), /*#__PURE__*/React.createElement("button", {
       onClick: function onClick(e) {
@@ -7018,14 +7165,14 @@ function TokenTracker() {
       className: "absolute top-1.5 right-1.5 w-7 h-7 flex items-center justify-center active:scale-90",
       style: {
         background: "rgba(10, 6, 4, 0.85)",
-        border: "1px solid ".concat(fav ? "#c9a961" : "rgba(154, 135, 101, 0.5)"),
+        border: "1px solid ".concat(fav ? "var(--tq-gold)" : "rgba(154, 135, 101, 0.5)"),
         borderRadius: "50%"
       },
       "aria-label": fav ? "Unfavourite" : "Favourite"
     }, /*#__PURE__*/React.createElement(Star, {
-      fill: fav ? "#c9a961" : "none",
+      fill: fav ? "var(--tq-gold)" : "none",
       style: {
-        color: fav ? "#c9a961" : "#9a8765",
+        color: fav ? "var(--tq-gold)" : "var(--tq-ink-dim)",
         fontSize: '0.875rem'
       }
     })));
@@ -7036,7 +7183,7 @@ function TokenTracker() {
     className: "w-full mb-4 py-2 text-xs tracking-widest uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       border: "1px dashed rgba(201, 169, 97, 0.3)",
       borderRadius: "2px"
     }
@@ -7047,7 +7194,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      background: "linear-gradient(180deg, var(--tq-gold-deep), var(--tq-gold) 50%, transparent)",
       borderRadius: "1px",
       boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
@@ -7055,7 +7202,7 @@ function TokenTracker() {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontWeight: 600
     }
   }, "Battlefield")), /*#__PURE__*/React.createElement("button", {
@@ -7066,7 +7213,7 @@ function TokenTracker() {
     className: "flex items-center gap-1 text-[10px] uppercase tracking-widest px-2 py-1 active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "2px"
     },
@@ -7078,13 +7225,13 @@ function TokenTracker() {
     }
   }), "Presets ", presets.length > 0 && /*#__PURE__*/React.createElement("span", {
     style: {
-      color: '#9a8765',
+      color: 'var(--tq-ink-dim)',
       fontFamily: "'JetBrains Mono', monospace"
     }
   }, ". ", presets.length))), battlefield.length > 0 && /*#__PURE__*/React.createElement("p", {
     className: "text-[9px] italic tracking-wide text-center mb-2",
     style: {
-      color: "#6a5a42"
+      color: "var(--tq-ink-faint)"
     }
   }, "tap top . +1 \xA0.\xA0 tap bottom . -1 \xA0.\xA0 long-press . zoom"), battlefield.length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "text-center py-16 px-6 relative overflow-hidden",
@@ -7134,7 +7281,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("p", {
     className: "italic text-base mb-1.5",
     style: {
-      color: "#b09870",
+      color: "var(--tq-ink-warm)",
       fontFamily: "'Crimson Pro', serif"
     }
   }, "The battlefield lies still."), /*#__PURE__*/React.createElement("p", {
@@ -7165,7 +7312,7 @@ function TokenTracker() {
       alt: t.name,
       className: "w-full h-auto block pointer-events-none"
     }) : t.isCounter ? function () {
-      var cc = t.counterColor || '#c9a961';
+      var cc = t.counterColor || 'var(--tq-gold)';
       return /*#__PURE__*/React.createElement("div", {
         className: "aspect-[5/7] relative flex flex-col items-center justify-center p-2 text-center pointer-events-none overflow-hidden",
         style: {
@@ -7226,7 +7373,7 @@ function TokenTracker() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#0a0604',
+          color: 'var(--tq-surface-deep)',
           fontFamily: "'Cinzel', serif",
           fontWeight: 800,
           fontSize: compact ? '0.65rem' : '0.85rem',
@@ -7246,7 +7393,7 @@ function TokenTracker() {
         style: {
           marginTop: 2,
           fontFamily: "'Crimson Pro', serif",
-          color: '#9a8765',
+          color: 'var(--tq-ink-dim)',
           fontSize: compact ? '0.5rem' : '0.6rem',
           fontStyle: 'italic'
         }
@@ -7255,7 +7402,7 @@ function TokenTracker() {
       className: "aspect-[5/7] flex items-center justify-center text-xs p-2 text-center pointer-events-none",
       style: {
         background: "#2a1f14",
-        color: "#c9a961"
+        color: "var(--tq-gold)"
       }
     }, t.name), /*#__PURE__*/React.createElement("div", {
       className: "absolute inset-0 z-10",
@@ -7301,10 +7448,10 @@ function TokenTracker() {
         justifyContent: 'center',
         padding: '0 0.25rem',
         background: "rgba(10, 6, 4, 0.92)",
-        border: "1.5px solid #c9a961",
+        border: "1.5px solid var(--tq-gold)",
         borderRadius: "2px",
         fontFamily: "'JetBrains Mono', monospace",
-        color: "#d4b87a",
+        color: "var(--tq-gold-deep)",
         fontWeight: 700,
         fontSize: compact ? "0.8rem" : "0.95rem",
         boxShadow: "0 0 8px rgba(201, 169, 97, 0.4)",
@@ -7327,18 +7474,18 @@ function TokenTracker() {
       className: "absolute bottom-9 left-1 pointer-events-none z-20 flex items-center gap-0.5 px-1 py-0.5",
       style: {
         background: "rgba(10, 6, 4, 0.9)",
-        border: "1px solid #9fc7e6",
+        border: "1px solid var(--tq-info)",
         borderRadius: "2px"
       }
     }, /*#__PURE__*/React.createElement(Copy, {
       style: {
-        color: "#9fc7e6",
+        color: "var(--tq-info)",
         fontSize: '0.45rem'
       }
     }), /*#__PURE__*/React.createElement("span", {
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#9fc7e6",
+        color: "var(--tq-info)",
         fontSize: "0.4rem",
         fontWeight: 700
       }
@@ -7361,7 +7508,7 @@ function TokenTracker() {
       title: t.name
     }, t.name, t.isCopy ? /*#__PURE__*/React.createElement("span", {
       style: {
-        color: "#9fc7e6",
+        color: "var(--tq-info)",
         fontStyle: "italic"
       }
     }, " .copy") : null), t.power !== null && t.toughness !== null && function () {
@@ -7379,7 +7526,7 @@ function TokenTracker() {
         className: "flex items-center gap-1"
       }, /*#__PURE__*/React.createElement("span", {
         style: {
-          color: hasMod ? "#f5d98f" : "#c9a961",
+          color: hasMod ? "var(--tq-gold-bright)" : "var(--tq-gold)",
           fontSize: compact ? "0.55rem" : "0.65rem",
           fontFamily: "'JetBrains Mono', monospace",
           fontWeight: 700,
@@ -7387,7 +7534,7 @@ function TokenTracker() {
         }
       }, curP, "/", curT), hasMod && /*#__PURE__*/React.createElement("span", {
         style: {
-          color: "#b4d4a0",
+          color: "var(--tq-life)",
           fontSize: "0.5rem",
           padding: "0 2px",
           background: "rgba(107,142,90,0.3)",
@@ -7410,9 +7557,9 @@ function TokenTracker() {
         width: compact ? '18px' : '22px',
         height: compact ? '18px' : '22px',
         background: t.tapped ? "rgba(201,169,97,0.25)" : "rgba(6,4,2,0.85)",
-        border: "1px solid ".concat(t.tapped ? "#c9a961" : "rgba(154,135,101,0.5)"),
+        border: "1px solid ".concat(t.tapped ? "var(--tq-gold)" : "rgba(154,135,101,0.5)"),
         borderRadius: "2px",
-        color: t.tapped ? "#c9a961" : "#9a8765",
+        color: t.tapped ? "var(--tq-gold)" : "var(--tq-ink-dim)",
         transform: t.tapped ? 'rotate(90deg)' : 'none',
         transition: 'transform 0.2s'
       }
@@ -7433,7 +7580,7 @@ function TokenTracker() {
         background: "rgba(6,4,2,0.85)",
         border: "1px solid rgba(154,135,101,0.5)",
         borderRadius: "2px",
-        color: "#9a8765"
+        color: "var(--tq-ink-dim)"
       }
     }, /*#__PURE__*/React.createElement(Info, {
       style: {
@@ -7449,9 +7596,9 @@ function TokenTracker() {
         width: compact ? '18px' : '22px',
         height: compact ? '18px' : '22px',
         background: t.ptExpanded ? "rgba(201,169,97,0.25)" : "rgba(6,4,2,0.85)",
-        border: "1px solid ".concat(t.ptExpanded ? "#c9a961" : "rgba(154,135,101,0.5)"),
+        border: "1px solid ".concat(t.ptExpanded ? "var(--tq-gold)" : "rgba(154,135,101,0.5)"),
         borderRadius: "2px",
-        color: t.ptExpanded ? "#c9a961" : "#9a8765"
+        color: t.ptExpanded ? "var(--tq-gold)" : "var(--tq-ink-dim)"
       }
     }, /*#__PURE__*/React.createElement(Sword, {
       style: {
@@ -7467,13 +7614,13 @@ function TokenTracker() {
         width: compact ? '18px' : '22px',
         height: compact ? '18px' : '22px',
         background: fav ? "rgba(201,169,97,0.25)" : "rgba(6,4,2,0.85)",
-        border: "1px solid ".concat(fav ? "#c9a961" : "rgba(154,135,101,0.5)"),
+        border: "1px solid ".concat(fav ? "var(--tq-gold)" : "rgba(154,135,101,0.5)"),
         borderRadius: "2px"
       }
     }, /*#__PURE__*/React.createElement(Star, {
-      fill: fav ? "#c9a961" : "none",
+      fill: fav ? "var(--tq-gold)" : "none",
       style: {
-        color: fav ? "#c9a961" : "#9a8765",
+        color: fav ? "var(--tq-gold)" : "var(--tq-ink-dim)",
         fontSize: compact ? '0.55rem' : '0.65rem'
       }
     })), /*#__PURE__*/React.createElement("button", {
@@ -7488,7 +7635,7 @@ function TokenTracker() {
         background: "rgba(6,4,2,0.85)",
         border: "1px solid rgba(160,48,44,0.5)",
         borderRadius: "2px",
-        color: "#d48a86"
+        color: "var(--tq-danger)"
       }
     }, /*#__PURE__*/React.createElement(Trash2, {
       style: {
@@ -7503,19 +7650,19 @@ function TokenTracker() {
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center justify-between gap-1 mb-1"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-[8px] tracking-[0.2em] uppercase",
+      className: "text-[10px] tracking-[0.2em] uppercase",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#9a8765"
+        color: "var(--tq-ink-dim)"
       }
     }, "Counters"), (t.powerMod !== 0 || t.toughnessMod !== 0) && /*#__PURE__*/React.createElement("button", {
       onClick: function onClick() {
         return resetPT(t.id);
       },
-      className: "flex items-center gap-0.5 text-[8px] tracking-widest uppercase px-1 py-0.5 active:scale-95",
+      className: "flex items-center gap-0.5 text-[10px] tracking-widest uppercase px-1 py-0.5 active:scale-95",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#9a8765",
+        color: "var(--tq-ink-dim)",
         border: "1px solid rgba(154, 135, 101, 0.4)",
         borderRadius: "2px"
       }
@@ -7539,7 +7686,7 @@ function TokenTracker() {
       },
       className: "w-5 h-5 flex items-center justify-center active:scale-90",
       style: {
-        color: "#d48a86"
+        color: "var(--tq-danger)"
       }
     }, /*#__PURE__*/React.createElement(Minus, {
       style: {
@@ -7549,13 +7696,13 @@ function TokenTracker() {
       className: "flex items-center gap-0.5"
     }, /*#__PURE__*/React.createElement(Sword, {
       style: {
-        color: "#d48a86",
+        color: "var(--tq-danger)",
         fontSize: '0.55rem'
       }
     }), /*#__PURE__*/React.createElement("span", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
-        color: (t.powerMod || 0) === 0 ? "#9a8765" : "#d4b87a",
+        color: (t.powerMod || 0) === 0 ? "var(--tq-ink-dim)" : "var(--tq-gold-deep)",
         fontSize: "0.65rem",
         fontWeight: 700,
         minWidth: "1rem",
@@ -7567,7 +7714,7 @@ function TokenTracker() {
       },
       className: "w-5 h-5 flex items-center justify-center active:scale-90",
       style: {
-        color: "#d48a86"
+        color: "var(--tq-danger)"
       }
     }, /*#__PURE__*/React.createElement(Plus, {
       style: {
@@ -7587,7 +7734,7 @@ function TokenTracker() {
       },
       className: "w-5 h-5 flex items-center justify-center active:scale-90",
       style: {
-        color: "#9fc7e6"
+        color: "var(--tq-info)"
       }
     }, /*#__PURE__*/React.createElement(Minus, {
       style: {
@@ -7597,13 +7744,13 @@ function TokenTracker() {
       className: "flex items-center gap-0.5"
     }, /*#__PURE__*/React.createElement(Shield, {
       style: {
-        color: "#9fc7e6",
+        color: "var(--tq-info)",
         fontSize: '0.55rem'
       }
     }), /*#__PURE__*/React.createElement("span", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
-        color: (t.toughnessMod || 0) === 0 ? "#9a8765" : "#d4b87a",
+        color: (t.toughnessMod || 0) === 0 ? "var(--tq-ink-dim)" : "var(--tq-gold-deep)",
         fontSize: "0.65rem",
         fontWeight: 700,
         minWidth: "1rem",
@@ -7615,7 +7762,7 @@ function TokenTracker() {
       },
       className: "w-5 h-5 flex items-center justify-center active:scale-90",
       style: {
-        color: "#9fc7e6"
+        color: "var(--tq-info)"
       }
     }, /*#__PURE__*/React.createElement(Plus, {
       style: {
@@ -7666,7 +7813,7 @@ function TokenTracker() {
       }, ct.short), /*#__PURE__*/React.createElement("span", {
         style: {
           fontFamily: "'JetBrains Mono', monospace",
-          color: active ? "#d4b87a" : "#6a5a42",
+          color: active ? "var(--tq-gold-deep)" : "var(--tq-ink-faint)",
           fontSize: "0.6rem",
           fontWeight: 700,
           minWidth: "0.875rem",
@@ -7696,7 +7843,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      background: "linear-gradient(180deg, var(--tq-gold-deep), var(--tq-gold) 50%, transparent)",
       borderRadius: "1px",
       boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
@@ -7704,7 +7851,7 @@ function TokenTracker() {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontWeight: 600
     }
   }, "Life Totals")), /*#__PURE__*/React.createElement("div", {
@@ -7726,8 +7873,8 @@ function TokenTracker() {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
         fontWeight: 600,
-        color: players.length === n ? "#1a110a" : "#c9a961",
-        background: players.length === n ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
+        color: players.length === n ? "var(--tq-surface)" : "var(--tq-gold)",
+        background: players.length === n ? "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))" : "transparent",
         minWidth: 40,
         flex: "0 0 auto",
         padding: "4px 6px",
@@ -7742,8 +7889,8 @@ function TokenTracker() {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 600,
-      color: bigPicture ? "#1a110a" : "#c9a961",
-      background: bigPicture ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
+      color: bigPicture ? "var(--tq-surface)" : "var(--tq-gold)",
+      background: bigPicture ? "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))" : "transparent",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "2px",
       marginLeft: 6,
@@ -7757,7 +7904,7 @@ function TokenTracker() {
     className: "flex items-center gap-1 text-[10px] uppercase tracking-widest px-2 py-1 active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "2px"
     },
@@ -7773,7 +7920,7 @@ function TokenTracker() {
     className: "flex items-center gap-1 text-[10px] uppercase tracking-widest px-2 py-1 active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#8fbc8f",
+      color: "var(--tq-life-deep)",
       border: "1px solid rgba(143, 188, 143, 0.4)",
       borderRadius: "2px"
     },
@@ -7787,7 +7934,7 @@ function TokenTracker() {
     className: "flex items-center gap-1 text-[10px] uppercase tracking-widest px-2 py-1 active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9fc7e6",
+      color: "var(--tq-info)",
       border: "1px solid rgba(159, 199, 230, 0.4)",
       borderRadius: "2px"
     },
@@ -7801,7 +7948,7 @@ function TokenTracker() {
     className: players.length === 2 ? "grid grid-cols-1 gap-3" : players.length === 3 ? "grid grid-cols-1 sm:grid-cols-3 gap-3" : "grid grid-cols-2 gap-3"
   }, players.map(function (p, idx) {
     var isActive = idx === activePlayerIndex;
-    var lifeColor = p.life <= 0 ? "#a0302c" : p.life <= 10 ? "#d48a86" : "#d4b87a";
+    var lifeColor = p.life <= 0 ? "var(--tq-danger-deep)" : p.life <= 10 ? "var(--tq-danger)" : "var(--tq-gold-deep)";
     var isFlipped = playerFlipped[idx] || false;
     return /*#__PURE__*/React.createElement("div", {
       key: p.id,
@@ -7842,7 +7989,7 @@ function TokenTracker() {
       className: "bg-transparent outline-none text-sm flex-1 min-w-0",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#e8dcc4",
+        color: "var(--tq-ink)",
         borderBottom: "1px solid ".concat(p.color)
       }
     }) : /*#__PURE__*/React.createElement("button", {
@@ -7853,7 +8000,7 @@ function TokenTracker() {
       className: "text-left flex-1 min-w-0 truncate text-sm tracking-wide active:opacity-70",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#e8dcc4",
+        color: "var(--tq-ink)",
         fontWeight: 600
       },
       "aria-label": "Rename player"
@@ -7914,7 +8061,7 @@ function TokenTracker() {
       "aria-label": "Decrease life"
     }, /*#__PURE__*/React.createElement(Minus, {
       style: {
-        color: "#d48a86",
+        color: "var(--tq-danger)",
         fontSize: '1.25rem',
         opacity: 0.7
       }
@@ -7926,7 +8073,7 @@ function TokenTracker() {
       "aria-label": "Increase life"
     }, /*#__PURE__*/React.createElement(Plus, {
       style: {
-        color: "#b4d4a0",
+        color: "var(--tq-life)",
         fontSize: '1.25rem',
         opacity: 0.7
       }
@@ -7950,7 +8097,7 @@ function TokenTracker() {
         fontFamily: "'JetBrains Mono', monospace",
         fontWeight: 700,
         fontSize: '1.6rem',
-        color: lifeDelta[p.id].delta > 0 ? '#b4d4a0' : '#d48a86',
+        color: lifeDelta[p.id].delta > 0 ? 'var(--tq-life)' : 'var(--tq-danger)',
         textShadow: "0 0 16px ".concat(lifeDelta[p.id].delta > 0 ? 'rgba(107,142,90,0.8)' : 'rgba(160,48,44,0.8)'),
         pointerEvents: 'none',
         animation: 'lifeDeltaFade 2.5s ease-out forwards',
@@ -7971,13 +8118,13 @@ function TokenTracker() {
       },
       className: "text-[10px] active:scale-90",
       style: {
-        color: '#d48a86'
+        color: 'var(--tq-danger)'
       }
     }, "\u2212"), /*#__PURE__*/React.createElement("span", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: '0.75rem',
-        color: '#d48a86',
+        color: 'var(--tq-danger)',
         fontWeight: 600
       }
     }, "\u2620\uFE0F ", p.poison), /*#__PURE__*/React.createElement("button", {
@@ -7986,7 +8133,7 @@ function TokenTracker() {
       },
       className: "text-[10px] active:scale-90",
       style: {
-        color: '#d48a86'
+        color: 'var(--tq-danger)'
       }
     }, "+")), (p.energy || 0) > 0 && /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-1 px-2 py-1 rounded",
@@ -8000,13 +8147,13 @@ function TokenTracker() {
       },
       className: "text-[10px] active:scale-90",
       style: {
-        color: '#9fc7e6'
+        color: 'var(--tq-info)'
       }
     }, "\u2212"), /*#__PURE__*/React.createElement("span", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: '0.75rem',
-        color: '#9fc7e6',
+        color: 'var(--tq-info)',
         fontWeight: 600
       }
     }, "\u26A1 ", p.energy), /*#__PURE__*/React.createElement("button", {
@@ -8015,7 +8162,7 @@ function TokenTracker() {
       },
       className: "text-[10px] active:scale-90",
       style: {
-        color: '#9fc7e6'
+        color: 'var(--tq-info)'
       }
     }, "+")), (p.experience || 0) > 0 && /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-1 px-2 py-1 rounded",
@@ -8029,13 +8176,13 @@ function TokenTracker() {
       },
       className: "text-[10px] active:scale-90",
       style: {
-        color: '#c9a961'
+        color: 'var(--tq-gold)'
       }
     }, "\u2212"), /*#__PURE__*/React.createElement("span", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: '0.75rem',
-        color: '#c9a961',
+        color: 'var(--tq-gold)',
         fontWeight: 600
       }
     }, "\u2B50 ", p.experience), /*#__PURE__*/React.createElement("button", {
@@ -8044,7 +8191,7 @@ function TokenTracker() {
       },
       className: "text-[10px] active:scale-90",
       style: {
-        color: '#c9a961'
+        color: 'var(--tq-gold)'
       }
     }, "+")), (p.commanderTax || 0) > 0 && /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-1 px-2 py-1 rounded",
@@ -8058,13 +8205,13 @@ function TokenTracker() {
       },
       className: "text-[10px] active:scale-90",
       style: {
-        color: '#b4d4a0'
+        color: 'var(--tq-life)'
       }
     }, "\u2212"), /*#__PURE__*/React.createElement("span", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: '0.75rem',
-        color: '#b4d4a0',
+        color: 'var(--tq-life)',
         fontWeight: 600
       }
     }, "\uD83D\uDC51 ", p.commanderTax), /*#__PURE__*/React.createElement("button", {
@@ -8073,7 +8220,7 @@ function TokenTracker() {
       },
       className: "text-[10px] active:scale-90",
       style: {
-        color: '#b4d4a0'
+        color: 'var(--tq-life)'
       }
     }, "+"))), /*#__PURE__*/React.createElement("div", {
       className: "flex border-t",
@@ -8090,7 +8237,7 @@ function TokenTracker() {
         style: {
           fontFamily: "'JetBrains Mono', monospace",
           fontWeight: 600,
-          color: delta > 0 ? "#b4d4a0" : "#d48a86",
+          color: delta > 0 ? "var(--tq-life)" : "var(--tq-danger)",
           background: delta > 0 ? "rgba(107, 142, 90, 0.08)" : "rgba(160, 48, 44, 0.08)",
           borderLeft: delta === -5 ? "none" : "1px solid rgba(201, 169, 97, 0.15)"
         }
@@ -8101,7 +8248,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[9px] tracking-widest uppercase",
     style: {
-      color: "#6a5a42",
+      color: "var(--tq-ink-faint)",
       fontFamily: "'Cinzel', serif"
     }
   }, "Reset to"), [20, 30, 40].map(function (n) {
@@ -8114,7 +8261,7 @@ function TokenTracker() {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
         fontWeight: 600,
-        color: "#c9a961",
+        color: "var(--tq-gold)",
         border: "1px solid rgba(201, 169, 97, 0.3)",
         borderRadius: "2px"
       }
@@ -8132,8 +8279,8 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-sm p-6 rounded-lg",
     style: {
-      background: 'linear-gradient(180deg, #2d1f14 0%, #1a110a 100%)',
-      border: '2px solid #d48a86',
+      background: 'linear-gradient(180deg, #2d1f14 0%, var(--tq-surface) 100%)',
+      border: '2px solid var(--tq-danger)',
       boxShadow: '0 0 30px rgba(212, 138, 134, 0.3)'
     },
     onClick: function onClick(e) {
@@ -8143,14 +8290,14 @@ function TokenTracker() {
     className: "text-center mb-4",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: '#d48a86',
+      color: 'var(--tq-danger)',
       fontSize: '1.1rem',
       fontWeight: 600
     }
   }, "Reset Life Totals?"), /*#__PURE__*/React.createElement("p", {
     className: "text-center mb-6",
     style: {
-      color: '#9a8765',
+      color: 'var(--tq-ink-dim)',
       fontSize: '0.9rem'
     }
   }, "This will reset all players to 40 life and clear commander damage."), /*#__PURE__*/React.createElement("div", {
@@ -8164,7 +8311,7 @@ function TokenTracker() {
       fontFamily: "'Cinzel', serif",
       background: 'rgba(154, 135, 101, 0.2)',
       border: '1px solid rgba(154, 135, 101, 0.4)',
-      color: '#9a8765',
+      color: 'var(--tq-ink-dim)',
       fontSize: '0.9rem',
       fontWeight: 600,
       letterSpacing: '0.05em'
@@ -8176,8 +8323,8 @@ function TokenTracker() {
     className: "flex-1 py-3 rounded active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      background: 'linear-gradient(180deg, #d48a86, #a0302c)',
-      border: '1px solid #d48a86',
+      background: 'linear-gradient(180deg, var(--tq-danger), var(--tq-danger-deep))',
+      border: '1px solid var(--tq-danger)',
       color: '#ffffff',
       fontSize: '0.9rem',
       fontWeight: 600,
@@ -8196,8 +8343,8 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-sm p-6 rounded-lg",
     style: {
-      background: 'linear-gradient(180deg, #2d1f14 0%, #1a110a 100%)',
-      border: '2px solid #8fbc8f',
+      background: 'linear-gradient(180deg, #2d1f14 0%, var(--tq-surface) 100%)',
+      border: '2px solid var(--tq-life-deep)',
       boxShadow: '0 0 30px rgba(143, 188, 143, 0.3)'
     },
     onClick: function onClick(e) {
@@ -8207,14 +8354,14 @@ function TokenTracker() {
     className: "text-center mb-2",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: '#8fbc8f',
+      color: 'var(--tq-life-deep)',
       fontSize: '1.1rem',
       fontWeight: 600
     }
   }, "Start New Game"), /*#__PURE__*/React.createElement("p", {
     className: "text-center mb-6",
     style: {
-      color: '#9a8765',
+      color: 'var(--tq-ink-dim)',
       fontSize: '0.85rem'
     }
   }, "This will reset everything and start fresh"), /*#__PURE__*/React.createElement("div", {
@@ -8223,7 +8370,7 @@ function TokenTracker() {
     className: "block mb-2 text-xs uppercase tracking-widest",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: '#c9a961'
+      color: 'var(--tq-gold)'
     }
   }, "Players"), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-3 gap-2"
@@ -8239,7 +8386,7 @@ function TokenTracker() {
         fontFamily: "'JetBrains Mono', monospace",
         background: 'rgba(143, 188, 143, 0.15)',
         border: '1px solid rgba(143, 188, 143, 0.4)',
-        color: '#8fbc8f',
+        color: 'var(--tq-life-deep)',
         fontSize: '1.5rem',
         fontWeight: 700
       }
@@ -8250,7 +8397,7 @@ function TokenTracker() {
     className: "block mb-2 text-xs uppercase tracking-widest",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: '#c9a961'
+      color: 'var(--tq-gold)'
     }
   }, "Format"), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
@@ -8263,13 +8410,13 @@ function TokenTracker() {
       fontFamily: "'Cinzel', serif",
       background: 'rgba(143, 188, 143, 0.15)',
       border: '1px solid rgba(143, 188, 143, 0.4)',
-      color: '#d4b87a',
+      color: 'var(--tq-gold-deep)',
       fontSize: '0.9rem',
       fontWeight: 600
     }
   }, /*#__PURE__*/React.createElement("span", null, "Commander"), /*#__PURE__*/React.createElement("span", {
     style: {
-      color: '#8fbc8f'
+      color: 'var(--tq-life-deep)'
     }
   }, "4P \xB7 40 Life")), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -8280,13 +8427,13 @@ function TokenTracker() {
       fontFamily: "'Cinzel', serif",
       background: 'rgba(143, 188, 143, 0.15)',
       border: '1px solid rgba(143, 188, 143, 0.4)',
-      color: '#d4b87a',
+      color: 'var(--tq-gold-deep)',
       fontSize: '0.9rem',
       fontWeight: 600
     }
   }, /*#__PURE__*/React.createElement("span", null, "Standard / Modern"), /*#__PURE__*/React.createElement("span", {
     style: {
-      color: '#8fbc8f'
+      color: 'var(--tq-life-deep)'
     }
   }, "2P \xB7 20 Life")))), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -8297,7 +8444,7 @@ function TokenTracker() {
       fontFamily: "'Cinzel', serif",
       background: 'rgba(154, 135, 101, 0.2)',
       border: '1px solid rgba(154, 135, 101, 0.4)',
-      color: '#9a8765',
+      color: 'var(--tq-ink-dim)',
       fontSize: '0.85rem',
       letterSpacing: '0.05em'
     }
@@ -8309,7 +8456,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      background: "linear-gradient(180deg, var(--tq-gold-deep), var(--tq-gold) 50%, transparent)",
       borderRadius: "1px",
       boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
@@ -8317,7 +8464,7 @@ function TokenTracker() {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontWeight: 600
     }
   }, "Game State")), /*#__PURE__*/React.createElement("div", {
@@ -8333,12 +8480,12 @@ function TokenTracker() {
     className: "flex items-center gap-2 min-w-0 flex-1"
   }, dayNight === 'night' ? /*#__PURE__*/React.createElement(Moon, {
     style: {
-      color: "#9fc7e6",
+      color: "var(--tq-info)",
       fontSize: '1.1rem'
     }
   }) : /*#__PURE__*/React.createElement(Sun, {
     style: {
-      color: "#f5d98f",
+      color: "var(--tq-gold-bright)",
       fontSize: '1.1rem'
     }
   }), /*#__PURE__*/React.createElement("div", {
@@ -8347,13 +8494,13 @@ function TokenTracker() {
     className: "text-[9px] tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "Day / Night"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: dayNight ? dayNight === 'night' ? "#9fc7e6" : "#f5d98f" : "#6a5a42",
+      color: dayNight ? dayNight === 'night' ? "var(--tq-info)" : "var(--tq-gold-bright)" : "var(--tq-ink-faint)",
       fontWeight: 600
     }
   }, dayNight === 'day' ? 'Day' : dayNight === 'night' ? 'Night' : 'Inactive'))), /*#__PURE__*/React.createElement("div", {
@@ -8363,9 +8510,9 @@ function TokenTracker() {
     className: "px-2.5 py-1.5 text-[10px] tracking-widest uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: dayNight ? "#1a110a" : "#c9a961",
-      background: dayNight ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
-      border: "1px solid ".concat(dayNight ? "#c9a961" : "rgba(201, 169, 97, 0.4)"),
+      color: dayNight ? "var(--tq-surface)" : "var(--tq-gold)",
+      background: dayNight ? "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))" : "transparent",
+      border: "1px solid ".concat(dayNight ? "var(--tq-gold)" : "rgba(201, 169, 97, 0.4)"),
       borderRadius: "2px"
     }
   }, dayNight === 'day' ? 'To Night' : dayNight === 'night' ? 'To Day' : 'Begin'), dayNight && /*#__PURE__*/React.createElement("button", {
@@ -8374,7 +8521,7 @@ function TokenTracker() {
     style: {
       border: "1px solid rgba(154, 135, 101, 0.3)",
       borderRadius: "2px",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     },
     "aria-label": "Clear day/night"
   }, /*#__PURE__*/React.createElement(XIcon, {
@@ -8390,20 +8537,20 @@ function TokenTracker() {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement(Crown, {
     style: {
-      color: monarch ? "#d4b87a" : "#6a5a42",
+      color: monarch ? "var(--tq-gold-deep)" : "var(--tq-ink-faint)",
       fontSize: '1.1rem'
     }
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-[9px] tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "Monarch"), monarch && /*#__PURE__*/React.createElement("span", {
     className: "text-xs",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontWeight: 600
     }
   }, (_players$find = players.find(function (p) {
@@ -8419,7 +8566,7 @@ function TokenTracker() {
       className: "px-2 py-1.5 text-[10px] tracking-widest uppercase active:scale-95 flex items-center justify-center gap-1.5",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: monarch === p.id ? "#1a110a" : p.color,
+        color: monarch === p.id ? "var(--tq-surface)" : p.color,
         background: monarch === p.id ? "linear-gradient(180deg, ".concat(p.color, "cc, ").concat(p.color, "88)") : 'transparent',
         border: "1px solid ".concat(monarch === p.id ? p.color : p.color + '55'),
         borderRadius: "2px"
@@ -8440,20 +8587,20 @@ function TokenTracker() {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement(Sword, {
     style: {
-      color: initiative ? "#e8947a" : "#6a5a42",
+      color: initiative ? "var(--tq-danger-soft)" : "var(--tq-ink-faint)",
       fontSize: '1.1rem'
     }
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-[9px] tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "Initiative"), initiative && /*#__PURE__*/React.createElement("span", {
     className: "text-xs",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#e8947a",
+      color: "var(--tq-danger-soft)",
       fontWeight: 600
     }
   }, (_players$find2 = players.find(function (p) {
@@ -8469,7 +8616,7 @@ function TokenTracker() {
       className: "px-2 py-1.5 text-[10px] tracking-widest uppercase active:scale-95 flex items-center justify-center gap-1.5",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: initiative === p.id ? "#1a110a" : p.color,
+        color: initiative === p.id ? "var(--tq-surface)" : p.color,
         background: initiative === p.id ? "linear-gradient(180deg, ".concat(p.color, "cc, ").concat(p.color, "88)") : 'transparent',
         border: "1px solid ".concat(initiative === p.id ? p.color : p.color + '55'),
         borderRadius: "2px"
@@ -8490,19 +8637,19 @@ function TokenTracker() {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     style: {
-      color: citysBlessing.length > 0 ? "#c9a9c9" : "#6a5a42",
+      color: citysBlessing.length > 0 ? "#c9a9c9" : "var(--tq-ink-faint)",
       fontSize: '1.1rem'
     }
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-[9px] tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "City's Blessing"), /*#__PURE__*/React.createElement("span", {
     className: "text-[9px]",
     style: {
-      color: "#6a5a42"
+      color: "var(--tq-ink-faint)"
     }
   }, "(10+ permanents)")), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 gap-1.5"
@@ -8516,7 +8663,7 @@ function TokenTracker() {
       className: "px-2 py-1.5 text-[10px] tracking-widest uppercase active:scale-95 flex items-center justify-center gap-1.5",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: blessed ? "#1a110a" : p.color,
+        color: blessed ? "var(--tq-surface)" : p.color,
         background: blessed ? "linear-gradient(180deg, ".concat(p.color, "cc, ").concat(p.color, "88)") : 'transparent',
         border: "1px solid ".concat(blessed ? p.color : p.color + '55'),
         borderRadius: "2px"
@@ -8535,7 +8682,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      background: "linear-gradient(180deg, var(--tq-gold-deep), var(--tq-gold) 50%, transparent)",
       borderRadius: "1px",
       boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
@@ -8543,7 +8690,7 @@ function TokenTracker() {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontWeight: 600
     }
   }, "Turn Tracker")), /*#__PURE__*/React.createElement("button", {
@@ -8551,7 +8698,7 @@ function TokenTracker() {
     className: "flex items-center gap-1 text-[10px] uppercase tracking-widest px-2 py-1 active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765",
+      color: "var(--tq-ink-dim)",
       border: "1px solid rgba(154, 135, 101, 0.3)",
       borderRadius: "2px"
     }
@@ -8575,13 +8722,13 @@ function TokenTracker() {
     className: "text-[9px] tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "Turn"), /*#__PURE__*/React.createElement("span", {
     className: "text-2xl font-bold",
     style: {
       fontFamily: "'JetBrains Mono', monospace",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       textShadow: "0 1px 2px rgba(0,0,0,0.5)"
     }
   }, turnNumber)), players[activePlayerIndex] && /*#__PURE__*/React.createElement("div", {
@@ -8616,7 +8763,7 @@ function TokenTracker() {
     style: {
       height: '100%',
       width: "".concat((phaseIndex + 1) / PHASES.length * 100, "%"),
-      background: 'linear-gradient(90deg, #c9a961, #f5d98f)',
+      background: 'linear-gradient(90deg, var(--tq-gold), var(--tq-gold-bright))',
       transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       boxShadow: '0 0 6px rgba(245, 217, 143, 0.4)'
     }
@@ -8635,9 +8782,9 @@ function TokenTracker() {
       style: {
         fontFamily: "'Cinzel', serif",
         fontWeight: isCurrent ? 700 : 500,
-        color: isCurrent ? "#1a110a" : isPast ? "#8a7555" : "#c9a961",
-        background: isCurrent ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
-        border: "1px solid ".concat(isCurrent ? "#c9a961" : "rgba(201, 169, 97, 0.3)"),
+        color: isCurrent ? "var(--tq-surface)" : isPast ? "var(--tq-ink-mid)" : "var(--tq-gold)",
+        background: isCurrent ? "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))" : "transparent",
+        border: "1px solid ".concat(isCurrent ? "var(--tq-gold)" : "rgba(201, 169, 97, 0.3)"),
         borderRadius: "2px",
         boxShadow: isCurrent ? "0 2px 10px rgba(245, 217, 143, 0.35), inset 0 1px 0 rgba(255,255,255,0.2)" : "none",
         opacity: isPast ? 0.5 : 1
@@ -8649,7 +8796,7 @@ function TokenTracker() {
     onClick: retreatPhase,
     className: "flex-1 py-2.5 flex items-center justify-center gap-2 active:scale-95 transition-transform",
     style: {
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       background: "linear-gradient(180deg, rgba(201, 169, 97, 0.08), rgba(201, 169, 97, 0.02))",
       border: "1px solid rgba(201, 169, 97, 0.3)",
       borderRadius: "2px"
@@ -8667,10 +8814,10 @@ function TokenTracker() {
     onClick: advancePhase,
     className: "flex-[2] py-2.5 flex items-center justify-center gap-2 active:scale-95 transition-transform",
     style: {
-      color: "#1a110a",
+      color: "var(--tq-surface)",
       fontWeight: 600,
-      background: "linear-gradient(180deg, #f5d98f, #c9a961)",
-      border: "1px solid #c9a961",
+      background: "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))",
+      border: "1px solid var(--tq-gold)",
       borderRadius: "2px",
       boxShadow: "0 2px 8px rgba(201, 169, 97, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
     }
@@ -8690,7 +8837,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-4",
     style: {
-      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      background: "linear-gradient(180deg, var(--tq-gold-deep), var(--tq-gold) 50%, transparent)",
       borderRadius: "1px",
       boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
@@ -8698,7 +8845,7 @@ function TokenTracker() {
     className: "text-[10px] sm:text-xs tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontWeight: 600
     }
   }, "Dice & Picks")), diceRolls.length > 0 && /*#__PURE__*/React.createElement("button", {
@@ -8706,7 +8853,7 @@ function TokenTracker() {
     className: "text-[10px] tracking-widest uppercase px-2 py-1 active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765",
+      color: "var(--tq-ink-dim)",
       border: "1px solid rgba(154, 135, 101, 0.3)",
       borderRadius: "2px"
     }
@@ -8724,7 +8871,7 @@ function TokenTracker() {
         fontFamily: "'JetBrains Mono', monospace",
         fontWeight: 700,
         fontSize: "1rem",
-        color: "#c9a961",
+        color: "var(--tq-gold)",
         background: "linear-gradient(180deg, rgba(201, 169, 97, 0.1), rgba(201, 169, 97, 0.02))",
         border: "1px solid rgba(201, 169, 97, 0.3)",
         borderRadius: "2px",
@@ -8736,7 +8883,7 @@ function TokenTracker() {
     disabled: rolling !== null,
     className: "py-4 flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50",
     style: {
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       background: "linear-gradient(180deg, rgba(201, 169, 97, 0.1), rgba(201, 169, 97, 0.02))",
       border: "1px solid rgba(201, 169, 97, 0.3)",
       borderRadius: "2px"
@@ -8755,7 +8902,7 @@ function TokenTracker() {
     disabled: rolling !== null || players.length === 0,
     className: "py-4 flex items-center justify-center gap-1 active:scale-95 transition-transform disabled:opacity-50",
     style: {
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       background: "linear-gradient(180deg, rgba(201, 169, 97, 0.1), rgba(201, 169, 97, 0.02))",
       border: "1px solid rgba(201, 169, 97, 0.3)",
       borderRadius: "2px"
@@ -8777,19 +8924,19 @@ function TokenTracker() {
     className: "text-[9px] tracking-[0.3em] uppercase mb-1",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "Rolling\u2026"), /*#__PURE__*/React.createElement("div", {
     className: "text-4xl font-bold animate-pulse",
     style: {
       fontFamily: "'JetBrains Mono', monospace",
-      color: "#d4b87a"
+      color: "var(--tq-gold-deep)"
     }
   }, "?")) : diceRolls[0] && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "text-[9px] tracking-[0.3em] uppercase mb-1",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#b09870",
+      color: "var(--tq-ink-warm)",
       fontWeight: 600
     }
   }, diceRolls[0].sides === 'coin' ? 'Coin flip' : diceRolls[0].sides === 'player' ? 'Random pick' : "d".concat(diceRolls[0].sides)), /*#__PURE__*/React.createElement("div", {
@@ -8798,8 +8945,8 @@ function TokenTracker() {
       fontFamily: diceRolls[0].sides === 'player' || diceRolls[0].sides === 'coin' ? "'Cinzel', serif" : "'JetBrains Mono', monospace",
       fontSize: diceRolls[0].sides === 'player' ? "1.5rem" : "3.25rem",
       fontWeight: 800,
-      color: "#f5d98f",
-      background: "linear-gradient(180deg, #f5d98f 0%, #d4b87a 50%, #8a6f3a 100%)",
+      color: "var(--tq-gold-bright)",
+      background: "linear-gradient(180deg, var(--tq-gold-bright) 0%, var(--tq-gold-deep) 50%, var(--tq-brass) 100%)",
       WebkitBackgroundClip: "text",
       WebkitTextFillColor: "transparent",
       backgroundClip: "text",
@@ -8815,18 +8962,18 @@ function TokenTracker() {
       className: "flex-shrink-0 px-2 py-1 text-[10px]",
       style: {
         fontFamily: "'JetBrains Mono', monospace",
-        color: "#8a7555",
+        color: "var(--tq-ink-mid)",
         background: "rgba(20, 14, 8, 0.6)",
         border: "1px solid rgba(154, 135, 101, 0.25)",
         borderRadius: "2px"
       }
     }, /*#__PURE__*/React.createElement("span", {
       style: {
-        color: "#6a5a42"
+        color: "var(--tq-ink-faint)"
       }
     }, r.sides === 'coin' ? '🪙' : r.sides === 'player' ? '👤' : "d".concat(r.sides, ":")), " ", /*#__PURE__*/React.createElement("span", {
       style: {
-        color: "#c9a961",
+        color: "var(--tq-gold)",
         fontWeight: 600
       }
     }, r.result));
@@ -8847,10 +8994,10 @@ function TokenTracker() {
       background: "linear-gradient(90deg, transparent, rgba(201, 169, 97, 0.5))"
     }
   }), /*#__PURE__*/React.createElement("span", {
-    className: "text-[8px] tracking-[0.3em] uppercase",
+    className: "text-[10px] tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#8a7555"
+      color: "var(--tq-ink-mid)"
     }
   }, "Forged by"), /*#__PURE__*/React.createElement("div", {
     className: "h-px w-6",
@@ -8862,7 +9009,7 @@ function TokenTracker() {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 600,
-      background: "linear-gradient(180deg, #f5d98f 0%, #d4b87a 40%, #8a6f3a 100%)",
+      background: "linear-gradient(180deg, var(--tq-gold-bright) 0%, var(--tq-gold-deep) 40%, var(--tq-brass) 100%)",
       WebkitBackgroundClip: "text",
       WebkitTextFillColor: "transparent",
       backgroundClip: "text"
@@ -8870,7 +9017,7 @@ function TokenTracker() {
   }, "Sodium Fabrications")), /*#__PURE__*/React.createElement("p", {
     className: "text-center text-[10px] italic px-4",
     style: {
-      color: "#6a5a42",
+      color: "var(--tq-ink-faint)",
       fontFamily: "'Crimson Pro', serif",
       lineHeight: 1.5
     }
@@ -8890,7 +9037,7 @@ function TokenTracker() {
       return e.stopPropagation();
     },
     style: {
-      background: "radial-gradient(ellipse at top, #1a110a 0%, #0a0604 100%)",
+      background: "radial-gradient(ellipse at top, var(--tq-surface) 0%, var(--tq-surface-deep) 100%)",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "3px",
       boxShadow: "0 0 40px rgba(0, 0, 0, 0.8)"
@@ -8904,14 +9051,14 @@ function TokenTracker() {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Copy, {
     style: {
-      color: "#9fc7e6",
+      color: "var(--tq-info)",
       fontSize: '1rem'
     }
   }), /*#__PURE__*/React.createElement("h2", {
     className: "text-xs tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontWeight: 600
     }
   }, "Copy Token")), /*#__PURE__*/React.createElement("button", {
@@ -8920,7 +9067,7 @@ function TokenTracker() {
     },
     className: "w-8 h-8 flex items-center justify-center active:scale-90",
     style: {
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     },
     "aria-label": "Close"
   }, /*#__PURE__*/React.createElement(XIcon, {
@@ -8936,8 +9083,8 @@ function TokenTracker() {
     className: "flex-1 py-1.5 text-[10px] tracking-widest uppercase transition-all active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: copyScope === "tokens" ? "#1a110a" : "#c9a961",
-      background: copyScope === "tokens" ? "#c9a961" : "transparent",
+      color: copyScope === "tokens" ? "var(--tq-surface)" : "var(--tq-gold)",
+      background: copyScope === "tokens" ? "var(--tq-gold)" : "transparent",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "2px"
     }
@@ -8948,8 +9095,8 @@ function TokenTracker() {
     className: "flex-1 py-1.5 text-[10px] tracking-widest uppercase transition-all active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: copyScope === "creatures" ? "#1a110a" : "#c9a961",
-      background: copyScope === "creatures" ? "#c9a961" : "transparent",
+      color: copyScope === "creatures" ? "var(--tq-surface)" : "var(--tq-gold)",
+      background: copyScope === "creatures" ? "var(--tq-gold)" : "transparent",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "2px"
     }
@@ -8964,7 +9111,7 @@ function TokenTracker() {
     }
   }, /*#__PURE__*/React.createElement(Search, {
     style: {
-      color: "#9a8765",
+      color: "var(--tq-ink-dim)",
       fontSize: '1rem',
       position: 'absolute',
       left: '0.75rem',
@@ -8990,13 +9137,13 @@ function TokenTracker() {
     },
     className: "absolute right-2 top-1/2 -translate-y-1/2 p-1.5",
     style: {
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     },
     "aria-label": "Clear"
   }, /*#__PURE__*/React.createElement(XIcon, null))), /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] italic mt-2 text-center",
     style: {
-      color: "#6a5a42"
+      color: "var(--tq-ink-faint)"
     }
   }, "Tap a result to summon it as a copy")), /*#__PURE__*/React.createElement("div", {
     className: "px-4 py-3 max-h-[60vh] overflow-y-auto"
@@ -9005,18 +9152,18 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement(Loader2, {
     className: "animate-spin",
     style: {
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontSize: '1.25rem'
     }
   })), copyError && !copyLoading && /*#__PURE__*/React.createElement("p", {
     className: "italic text-center py-4 text-sm",
     style: {
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, copyError), !copyLoading && !copyError && copyResults.length === 0 && copyQuery.trim().length < 2 && /*#__PURE__*/React.createElement("p", {
     className: "italic text-center py-4 text-sm",
     style: {
-      color: "#6a5a42"
+      color: "var(--tq-ink-faint)"
     }
   }, "Type at least 2 characters..."), !copyLoading && copyResults.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2"
@@ -9041,7 +9188,7 @@ function TokenTracker() {
       className: "aspect-[5/7] flex items-center justify-center text-[10px] p-2 text-center",
       style: {
         background: "#2a1f14",
-        color: "#c9a961"
+        color: "var(--tq-gold)"
       }
     }, card.name));
   }))))), numpadFor !== null && function () {
@@ -9087,7 +9234,7 @@ function TokenTracker() {
         return e.stopPropagation();
       },
       style: {
-        background: "radial-gradient(ellipse at top, #1a110a 0%, #0a0604 100%)",
+        background: "radial-gradient(ellipse at top, var(--tq-surface) 0%, var(--tq-surface-deep) 100%)",
         border: "1px solid rgba(201, 169, 97, 0.4)",
         borderTopLeftRadius: "6px",
         borderTopRightRadius: "6px",
@@ -9103,7 +9250,7 @@ function TokenTracker() {
       className: "text-sm truncate",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#e8dcc4",
+        color: "var(--tq-ink)",
         fontWeight: 600
       }
     }, target.name), /*#__PURE__*/React.createElement("button", {
@@ -9114,7 +9261,7 @@ function TokenTracker() {
       },
       className: "w-10 h-10 flex items-center justify-center active:scale-90",
       style: {
-        color: "#c9a961",
+        color: "var(--tq-gold)",
         background: "rgba(20, 14, 8, 0.6)",
         border: "1px solid rgba(201, 169, 97, 0.35)",
         borderRadius: "3px"
@@ -9139,7 +9286,7 @@ function TokenTracker() {
         style: {
           fontFamily: "'JetBrains Mono', monospace",
           fontWeight: 700,
-          color: d < 0 ? "#d48a86" : "#b4d4a0",
+          color: d < 0 ? "var(--tq-danger)" : "var(--tq-life)",
           background: d < 0 ? "rgba(160, 48, 44, 0.12)" : "rgba(107, 142, 90, 0.12)",
           border: "1px solid ".concat(d < 0 ? "rgba(160, 48, 44, 0.35)" : "rgba(107, 142, 90, 0.35)"),
           borderRadius: "2px"
@@ -9151,10 +9298,10 @@ function TokenTracker() {
       className: "text-center py-3",
       style: {
         background: "rgba(10, 6, 4, 0.6)",
-        border: "1.5px solid #c9a961",
+        border: "1.5px solid var(--tq-gold)",
         borderRadius: "2px",
         fontFamily: "'JetBrains Mono', monospace",
-        color: "#d4b87a",
+        color: "var(--tq-gold-deep)",
         fontWeight: 700,
         fontSize: "2rem",
         boxShadow: "0 0 16px rgba(201, 169, 97, 0.25)"
@@ -9171,7 +9318,7 @@ function TokenTracker() {
         style: {
           fontFamily: "'JetBrains Mono', monospace",
           fontWeight: 600,
-          color: k === 'clear' || k === 'back' ? "#d48a86" : "#e8dcc4",
+          color: k === 'clear' || k === 'back' ? "var(--tq-danger)" : "var(--tq-ink)",
           background: "linear-gradient(180deg, rgba(201, 169, 97, 0.08), rgba(201, 169, 97, 0.02))",
           border: "1px solid rgba(201, 169, 97, 0.25)",
           borderRadius: "2px"
@@ -9185,9 +9332,9 @@ function TokenTracker() {
       style: {
         fontFamily: "'Cinzel', serif",
         fontWeight: 600,
-        color: "#1a110a",
-        background: "linear-gradient(180deg, #f5d98f, #c9a961)",
-        border: "1px solid #c9a961",
+        color: "var(--tq-surface)",
+        background: "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))",
+        border: "1px solid var(--tq-gold)",
         borderRadius: "2px"
       }
     }, "Set to ", displayVal))));
@@ -9207,7 +9354,7 @@ function TokenTracker() {
       return e.stopPropagation();
     },
     style: {
-      background: "radial-gradient(ellipse at top, #1a110a 0%, #0a0604 100%)",
+      background: "radial-gradient(ellipse at top, var(--tq-surface) 0%, var(--tq-surface-deep) 100%)",
       border: "1px solid rgba(160, 48, 44, 0.5)",
       borderRadius: "3px",
       boxShadow: "0 0 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(160, 48, 44, 0.15)"
@@ -9216,7 +9363,7 @@ function TokenTracker() {
     className: "px-5 py-5 text-center"
   }, /*#__PURE__*/React.createElement(AlertTriangle, {
     style: {
-      color: "#d48a86",
+      color: "var(--tq-danger)",
       fontSize: '2rem',
       margin: '0 auto 0.75rem'
     }
@@ -9224,19 +9371,19 @@ function TokenTracker() {
     className: "text-sm tracking-[0.25em] uppercase mb-2",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#d48a86",
+      color: "var(--tq-danger)",
       fontWeight: 600
     }
   }, "Wipe battlefield?"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm italic mb-1",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#c9a961"
+      color: "var(--tq-gold)"
     }
   }, totalTokens, " token", totalTokens === 1 ? "" : "s", " across ", uniqueTypes, " type", uniqueTypes === 1 ? "" : "s"), /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] italic mb-5",
     style: {
-      color: "#8a7555"
+      color: "var(--tq-ink-mid)"
     }
   }, "You can undo this."), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
@@ -9248,7 +9395,7 @@ function TokenTracker() {
     className: "flex-1 py-2.5 text-[10px] tracking-widest uppercase active:scale-95 transition-transform",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       background: "transparent",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "2px"
@@ -9261,7 +9408,7 @@ function TokenTracker() {
       fontWeight: 600,
       color: "#fff",
       background: "linear-gradient(180deg, #c0453f, #8a2d29)",
-      border: "1px solid #a0302c",
+      border: "1px solid var(--tq-danger-deep)",
       borderRadius: "2px",
       boxShadow: "0 2px 8px rgba(160, 48, 44, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)"
     }
@@ -9292,7 +9439,7 @@ function TokenTracker() {
       background: 'rgba(10, 6, 4, 0.85)',
       border: '1px solid rgba(201, 169, 97, 0.4)',
       borderRadius: '50%',
-      color: '#c9a961',
+      color: 'var(--tq-gold)',
       fontSize: '1.1rem',
       fontFamily: "'Cinzel', serif",
       cursor: 'pointer',
@@ -9316,29 +9463,29 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute top-0 left-0 w-12 h-12 pointer-events-none",
     style: {
-      borderTop: "1px solid #c9a961",
-      borderLeft: "1px solid #c9a961",
+      borderTop: "1px solid var(--tq-gold)",
+      borderLeft: "1px solid var(--tq-gold)",
       borderTopLeftRadius: "3px"
     }
   }), /*#__PURE__*/React.createElement("div", {
     className: "absolute top-0 right-0 w-12 h-12 pointer-events-none",
     style: {
-      borderTop: "1px solid #c9a961",
-      borderRight: "1px solid #c9a961",
+      borderTop: "1px solid var(--tq-gold)",
+      borderRight: "1px solid var(--tq-gold)",
       borderTopRightRadius: "3px"
     }
   }), /*#__PURE__*/React.createElement("div", {
     className: "absolute bottom-0 left-0 w-12 h-12 pointer-events-none",
     style: {
-      borderBottom: "1px solid #c9a961",
-      borderLeft: "1px solid #c9a961",
+      borderBottom: "1px solid var(--tq-gold)",
+      borderLeft: "1px solid var(--tq-gold)",
       borderBottomLeftRadius: "3px"
     }
   }), /*#__PURE__*/React.createElement("div", {
     className: "absolute bottom-0 right-0 w-12 h-12 pointer-events-none",
     style: {
-      borderBottom: "1px solid #c9a961",
-      borderRight: "1px solid #c9a961",
+      borderBottom: "1px solid var(--tq-gold)",
+      borderRight: "1px solid var(--tq-gold)",
       borderBottomRightRadius: "3px"
     }
   }), /*#__PURE__*/React.createElement("div", {
@@ -9347,7 +9494,7 @@ function TokenTracker() {
     className: "flex items-center justify-center gap-3 mb-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     style: {
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontSize: '1rem'
     }
   }), /*#__PURE__*/React.createElement("h2", {
@@ -9355,20 +9502,20 @@ function TokenTracker() {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 600,
-      background: "linear-gradient(180deg, #f5d98f 0%, #d4b87a 50%, #8a6f3a 100%)",
+      background: "linear-gradient(180deg, var(--tq-gold-bright) 0%, var(--tq-gold-deep) 50%, var(--tq-brass) 100%)",
       WebkitBackgroundClip: "text",
       WebkitTextFillColor: "transparent",
       backgroundClip: "text"
     }
   }, "The Sanctum"), /*#__PURE__*/React.createElement(Sparkles, {
     style: {
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontSize: '1rem'
     }
   })), /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] italic",
     style: {
-      color: "#9a8765",
+      color: "var(--tq-ink-dim)",
       fontFamily: "'Crimson Pro', serif"
     }
   }, "A hidden chamber, found by those who seek")), /*#__PURE__*/React.createElement("div", {
@@ -9401,9 +9548,9 @@ function TokenTracker() {
       style: {
         fontFamily: "'Cinzel', serif",
         fontWeight: active ? 700 : 500,
-        color: active ? "#0a0604" : "#b09870",
-        background: active ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
-        border: active ? "1px solid #c9a961" : "1px solid transparent",
+        color: active ? "var(--tq-surface-deep)" : "var(--tq-ink-warm)",
+        background: active ? "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))" : "transparent",
+        border: active ? "1px solid var(--tq-gold)" : "1px solid transparent",
         borderRadius: "2px",
         boxShadow: active ? "0 2px 6px rgba(201,169,97,0.25)" : "none"
       }
@@ -9423,9 +9570,9 @@ function TokenTracker() {
       background: "linear-gradient(90deg, transparent, rgba(232, 148, 122, 0.6))"
     }
   }), /*#__PURE__*/React.createElement(Heart, {
-    fill: "#e8947a",
+    fill: "var(--tq-danger-soft)",
     style: {
-      color: "#e8947a",
+      color: "var(--tq-danger-soft)",
       fontSize: '0.9rem'
     }
   }), /*#__PURE__*/React.createElement("div", {
@@ -9437,13 +9584,13 @@ function TokenTracker() {
     className: "text-[10px] tracking-[0.3em] uppercase mb-2",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "A Note"), /*#__PURE__*/React.createElement("p", {
     className: "italic text-base sm:text-lg",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#e8dcc4",
+      color: "var(--tq-ink)",
       lineHeight: 1.4
     }
   }, "Made with love for"), /*#__PURE__*/React.createElement("p", {
@@ -9451,7 +9598,7 @@ function TokenTracker() {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 700,
-      background: "linear-gradient(180deg, #f5d98f 0%, #e8947a 100%)",
+      background: "linear-gradient(180deg, var(--tq-gold-bright) 0%, var(--tq-danger-soft) 100%)",
       WebkitBackgroundClip: "text",
       WebkitTextFillColor: "transparent",
       backgroundClip: "text",
@@ -9462,7 +9609,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-3",
     style: {
-      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      background: "linear-gradient(180deg, var(--tq-gold-deep), var(--tq-gold) 50%, transparent)",
       borderRadius: "1px",
       boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
@@ -9470,7 +9617,7 @@ function TokenTracker() {
     className: "text-[9px] tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "About")), /*#__PURE__*/React.createElement("div", {
     className: "px-4 py-3 space-y-2",
@@ -9485,13 +9632,13 @@ function TokenTracker() {
     className: "text-[9px] tracking-[0.25em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "App"), /*#__PURE__*/React.createElement("span", {
     className: "text-sm",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#e8dcc4",
+      color: "var(--tq-ink)",
       fontWeight: 600
     }
   }, "Token Queen")), /*#__PURE__*/React.createElement("div", {
@@ -9500,13 +9647,13 @@ function TokenTracker() {
     className: "text-[9px] tracking-[0.25em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "Codename"), /*#__PURE__*/React.createElement("span", {
     className: "text-sm italic",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#c9a961"
+      color: "var(--tq-gold)"
     }
   }, "The Arcanist's Grimoire")), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-0.5"
@@ -9514,13 +9661,13 @@ function TokenTracker() {
     className: "text-[9px] tracking-[0.25em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "Forged by"), /*#__PURE__*/React.createElement("span", {
     className: "text-sm",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontWeight: 600
     }
   }, "Sodium Fabrications")), /*#__PURE__*/React.createElement("div", {
@@ -9529,13 +9676,13 @@ function TokenTracker() {
     className: "text-[9px] tracking-[0.25em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "Card data"), /*#__PURE__*/React.createElement("span", {
     className: "text-sm",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#e8dcc4"
+      color: "var(--tq-ink)"
     }
   }, "Scryfall")), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-0.5"
@@ -9543,18 +9690,18 @@ function TokenTracker() {
     className: "text-[9px] tracking-[0.25em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "Crafted in"), /*#__PURE__*/React.createElement("span", {
     className: "text-sm italic",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#c9a961"
+      color: "var(--tq-gold)"
     }
   }, "the Izzet League's labs"))), /*#__PURE__*/React.createElement("p", {
     className: "text-[9px] italic text-center mt-2",
     style: {
-      color: "#6a5a42",
+      color: "var(--tq-ink-faint)",
       fontFamily: "'Crimson Pro', serif"
     }
   }, "Not affiliated with Wizards of the Coast."))), sanctumTab === 'companion' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
@@ -9562,7 +9709,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-3",
     style: {
-      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      background: "linear-gradient(180deg, var(--tq-gold-deep), var(--tq-gold) 50%, transparent)",
       borderRadius: "1px",
       boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
@@ -9570,7 +9717,7 @@ function TokenTracker() {
     className: "text-[9px] tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, pet ? 'Companion' : 'Hatchery')), !pet ? /*#__PURE__*/React.createElement("div", {
     style: {
@@ -9584,9 +9731,16 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "px-4 py-5 text-center",
     style: {
-      background: "radial-gradient(ellipse at center, rgba(143,188,143,0.06) 0%, rgba(159,199,230,0.04) 30%, rgba(232,148,122,0.03) 60%, transparent 100%)",
-      border: "1px dashed rgba(201,169,97,0.3)",
-      borderRadius: "2px"
+      backgroundImage: window.TQ && window.TQ.hatcheryBackdrop ? window.TQ.hatcheryBackdrop({
+        lit: unlockedOrbs.length
+      }) : 'none',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center 44%',
+      backgroundRepeat: 'no-repeat',
+      border: "1px solid rgba(201,169,97,0.28)",
+      borderRadius: "3px",
+      boxShadow: "inset 0 0 44px rgba(0,0,0,0.72), 0 2px 20px rgba(0,0,0,0.5)",
+      minHeight: "252px"
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center mb-3"
@@ -9635,19 +9789,19 @@ function TokenTracker() {
   })), /*#__PURE__*/React.createElement("p", {
     className: "text-sm italic mb-1",
     style: {
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontFamily: "'Crimson Pro', serif"
     }
   }, "An egg awaits its spark..."), /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] tracking-[0.2em] uppercase mb-2",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#6a5a42"
+      color: "var(--tq-ink-faint)"
     }
   }, "Solve the runes to hatch"), showDiscoveryHint && /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] italic mt-2",
     style: {
-      color: "#8a7555",
+      color: "var(--tq-ink-mid)",
       fontFamily: "'Crimson Pro', serif",
       opacity: 0.85
     }
@@ -9684,19 +9838,19 @@ function TokenTracker() {
   },
     /*#__PURE__*/React.createElement("defs", null,
       /*#__PURE__*/React.createElement("radialGradient", { id: "sealGlow", cx: "50%", cy: "50%", r: "55%" },
-        /*#__PURE__*/React.createElement("stop", { offset: "0%", stopColor: "#f5d98f", stopOpacity: "0.45" }),
-        /*#__PURE__*/React.createElement("stop", { offset: "60%", stopColor: "#c9a961", stopOpacity: "0.15" }),
-        /*#__PURE__*/React.createElement("stop", { offset: "100%", stopColor: "#c9a961", stopOpacity: "0" })
+        /*#__PURE__*/React.createElement("stop", { offset: "0%", stopColor: "var(--tq-gold-bright)", stopOpacity: "0.45" }),
+        /*#__PURE__*/React.createElement("stop", { offset: "60%", stopColor: "var(--tq-gold)", stopOpacity: "0.15" }),
+        /*#__PURE__*/React.createElement("stop", { offset: "100%", stopColor: "var(--tq-gold)", stopOpacity: "0" })
       ),
       /*#__PURE__*/React.createElement("linearGradient", { id: "sealRing", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
-        /*#__PURE__*/React.createElement("stop", { offset: "0%", stopColor: "#f5d98f" }),
-        /*#__PURE__*/React.createElement("stop", { offset: "50%", stopColor: "#c9a961" }),
+        /*#__PURE__*/React.createElement("stop", { offset: "0%", stopColor: "var(--tq-gold-bright)" }),
+        /*#__PURE__*/React.createElement("stop", { offset: "50%", stopColor: "var(--tq-gold)" }),
         /*#__PURE__*/React.createElement("stop", { offset: "100%", stopColor: "#8a6b3a" })
       )
     ),
     /*#__PURE__*/React.createElement("circle", { cx: "110", cy: "110", r: "100", fill: "url(#sealGlow)" }),
     /*#__PURE__*/React.createElement("circle", { cx: "110", cy: "110", r: "92", fill: "none", stroke: "url(#sealRing)", strokeWidth: "2.5" }),
-    /*#__PURE__*/React.createElement("circle", { cx: "110", cy: "110", r: "86", fill: "none", stroke: "#c9a961", strokeWidth: "0.5", strokeDasharray: "3 2", opacity: "0.6" }),
+    /*#__PURE__*/React.createElement("circle", { cx: "110", cy: "110", r: "86", fill: "none", stroke: "var(--tq-gold)", strokeWidth: "0.5", strokeDasharray: "3 2", opacity: "0.6" }),
     /*#__PURE__*/React.createElement("circle", { cx: "110", cy: "110", r: "72", fill: "none", stroke: "url(#sealRing)", strokeWidth: "1" }),
     /*#__PURE__*/[0,1,2,3,4,5,6,7,8,9,10,11].map(function (i) {
       var a = i * Math.PI / 6;
@@ -9704,7 +9858,7 @@ function TokenTracker() {
       var y1 = 110 + Math.sin(a) * 78;
       var x2 = 110 + Math.cos(a) * 86;
       var y2 = 110 + Math.sin(a) * 86;
-      return /*#__PURE__*/React.createElement("line", { key: "tick"+i, x1: x1, y1: y1, x2: x2, y2: y2, stroke: "#c9a961", strokeWidth: "1", opacity: i % 3 === 0 ? "1" : "0.5" });
+      return /*#__PURE__*/React.createElement("line", { key: "tick"+i, x1: x1, y1: y1, x2: x2, y2: y2, stroke: "var(--tq-gold)", strokeWidth: "1", opacity: i % 3 === 0 ? "1" : "0.5" });
     }),
     /*#__PURE__*/[0,1,2,3,4].map(function (i) {
       var a = i * 2 * Math.PI / 5 - Math.PI / 2;
@@ -9712,7 +9866,7 @@ function TokenTracker() {
       var y = 110 + Math.sin(a) * 50;
       return /*#__PURE__*/React.createElement("g", { key: "pt"+i, transform: "translate("+x+" "+y+")" },
         /*#__PURE__*/React.createElement("circle", { r: "9", fill: "#15100a", stroke: "url(#sealRing)", strokeWidth: "1.5" }),
-        /*#__PURE__*/React.createElement("circle", { r: "3", fill: "#c9a961", opacity: "0.85" },
+        /*#__PURE__*/React.createElement("circle", { r: "3", fill: "var(--tq-gold)", opacity: "0.85" },
           /*#__PURE__*/React.createElement("animate", { attributeName: "opacity", values: "0.85;0.35;0.85", dur: (2 + i * 0.2) + "s", repeatCount: "indefinite" })
         )
       );
@@ -9720,19 +9874,19 @@ function TokenTracker() {
     /*#__PURE__*/React.createElement("g", { transform: "translate(110 110)" },
       /*#__PURE__*/React.createElement("polygon", {
         points: "0,-32 8,-10 30,-10 12,4 18,26 0,14 -18,26 -12,4 -30,-10 -8,-10",
-        fill: "#c9a961",
+        fill: "var(--tq-gold)",
         opacity: "0.9"
       },
         /*#__PURE__*/React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "0", to: "360", dur: "60s", repeatCount: "indefinite" })
       ),
       /*#__PURE__*/React.createElement("circle", { r: "8", fill: "#15100a" }),
-      /*#__PURE__*/React.createElement("circle", { r: "4", fill: "#f5d98f" },
+      /*#__PURE__*/React.createElement("circle", { r: "4", fill: "var(--tq-gold-bright)" },
         /*#__PURE__*/React.createElement("animate", { attributeName: "r", values: "3.5;5;3.5", dur: "2.4s", repeatCount: "indefinite" })
       )
     ),
     /*#__PURE__*/React.createElement("text", {
       x: "110", y: "212", textAnchor: "middle",
-      fontFamily: "'Cinzel', serif", fontSize: "8.5", fill: "#9a8765",
+      fontFamily: "'Cinzel', serif", fontSize: "8.5", fill: "var(--tq-ink-dim)",
       letterSpacing: "4", opacity: "0.85"
     }, "SPEAK THE WORD")
   )), hatcheryDoorOpen && /*#__PURE__*/React.createElement("div", {
@@ -9830,7 +9984,7 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-1 h-3",
     style: {
-      background: "linear-gradient(180deg, #d4b87a, #c9a961 50%, transparent)",
+      background: "linear-gradient(180deg, var(--tq-gold-deep), var(--tq-gold) 50%, transparent)",
       borderRadius: "1px",
       boxShadow: "0 0 4px rgba(212, 184, 122, 0.3)"
     }
@@ -9838,10 +9992,10 @@ function TokenTracker() {
     className: "text-[9px] tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     }
   }, "Games"), /*#__PURE__*/React.createElement("div", {
-    style: { display: "flex", alignItems: "center", gap: 6, marginTop: 4, marginBottom: 4, fontSize: 9, color: "#8a7555", fontFamily: "'Cinzel', serif", letterSpacing: "0.15em" }
+    style: { display: "flex", alignItems: "center", gap: 6, marginTop: 4, marginBottom: 4, fontSize: 9, color: "var(--tq-ink-mid)", fontFamily: "'Cinzel', serif", letterSpacing: "0.15em" }
   },
     /*#__PURE__*/React.createElement("span", null, "MEMORY TIER:"),
     ['easy', 'normal', 'hard', 'expert'].map(function (tier) {
@@ -9859,8 +10013,8 @@ function TokenTracker() {
         style: {
           padding: "2px 6px",
           background: active ? "rgba(201,169,97,0.25)" : "transparent",
-          border: "1px solid " + (active ? "#c9a961" : "rgba(154,135,101,0.3)"),
-          color: active ? "#f5d98f" : "#9a8765",
+          border: "1px solid " + (active ? "var(--tq-gold)" : "rgba(154,135,101,0.3)"),
+          color: active ? "var(--tq-gold-bright)" : "var(--tq-ink-dim)",
           borderRadius: "2px",
           fontFamily: "inherit",
           fontSize: "inherit",
@@ -9890,7 +10044,7 @@ function TokenTracker() {
   }, "\uD83C\uDCCF"), /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontSize: "0.7rem",
       letterSpacing: "0.15em",
       textTransform: "uppercase"
@@ -9898,7 +10052,7 @@ function TokenTracker() {
   }, "Memory"), /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#6a5a42",
+      color: "var(--tq-ink-faint)",
       fontSize: "0.6rem",
       fontStyle: "italic"
     }
@@ -9921,7 +10075,7 @@ function TokenTracker() {
   }, "\uD83D\uDC09"), /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#d48a86",
+      color: "var(--tq-danger)",
       fontSize: "0.7rem",
       letterSpacing: "0.15em",
       textTransform: "uppercase"
@@ -9929,7 +10083,7 @@ function TokenTracker() {
   }, "Flappy Dragon"), /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#6a5a42",
+      color: "var(--tq-ink-faint)",
       fontSize: "0.6rem",
       fontStyle: "italic"
     }
@@ -9942,7 +10096,7 @@ function TokenTracker() {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 600,
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       background: "linear-gradient(180deg, rgba(201, 169, 97, 0.08), rgba(201, 169, 97, 0.02))",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "2px"
@@ -9987,9 +10141,9 @@ function TokenTracker() {
       background: bigPictureMenu
         ? "radial-gradient(circle at 35% 35%, rgba(245,217,143,0.95), rgba(201,169,97,0.85))"
         : "radial-gradient(circle at 35% 35%, rgba(20,14,8,0.98), rgba(10,6,4,0.98))",
-      border: "2px solid #c9a961",
+      border: "2px solid var(--tq-gold)",
       boxShadow: "0 0 20px rgba(201,169,97,0.4), 0 4px 14px rgba(0,0,0,0.7), 0 0 0 6px rgba(5,3,4,0.95)",
-      color: bigPictureMenu ? "#1a110a" : "#c9a961",
+      color: bigPictureMenu ? "var(--tq-surface)" : "var(--tq-gold)",
       fontFamily: "'Cinzel', serif",
       fontSize: bigPictureMenu ? "22px" : "10px",
       fontWeight: 700,
@@ -10014,17 +10168,17 @@ function TokenTracker() {
         borderRadius: "10px",
         padding: "84px 18px 18px",
         boxShadow: "0 10px 40px rgba(0,0,0,0.7), 0 0 32px rgba(201,169,97,0.15)",
-        color: "#e8dcc4",
+        color: "var(--tq-ink)",
         fontFamily: "'Crimson Pro', serif",
         textAlign: "center"
       }
     },
       /*#__PURE__*/React.createElement("div", {
-        style: { fontFamily: "'Cinzel', serif", fontSize: "10px", letterSpacing: "0.25em", color: "#9a8765", textTransform: "uppercase", marginBottom: "12px" }
+        style: { fontFamily: "'Cinzel', serif", fontSize: "10px", letterSpacing: "0.25em", color: "var(--tq-ink-dim)", textTransform: "uppercase", marginBottom: "12px" }
       }, "Big-Picture"),
       /*#__PURE__*/React.createElement("button", {
         onClick: function onClick() { setBigPicture(false); setBigPictureMenu(false); haptic(15); },
-        style: { display: "block", width: "100%", margin: "6px 0", padding: "10px", background: "rgba(160,48,44,0.18)", color: "#d48a86", border: "1px solid #a0302c66", borderRadius: "4px", fontFamily: "'Cinzel', serif", fontSize: "11px", letterSpacing: "0.18em", cursor: "pointer" }
+        style: { display: "block", width: "100%", margin: "6px 0", padding: "10px", background: "rgba(160,48,44,0.18)", color: "var(--tq-danger)", border: "1px solid var(--tq-danger-deep)66", borderRadius: "4px", fontFamily: "'Cinzel', serif", fontSize: "11px", letterSpacing: "0.18em", cursor: "pointer" }
       }, "× EXIT FULLSCREEN"),
       /*#__PURE__*/React.createElement("button", {
         onClick: function onClick() {
@@ -10032,13 +10186,13 @@ function TokenTracker() {
           setActiveTab('battlefield');
           haptic(10);
         },
-        style: { display: "block", width: "100%", margin: "6px 0", padding: "10px", background: "rgba(20,14,8,0.6)", color: "#c9a961", border: "1px solid rgba(201,169,97,0.4)", borderRadius: "4px", fontFamily: "'Cinzel', serif", fontSize: "11px", letterSpacing: "0.18em", cursor: "pointer" }
+        style: { display: "block", width: "100%", margin: "6px 0", padding: "10px", background: "rgba(20,14,8,0.6)", color: "var(--tq-gold)", border: "1px solid rgba(201,169,97,0.4)", borderRadius: "4px", fontFamily: "'Cinzel', serif", fontSize: "11px", letterSpacing: "0.18em", cursor: "pointer" }
       }, "TOKEN MANAGEMENT"),
       /*#__PURE__*/React.createElement("div", {
         style: { display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", margin: "10px 0 4px" }
       },
-        /*#__PURE__*/React.createElement("span", { style: { fontSize: "10px", color: "#9a8765", letterSpacing: "0.2em", fontFamily: "'Cinzel', serif", marginRight: "4px" } }, "COLOUR"),
-        ["#d4b87a", "#9fc7e6", "#5a4060", "#d97757", "#7faf4f", "#fffbe6"].map(function (col) {
+        /*#__PURE__*/React.createElement("span", { style: { fontSize: "10px", color: "var(--tq-ink-dim)", letterSpacing: "0.2em", fontFamily: "'Cinzel', serif", marginRight: "4px" } }, "COLOUR"),
+        ["var(--tq-gold-deep)", "var(--tq-info)", "#5a4060", "#d97757", "#7faf4f", "#fffbe6"].map(function (col) {
           return /*#__PURE__*/React.createElement("button", {
             key: col,
             onClick: function onClick() {
@@ -10050,10 +10204,10 @@ function TokenTracker() {
         })
       ),
       /*#__PURE__*/React.createElement("div", {
-        style: { fontSize: "9px", color: "#6a5a42", marginTop: "6px", fontStyle: "italic" }
+        style: { fontSize: "9px", color: "var(--tq-ink-faint)", marginTop: "6px", fontStyle: "italic" }
       }, "Colour applies to the active (highlighted) player.")
     ), players.map(function (p, idx) {
-    var lifeColor = p.life <= 0 ? "#a0302c" : p.life <= 10 ? "#d48a86" : "#d4b87a";
+    var lifeColor = p.life <= 0 ? "var(--tq-danger-deep)" : p.life <= 10 ? "var(--tq-danger)" : "var(--tq-gold-deep)";
     // 2P: top player (idx 0) is rotated 180° so they read it across the table
     // 4P: top-left and top-right rotated 180°, bottom two normal
     var rotate = players.length === 2 ? (idx === 0 ? "180deg" : "0deg") : (idx < 2 ? "180deg" : "0deg");
@@ -10088,7 +10242,7 @@ function TokenTracker() {
       },
         /*#__PURE__*/React.createElement("button", {
           onClick: function onClick() { adjustLife(p.id, -1); },
-          style: { flex: "0 0 auto", background: "transparent", border: "none", color: "#a0302c", fontSize: "48px", padding: "0 16px", cursor: "pointer", fontFamily: "'Cinzel', serif" }
+          style: { flex: "0 0 auto", background: "transparent", border: "none", color: "var(--tq-danger-deep)", fontSize: "48px", padding: "0 16px", cursor: "pointer", fontFamily: "'Cinzel', serif" }
         }, "−"),
         /*#__PURE__*/React.createElement("div", {
           style: { flex: 1, textAlign: "center", color: lifeColor, fontFamily: "'Cinzel', serif", fontSize: players.length === 2 ? "150px" : "100px", fontWeight: 700, lineHeight: 1, textShadow: "0 0 24px " + lifeColor + "66" }
@@ -10107,9 +10261,9 @@ function TokenTracker() {
           style: {
             padding: "6px 12px",
             background: d < 0 ? "rgba(160,48,44,0.18)" : "rgba(138,170,112,0.18)",
-            border: "1px solid " + (d < 0 ? "#a0302c66" : "#8aaa7066"),
+            border: "1px solid " + (d < 0 ? "var(--tq-danger-deep)66" : "#8aaa7066"),
             borderRadius: "3px",
-            color: d < 0 ? "#d48a86" : "#a0c87a",
+            color: d < 0 ? "var(--tq-danger)" : "#a0c87a",
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: "11px",
             cursor: "pointer"
@@ -10136,15 +10290,15 @@ function TokenTracker() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute top-0 left-0 w-10 h-10 pointer-events-none",
     style: {
-      borderTop: "1px solid #c9a961",
-      borderLeft: "1px solid #c9a961",
+      borderTop: "1px solid var(--tq-gold)",
+      borderLeft: "1px solid var(--tq-gold)",
       borderTopLeftRadius: "3px"
     }
   }), /*#__PURE__*/React.createElement("div", {
     className: "absolute top-0 right-0 w-10 h-10 pointer-events-none",
     style: {
-      borderTop: "1px solid #c9a961",
-      borderRight: "1px solid #c9a961",
+      borderTop: "1px solid var(--tq-gold)",
+      borderRight: "1px solid var(--tq-gold)",
       borderTopRightRadius: "3px"
     }
   }), /*#__PURE__*/React.createElement("div", {
@@ -10153,7 +10307,7 @@ function TokenTracker() {
     className: "flex items-center justify-center gap-2 mb-1"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     style: {
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontSize: '1rem'
     }
   }), /*#__PURE__*/React.createElement("h2", {
@@ -10161,20 +10315,20 @@ function TokenTracker() {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 600,
-      background: "linear-gradient(180deg, #f5d98f 0%, #d4b87a 50%, #8a6f3a 100%)",
+      background: "linear-gradient(180deg, var(--tq-gold-bright) 0%, var(--tq-gold-deep) 50%, var(--tq-brass) 100%)",
       WebkitBackgroundClip: "text",
       WebkitTextFillColor: "transparent",
       backgroundClip: "text"
     }
   }, "Choose Your Companion"), /*#__PURE__*/React.createElement(Sparkles, {
     style: {
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontSize: '1rem'
     }
   })), /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] italic",
     style: {
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontFamily: "'Crimson Pro', serif"
     }
   }, "Three companions await. Only one may bond with you.")), /*#__PURE__*/React.createElement("div", {
@@ -10208,7 +10362,7 @@ function TokenTracker() {
     className: "text-sm italic",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#e8dcc4",
+      color: "var(--tq-ink)",
       lineHeight: 1.45
     }
   }, ((_COLOR_LORE$PET_TYPES = COLOR_LORE[PET_TYPES[chosenType].color]) === null || _COLOR_LORE$PET_TYPES === void 0 ? void 0 : _COLOR_LORE$PET_TYPES.text) || PET_TYPES[chosenType].flavor)), /*#__PURE__*/React.createElement("div", {
@@ -10222,7 +10376,7 @@ function TokenTracker() {
     className: "flex items-center justify-center gap-1.5 px-3 py-2.5 text-[10px] tracking-[0.2em] uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9a8765",
+      color: "var(--tq-ink-dim)",
       border: "1px solid rgba(154,135,101,0.35)",
       borderRadius: "2px",
       flex: 1
@@ -10240,7 +10394,7 @@ function TokenTracker() {
     className: "px-3 py-2.5 text-[10px] tracking-[0.2em] uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       border: "1px solid rgba(201,169,97,0.4)",
       borderRadius: "2px"
     }
@@ -10253,9 +10407,9 @@ function TokenTracker() {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 600,
-      color: chosenType ? "#1a110a" : "#6a5a42",
-      background: chosenType ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "rgba(154,135,101,0.1)",
-      border: "1px solid ".concat(chosenType ? "#c9a961" : "rgba(154,135,101,0.2)"),
+      color: chosenType ? "var(--tq-surface)" : "var(--tq-ink-faint)",
+      background: chosenType ? "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))" : "rgba(154,135,101,0.1)",
+      border: "1px solid ".concat(chosenType ? "var(--tq-gold)" : "rgba(154,135,101,0.2)"),
       borderRadius: "2px",
       boxShadow: chosenType ? "0 0 16px rgba(212,184,122,0.3)" : 'none'
     }
@@ -10276,7 +10430,7 @@ function TokenTracker() {
       return e.stopPropagation();
     },
     style: {
-      background: "radial-gradient(ellipse at top, #1a110a 0%, #0a0604 100%)",
+      background: "radial-gradient(ellipse at top, var(--tq-surface) 0%, var(--tq-surface-deep) 100%)",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "3px",
       boxShadow: "0 0 40px rgba(0, 0, 0, 0.8)"
@@ -10287,7 +10441,7 @@ function TokenTracker() {
     className: "text-xs tracking-[0.3em] uppercase mb-3",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontWeight: 600
     }
   }, "Name your companion"), /*#__PURE__*/React.createElement("input", {
@@ -10305,7 +10459,7 @@ function TokenTracker() {
     className: "w-full px-3 py-2.5 text-base outline-none mb-3",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#e8dcc4",
+      color: "var(--tq-ink)",
       background: "rgba(20, 14, 8, 0.6)",
       border: "1px solid rgba(201, 169, 97, 0.3)",
       borderRadius: "2px"
@@ -10322,7 +10476,7 @@ function TokenTracker() {
       className: "text-[9px] tracking-[0.2em] uppercase mb-1.5",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#8a7555"
+        color: "var(--tq-ink-mid)"
       }
     }, "Suggestions"), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap gap-1.5"
@@ -10336,7 +10490,7 @@ function TokenTracker() {
         className: "px-2.5 py-1 text-[10px] tracking-[0.05em] active:scale-95",
         style: {
           fontFamily: "'Crimson Pro', serif",
-          color: "#c9a961",
+          color: "var(--tq-gold)",
           background: "rgba(201, 169, 97, 0.08)",
           border: "1px solid rgba(201, 169, 97, 0.25)",
           borderRadius: "2px"
@@ -10353,7 +10507,7 @@ function TokenTracker() {
     className: "flex-1 py-2 text-[10px] tracking-widest uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "2px"
     }
@@ -10364,9 +10518,9 @@ function TokenTracker() {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 600,
-      color: !petNameInput.trim() ? "#6a5a42" : "#1a110a",
-      background: !petNameInput.trim() ? "rgba(154, 135, 101, 0.1)" : "linear-gradient(180deg, #f5d98f, #c9a961)",
-      border: "1px solid ".concat(!petNameInput.trim() ? "rgba(154, 135, 101, 0.2)" : "#c9a961"),
+      color: !petNameInput.trim() ? "var(--tq-ink-faint)" : "var(--tq-surface)",
+      background: !petNameInput.trim() ? "rgba(154, 135, 101, 0.1)" : "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))",
+      border: "1px solid ".concat(!petNameInput.trim() ? "rgba(154, 135, 101, 0.2)" : "var(--tq-gold)"),
       borderRadius: "2px"
     }
   }, "Save"))))), petResetConfirmOpen && /*#__PURE__*/React.createElement("div", {
@@ -10385,7 +10539,7 @@ function TokenTracker() {
       return e.stopPropagation();
     },
     style: {
-      background: "radial-gradient(ellipse at top, #1a110a 0%, #0a0604 100%)",
+      background: "radial-gradient(ellipse at top, var(--tq-surface) 0%, var(--tq-surface-deep) 100%)",
       border: "1px solid rgba(160, 48, 44, 0.5)",
       borderRadius: "3px",
       boxShadow: "0 0 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(160, 48, 44, 0.15)"
@@ -10394,7 +10548,7 @@ function TokenTracker() {
     className: "px-5 py-5 text-center"
   }, /*#__PURE__*/React.createElement(AlertTriangle, {
     style: {
-      color: "#d48a86",
+      color: "var(--tq-danger)",
       fontSize: '2rem',
       margin: '0 auto 0.75rem'
     }
@@ -10402,20 +10556,20 @@ function TokenTracker() {
     className: "text-sm tracking-[0.25em] uppercase mb-2",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#d48a86",
+      color: "var(--tq-danger)",
       fontWeight: 600
     }
   }, "Release your companion?"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm italic mb-1 px-2",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       lineHeight: 1.5
     }
   }, "Your companion will return to the aether. The egg may be found again."), /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] italic mt-1 mb-5",
     style: {
-      color: "#8a7555"
+      color: "var(--tq-ink-mid)"
     }
   }, "This cannot be undone."), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
@@ -10427,7 +10581,7 @@ function TokenTracker() {
     className: "flex-1 py-2.5 text-[10px] tracking-widest uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "2px"
     }
@@ -10439,7 +10593,7 @@ function TokenTracker() {
       fontWeight: 600,
       color: "#fff",
       background: "linear-gradient(180deg, #c0453f, #8a2d29)",
-      border: "1px solid #a0302c",
+      border: "1px solid var(--tq-danger-deep)",
       borderRadius: "2px"
     }
   }, "Release"))))), zoomImage && function () {
@@ -10514,7 +10668,7 @@ function TokenTracker() {
         background: "rgba(10, 6, 4, 0.9)",
         border: "1px solid rgba(201, 169, 97, 0.4)",
         borderRadius: "50%",
-        color: "#c9a961"
+        color: "var(--tq-gold)"
       },
       "aria-label": "Close zoom"
     }, /*#__PURE__*/React.createElement(XIcon, {
@@ -10526,7 +10680,7 @@ function TokenTracker() {
     }, /*#__PURE__*/React.createElement("span", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
-        color: "#c9a961",
+        color: "var(--tq-gold)",
         fontSize: "0.75rem"
       }
     }, idx + 1, "/", battlefield.length)), canNav && idx > 0 && /*#__PURE__*/React.createElement("button", {
@@ -10539,7 +10693,7 @@ function TokenTracker() {
         background: "rgba(10, 6, 4, 0.7)",
         border: "1px solid rgba(201, 169, 97, 0.3)",
         borderRadius: "2px",
-        color: "#c9a961"
+        color: "var(--tq-gold)"
       },
       "aria-label": "Previous token"
     }, /*#__PURE__*/React.createElement(ChevronLeft, {
@@ -10556,7 +10710,7 @@ function TokenTracker() {
         background: "rgba(10, 6, 4, 0.7)",
         border: "1px solid rgba(201, 169, 97, 0.3)",
         borderRadius: "2px",
-        color: "#c9a961"
+        color: "var(--tq-gold)"
       },
       "aria-label": "Next token"
     }, /*#__PURE__*/React.createElement(ChevronRight, {
@@ -10615,7 +10769,7 @@ function TokenTracker() {
         background: "rgba(232,148,122,0.15)",
         border: "1px solid rgba(232,148,122,0.5)",
         borderRadius: "2px",
-        color: "#d48a86"
+        color: "var(--tq-danger)"
       }
     }, /*#__PURE__*/React.createElement(Minus, {
       style: {
@@ -10626,7 +10780,7 @@ function TokenTracker() {
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#9a8765",
+        color: "var(--tq-ink-dim)",
         fontSize: "0.5rem",
         letterSpacing: "0.15em",
         textTransform: "uppercase"
@@ -10634,7 +10788,7 @@ function TokenTracker() {
     }, "Power"), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
-        color: pMod !== 0 ? "#f5d98f" : "#c9a961",
+        color: pMod !== 0 ? "var(--tq-gold-bright)" : "var(--tq-gold)",
         fontSize: "1.2rem",
         fontWeight: 700,
         lineHeight: 1.1
@@ -10642,7 +10796,7 @@ function TokenTracker() {
     }, curP), pMod !== 0 && /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
-        color: "#b4d4a0",
+        color: "var(--tq-life)",
         fontSize: "0.55rem"
       }
     }, fmt(pMod))), /*#__PURE__*/React.createElement("button", {
@@ -10656,7 +10810,7 @@ function TokenTracker() {
         background: "rgba(232,148,122,0.15)",
         border: "1px solid rgba(232,148,122,0.5)",
         borderRadius: "2px",
-        color: "#d48a86"
+        color: "var(--tq-danger)"
       }
     }, /*#__PURE__*/React.createElement(Plus, {
       style: {
@@ -10672,7 +10826,7 @@ function TokenTracker() {
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
-        color: "#d4b87a",
+        color: "var(--tq-gold-deep)",
         fontSize: "1.4rem",
         fontWeight: 700,
         lineHeight: 1
@@ -10684,7 +10838,7 @@ function TokenTracker() {
       className: "flex items-center justify-center gap-0.5 mt-1 active:scale-95 mx-auto",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#9a8765",
+        color: "var(--tq-ink-dim)",
         fontSize: "0.5rem",
         letterSpacing: "0.1em",
         textTransform: "uppercase",
@@ -10710,7 +10864,7 @@ function TokenTracker() {
         background: "rgba(159,199,230,0.15)",
         border: "1px solid rgba(159,199,230,0.5)",
         borderRadius: "2px",
-        color: "#9fc7e6"
+        color: "var(--tq-info)"
       }
     }, /*#__PURE__*/React.createElement(Minus, {
       style: {
@@ -10721,7 +10875,7 @@ function TokenTracker() {
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#9a8765",
+        color: "var(--tq-ink-dim)",
         fontSize: "0.5rem",
         letterSpacing: "0.15em",
         textTransform: "uppercase"
@@ -10729,7 +10883,7 @@ function TokenTracker() {
     }, "Tough"), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
-        color: tMod !== 0 ? "#f5d98f" : "#c9a961",
+        color: tMod !== 0 ? "var(--tq-gold-bright)" : "var(--tq-gold)",
         fontSize: "1.2rem",
         fontWeight: 700,
         lineHeight: 1.1
@@ -10737,7 +10891,7 @@ function TokenTracker() {
     }, curT), tMod !== 0 && /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: "'JetBrains Mono', monospace",
-        color: "#9fc7e6",
+        color: "var(--tq-info)",
         fontSize: "0.55rem"
       }
     }, fmt(tMod))), /*#__PURE__*/React.createElement("button", {
@@ -10751,7 +10905,7 @@ function TokenTracker() {
         background: "rgba(159,199,230,0.15)",
         border: "1px solid rgba(159,199,230,0.5)",
         borderRadius: "2px",
-        color: "#9fc7e6"
+        color: "var(--tq-info)"
       }
     }, /*#__PURE__*/React.createElement(Plus, {
       style: {
@@ -10780,7 +10934,7 @@ function TokenTracker() {
         return e.stopPropagation();
       },
       style: {
-        background: "radial-gradient(ellipse at top, #1a110a 0%, #0a0604 100%)",
+        background: "radial-gradient(ellipse at top, var(--tq-surface) 0%, var(--tq-surface-deep) 100%)",
         border: "1px solid rgba(201, 169, 97, 0.4)",
         borderRadius: "3px",
         boxShadow: "0 0 40px rgba(0, 0, 0, 0.8)"
@@ -10794,14 +10948,14 @@ function TokenTracker() {
       className: "min-w-0 flex items-center gap-2"
     }, /*#__PURE__*/React.createElement(BookOpen, {
       style: {
-        color: "#c9a961",
+        color: "var(--tq-gold)",
         fontSize: '1rem'
       }
     }), /*#__PURE__*/React.createElement("h2", {
       className: "text-sm truncate",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#e8dcc4",
+        color: "var(--tq-ink)",
         fontWeight: 600
       }
     }, target.name)), /*#__PURE__*/React.createElement("button", {
@@ -10811,7 +10965,7 @@ function TokenTracker() {
       },
       className: "w-8 h-8 flex items-center justify-center active:scale-90",
       style: {
-        color: "#9a8765"
+        color: "var(--tq-ink-dim)"
       },
       "aria-label": "Close"
     }, /*#__PURE__*/React.createElement(XIcon, {
@@ -10823,7 +10977,7 @@ function TokenTracker() {
     }, target.type_line && /*#__PURE__*/React.createElement("p", {
       className: "text-[10px] italic mb-3",
       style: {
-        color: "#9a8765",
+        color: "var(--tq-ink-dim)",
         fontFamily: "'Crimson Pro', serif"
       }
     }, target.type_line), oracleLoading ? /*#__PURE__*/React.createElement("div", {
@@ -10831,13 +10985,13 @@ function TokenTracker() {
     }, /*#__PURE__*/React.createElement(Loader2, {
       className: "animate-spin",
       style: {
-        color: "#c9a961",
+        color: "var(--tq-gold)",
         fontSize: '1.25rem'
       }
     })) : /*#__PURE__*/React.createElement("div", {
       className: "text-sm whitespace-pre-line tq-oracle-text",
       style: {
-        color: "#e8dcc4",
+        color: "var(--tq-ink)",
         fontFamily: "'Crimson Pro', serif",
         lineHeight: 1.5
       },
@@ -10850,7 +11004,7 @@ function TokenTracker() {
       className: "mt-3 text-right",
       style: {
         fontFamily: "'JetBrains Mono', monospace",
-        color: "#c9a961"
+        color: "var(--tq-gold)"
       }
     }, target.power, " / ", target.toughness))));
   }(), presetMenuOpen && /*#__PURE__*/React.createElement("div", {
@@ -10869,7 +11023,7 @@ function TokenTracker() {
       return e.stopPropagation();
     },
     style: {
-      background: "radial-gradient(ellipse at top, #1a110a 0%, #0a0604 100%)",
+      background: "radial-gradient(ellipse at top, var(--tq-surface) 0%, var(--tq-surface-deep) 100%)",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "3px",
       boxShadow: "0 0 40px rgba(0, 0, 0, 0.8)"
@@ -10883,14 +11037,14 @@ function TokenTracker() {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Layers, {
     style: {
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontSize: '1rem'
     }
   }), /*#__PURE__*/React.createElement("h2", {
     className: "text-xs tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontWeight: 600
     }
   }, "Deck Presets")), /*#__PURE__*/React.createElement("button", {
@@ -10899,7 +11053,7 @@ function TokenTracker() {
     },
     className: "w-8 h-8 flex items-center justify-center active:scale-90",
     style: {
-      color: "#9a8765"
+      color: "var(--tq-ink-dim)"
     },
     "aria-label": "Close"
   }, /*#__PURE__*/React.createElement(XIcon, {
@@ -10911,7 +11065,7 @@ function TokenTracker() {
   }, presets.length === 0 ? /*#__PURE__*/React.createElement("p", {
     className: "text-center italic text-sm py-6",
     style: {
-      color: "#6a5a42"
+      color: "var(--tq-ink-faint)"
     }
   }, "No presets saved.", /*#__PURE__*/React.createElement("br", null), "Build a battlefield, then save it as a preset for next game.") : /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2"
@@ -10932,14 +11086,14 @@ function TokenTracker() {
     }, /*#__PURE__*/React.createElement("h3", {
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#e8dcc4",
+        color: "var(--tq-ink)",
         fontSize: "0.9rem",
         fontWeight: 600
       }
     }, p.name), /*#__PURE__*/React.createElement("p", {
       className: "text-[10px] mt-0.5",
       style: {
-        color: "#9a8765",
+        color: "var(--tq-ink-dim)",
         fontFamily: "'Crimson Pro', serif"
       }
     }, p.tokens.length, " token type", p.tokens.length === 1 ? "" : "s")), /*#__PURE__*/React.createElement("button", {
@@ -10950,7 +11104,7 @@ function TokenTracker() {
       style: {
         border: "1px solid rgba(160, 48, 44, 0.4)",
         borderRadius: "2px",
-        color: "#d48a86"
+        color: "var(--tq-danger)"
       },
       "aria-label": "Delete ".concat(p.name),
       title: "Delete preset"
@@ -10971,9 +11125,9 @@ function TokenTracker() {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 600,
-      color: battlefield.length === 0 ? "#6a5a42" : "#1a110a",
-      background: battlefield.length === 0 ? "rgba(154, 135, 101, 0.1)" : "linear-gradient(180deg, #f5d98f, #c9a961)",
-      border: "1px solid ".concat(battlefield.length === 0 ? "rgba(154, 135, 101, 0.2)" : "#c9a961"),
+      color: battlefield.length === 0 ? "var(--tq-ink-faint)" : "var(--tq-surface)",
+      background: battlefield.length === 0 ? "rgba(154, 135, 101, 0.1)" : "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))",
+      border: "1px solid ".concat(battlefield.length === 0 ? "rgba(154, 135, 101, 0.2)" : "var(--tq-gold)"),
       borderRadius: "2px"
     }
   }, /*#__PURE__*/React.createElement(Save, {
@@ -10997,7 +11151,7 @@ function TokenTracker() {
       return e.stopPropagation();
     },
     style: {
-      background: "radial-gradient(ellipse at top, #1a110a 0%, #0a0604 100%)",
+      background: "radial-gradient(ellipse at top, var(--tq-surface) 0%, var(--tq-surface-deep) 100%)",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "3px",
       boxShadow: "0 0 40px rgba(0, 0, 0, 0.8)"
@@ -11008,20 +11162,20 @@ function TokenTracker() {
     className: "flex items-center gap-2 mb-3"
   }, /*#__PURE__*/React.createElement(Save, {
     style: {
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       fontSize: '1rem'
     }
   }), /*#__PURE__*/React.createElement("h2", {
     className: "text-xs tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontWeight: 600
     }
   }, "Save Preset")), /*#__PURE__*/React.createElement("p", {
     className: "text-xs mb-3",
     style: {
-      color: "#9a8765",
+      color: "var(--tq-ink-dim)",
       fontFamily: "'Crimson Pro', serif"
     }
   }, "Saves ", battlefield.length, " token type", battlefield.length === 1 ? "" : "s", " as a reusable preset."), /*#__PURE__*/React.createElement("input", {
@@ -11038,7 +11192,7 @@ function TokenTracker() {
     className: "w-full px-3 py-2.5 text-base outline-none mb-3",
     style: {
       fontFamily: "'Crimson Pro', serif",
-      color: "#e8dcc4",
+      color: "var(--tq-ink)",
       background: "rgba(20, 14, 8, 0.6)",
       border: "1px solid rgba(201, 169, 97, 0.3)",
       borderRadius: "2px"
@@ -11053,7 +11207,7 @@ function TokenTracker() {
     className: "flex-1 py-2 text-[10px] tracking-widest uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961",
+      color: "var(--tq-gold)",
       border: "1px solid rgba(201, 169, 97, 0.4)",
       borderRadius: "2px"
     }
@@ -11066,9 +11220,9 @@ function TokenTracker() {
     style: {
       fontFamily: "'Cinzel', serif",
       fontWeight: 600,
-      color: !savePresetName.trim() ? "#6a5a42" : "#1a110a",
-      background: !savePresetName.trim() ? "rgba(154, 135, 101, 0.1)" : "linear-gradient(180deg, #f5d98f, #c9a961)",
-      border: "1px solid ".concat(!savePresetName.trim() ? "rgba(154, 135, 101, 0.2)" : "#c9a961"),
+      color: !savePresetName.trim() ? "var(--tq-ink-faint)" : "var(--tq-surface)",
+      background: !savePresetName.trim() ? "rgba(154, 135, 101, 0.1)" : "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))",
+      border: "1px solid ".concat(!savePresetName.trim() ? "rgba(154, 135, 101, 0.2)" : "var(--tq-gold)"),
       borderRadius: "2px"
     }
   }, "Save"))))), settingsOpen && /*#__PURE__*/React.createElement("div", {
@@ -11101,14 +11255,14 @@ function TokenTracker() {
     className: "text-base tracking-[0.3em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       fontWeight: 600
     }
   }, "Settings"), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return setSettingsOpen(false);
     },
-    className: "text-[#9a8765] text-xl active:scale-90",
+    className: "text-[var(--tq-ink-dim)] text-xl active:scale-90",
     style: {
       background: 'transparent',
       border: 'none',
@@ -11121,7 +11275,7 @@ function TokenTracker() {
     className: "text-[10px] tracking-[0.25em] uppercase mb-2",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#b09870",
+      color: "var(--tq-ink-warm)",
       fontWeight: 600
     }
   }, "Haptic Feedback"), /*#__PURE__*/React.createElement("div", {
@@ -11141,9 +11295,9 @@ function TokenTracker() {
       style: {
         fontFamily: "'Cinzel', serif",
         fontWeight: 600,
-        color: settings.hapticIntensity === opt ? "#0a0604" : "#c9a961",
-        background: settings.hapticIntensity === opt ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
-        border: "1px solid ".concat(settings.hapticIntensity === opt ? "#c9a961" : "rgba(201, 169, 97, 0.3)"),
+        color: settings.hapticIntensity === opt ? "var(--tq-surface-deep)" : "var(--tq-gold)",
+        background: settings.hapticIntensity === opt ? "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))" : "transparent",
+        border: "1px solid ".concat(settings.hapticIntensity === opt ? "var(--tq-gold)" : "rgba(201, 169, 97, 0.3)"),
         borderRadius: "2px"
       }
     }, opt);
@@ -11151,7 +11305,7 @@ function TokenTracker() {
     className: "text-[10px] tracking-[0.25em] uppercase mb-2",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#b09870",
+      color: "var(--tq-ink-warm)",
       fontWeight: 600
     }
   }, "Text Size"), /*#__PURE__*/React.createElement("div", {
@@ -11175,9 +11329,9 @@ function TokenTracker() {
         fontFamily: "'Cinzel', serif",
         fontWeight: 600,
         fontSize: opt === 'small' ? '0.7rem' : opt === 'large' ? '0.9rem' : '0.8rem',
-        color: settings.fontSize === opt ? "#0a0604" : "#c9a961",
-        background: settings.fontSize === opt ? "linear-gradient(180deg, #f5d98f, #c9a961)" : "transparent",
-        border: "1px solid ".concat(settings.fontSize === opt ? "#c9a961" : "rgba(201, 169, 97, 0.3)"),
+        color: settings.fontSize === opt ? "var(--tq-surface-deep)" : "var(--tq-gold)",
+        background: settings.fontSize === opt ? "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))" : "transparent",
+        border: "1px solid ".concat(settings.fontSize === opt ? "var(--tq-gold)" : "rgba(201, 169, 97, 0.3)"),
         borderRadius: "2px"
       }
     }, label);
@@ -11189,7 +11343,7 @@ function TokenTracker() {
     className: "text-[11px] tracking-[0.15em] uppercase",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#c9a961"
+      color: "var(--tq-gold)"
     }
   }, "Scroll-to-top button"), /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
@@ -11204,7 +11358,7 @@ function TokenTracker() {
       width: 40,
       height: 22,
       borderRadius: 11,
-      background: settings.showScrollTop ? "#c9a961" : "rgba(154,135,101,0.2)",
+      background: settings.showScrollTop ? "var(--tq-gold)" : "rgba(154,135,101,0.2)",
       border: "1px solid rgba(201,169,97,0.3)",
       position: 'relative',
       cursor: 'pointer',
@@ -11218,7 +11372,7 @@ function TokenTracker() {
       width: 16,
       height: 16,
       borderRadius: '50%',
-      background: settings.showScrollTop ? "#0a0604" : "#9a8765",
+      background: settings.showScrollTop ? "var(--tq-surface-deep)" : "var(--tq-ink-dim)",
       transition: 'left 0.2s'
     }
   })))), /*#__PURE__*/React.createElement("button", {
@@ -11231,7 +11385,7 @@ function TokenTracker() {
     className: "w-full py-2.5 text-[10px] tracking-[0.2em] uppercase active:scale-95",
     style: {
       fontFamily: "'Cinzel', serif",
-      color: "#9fc7e6",
+      color: "var(--tq-info)",
       background: "rgba(63,100,140,0.1)",
       border: "1px solid rgba(63,100,140,0.35)",
       borderRadius: "2px"
@@ -11253,7 +11407,7 @@ function TokenTracker() {
       borderRadius: '50%',
       background: "linear-gradient(180deg, rgba(26, 17, 10, 0.95), rgba(10, 6, 4, 0.95))",
       border: "1px solid rgba(212, 184, 122, 0.5)",
-      color: "#d4b87a",
+      color: "var(--tq-gold-deep)",
       boxShadow: "0 6px 20px rgba(0,0,0,0.6), 0 0 12px rgba(212, 184, 122, 0.15)",
       display: 'flex',
       alignItems: 'center',
@@ -11311,7 +11465,7 @@ function TokenTracker() {
           width: i === onboardingStep ? 16 : 6,
           height: 4,
           borderRadius: 2,
-          background: i <= onboardingStep ? '#d4b87a' : 'rgba(201,169,97,0.2)',
+          background: i <= onboardingStep ? 'var(--tq-gold-deep)' : 'rgba(201,169,97,0.2)',
           transition: 'all 0.3s'
         }
       });
@@ -11319,14 +11473,14 @@ function TokenTracker() {
       className: "text-base tracking-[0.2em] uppercase mb-2",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: '#f5d98f',
+        color: 'var(--tq-gold-bright)',
         fontWeight: 600
       }
     }, step.title), /*#__PURE__*/React.createElement("p", {
       className: "text-sm leading-relaxed mb-4",
       style: {
         fontFamily: "'Crimson Pro', serif",
-        color: '#d4b87a'
+        color: 'var(--tq-gold-deep)'
       }
     }, step.body), /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2"
@@ -11338,7 +11492,7 @@ function TokenTracker() {
       className: "flex-1 py-2.5 text-[10px] tracking-[0.2em] uppercase active:scale-95",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: '#9a8765',
+        color: 'var(--tq-ink-dim)',
         background: 'transparent',
         border: '1px solid rgba(154,135,101,0.3)',
         borderRadius: '2px'
@@ -11352,9 +11506,9 @@ function TokenTracker() {
       style: {
         fontFamily: "'Cinzel', serif",
         fontWeight: 700,
-        color: '#0a0604',
-        background: 'linear-gradient(180deg, #f5d98f, #c9a961)',
-        border: '1px solid #c9a961',
+        color: 'var(--tq-surface-deep)',
+        background: 'linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))',
+        border: '1px solid var(--tq-gold)',
         borderRadius: '2px',
         boxShadow: '0 2px 8px rgba(201,169,97,0.3)'
       }
@@ -11368,7 +11522,7 @@ function TokenTracker() {
       letterSpacing: "0.22em",
       textTransform: "uppercase",
       fontWeight: 600,
-      color: "#f5d98f",
+      color: "var(--tq-gold-bright)",
       background: "linear-gradient(180deg, rgba(26, 17, 10, 0.98), rgba(10, 6, 4, 0.98))",
       border: "1px solid rgba(212, 184, 122, 0.5)",
       borderRadius: "3px",
@@ -11399,7 +11553,7 @@ function TokenTracker() {
         return e.stopPropagation();
       },
       style: {
-        background: "radial-gradient(ellipse at top, #1a110a 0%, #0a0604 100%)",
+        background: "radial-gradient(ellipse at top, var(--tq-surface) 0%, var(--tq-surface-deep) 100%)",
         border: "1px solid ".concat(target.color, "66"),
         borderRadius: "3px",
         boxShadow: "0 0 40px rgba(0, 0, 0, 0.8), 0 0 30px ".concat(target.color, "20")
@@ -11422,7 +11576,7 @@ function TokenTracker() {
       className: "text-[9px] tracking-[0.3em] uppercase",
       style: {
         fontFamily: "'Cinzel', serif",
-        color: "#9a8765"
+        color: "var(--tq-ink-dim)"
       }
     }, "Commander damage to"), /*#__PURE__*/React.createElement("p", {
       className: "text-sm truncate",
@@ -11437,7 +11591,7 @@ function TokenTracker() {
       },
       className: "w-8 h-8 flex items-center justify-center active:scale-90 flex-shrink-0",
       style: {
-        color: "#9a8765"
+        color: "var(--tq-ink-dim)"
       },
       "aria-label": "Close"
     }, /*#__PURE__*/React.createElement(XIcon, {
@@ -11469,7 +11623,7 @@ function TokenTracker() {
         className: "text-xs truncate",
         style: {
           fontFamily: "'Cinzel', serif",
-          color: "#e8dcc4",
+          color: "var(--tq-ink)",
           fontWeight: 500
         }
       }, d.name)), /*#__PURE__*/React.createElement("div", {
@@ -11480,7 +11634,7 @@ function TokenTracker() {
         },
         className: "w-9 h-9 flex items-center justify-center active:scale-90",
         style: {
-          color: "#d48a86",
+          color: "var(--tq-danger)",
           borderLeft: "1px solid ".concat(d.color, "33")
         },
         "aria-label": "Decrease"
@@ -11494,7 +11648,7 @@ function TokenTracker() {
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: "1.1rem",
           fontWeight: 700,
-          color: lethal ? "#ff6b67" : dmg > 0 ? "#d4b87a" : "#8a7555",
+          color: lethal ? "#ff6b67" : dmg > 0 ? "var(--tq-gold-deep)" : "var(--tq-ink-mid)",
           textShadow: lethal ? "0 0 12px rgba(255, 107, 103, 0.6)" : "none"
         }
       }, dmg), /*#__PURE__*/React.createElement("button", {
@@ -11503,7 +11657,7 @@ function TokenTracker() {
         },
         className: "w-9 h-9 flex items-center justify-center active:scale-90",
         style: {
-          color: "#b4d4a0",
+          color: "var(--tq-life)",
           borderRight: "1px solid ".concat(d.color, "33")
         },
         "aria-label": "Increase"
@@ -11517,14 +11671,14 @@ function TokenTracker() {
     }, /*#__PURE__*/React.createElement("p", {
       className: "text-[9px] italic text-center",
       style: {
-        color: "#6a5a42"
+        color: "var(--tq-ink-faint)"
       }
     }, "Damage also reduces life. 21+ from one commander = lethal."))));
   }(), activeTab === 'vault' && /*#__PURE__*/React.createElement("div", {
     className: "min-h-screen tab-enter",
     key: "vault",
     style: {
-      background: "#0d0d0f",
+      background: "var(--tq-bg)",
       paddingBottom: 80
     },
     ref: function ref(el) {
@@ -11536,7 +11690,7 @@ function TokenTracker() {
     className: "min-h-screen tab-enter",
     key: "reference",
     style: {
-      background: "#0d0d0f",
+      background: "var(--tq-bg)",
       paddingBottom: 80
     },
     ref: function ref(el) {
@@ -11548,7 +11702,7 @@ function TokenTracker() {
     className: "min-h-screen tab-enter",
     key: "odds",
     style: {
-      background: "#0d0d0f",
+      background: "var(--tq-bg)",
       paddingBottom: 80
     },
     ref: function ref(el) {
@@ -11586,7 +11740,7 @@ function TokenTracker() {
     Icon: Crown
   }, {
     id: 'reference',
-    label: 'Reference',
+    label: 'Rules',
     Icon: BookOpen
   }, {
     id: 'odds',
@@ -11606,7 +11760,7 @@ function TokenTracker() {
       },
       className: "relative flex-1 flex flex-col items-center justify-center gap-1 py-2.5 active:scale-95 transition-all",
       style: {
-        color: isActive ? "#f5d98f" : "#7a6a52",
+        color: isActive ? "var(--tq-gold-bright)" : "#7a6a52",
         background: isActive ? "linear-gradient(180deg, rgba(212, 184, 122, 0.14) 0%, rgba(201, 169, 97, 0.04) 60%, transparent 100%)" : "transparent"
       },
       "aria-label": tab.label,
@@ -11619,7 +11773,7 @@ function TokenTracker() {
         left: '20%',
         right: '20%',
         height: 2,
-        background: 'linear-gradient(90deg, transparent, #d4b87a 50%, transparent)',
+        background: 'linear-gradient(90deg, transparent, var(--tq-gold-deep) 50%, transparent)',
         boxShadow: '0 0 8px rgba(212, 184, 122, 0.6)'
       }
     }), /*#__PURE__*/React.createElement(tab.Icon, {
@@ -11633,7 +11787,8 @@ function TokenTracker() {
       style: {
         fontFamily: "'Cinzel', serif",
         fontWeight: isActive ? 700 : 500,
-        letterSpacing: isActive ? '0.22em' : '0.18em',
+        letterSpacing: isActive ? '0.1em' : '0.08em',
+        whiteSpace: 'nowrap',
         transition: 'letter-spacing 0.2s ease'
       }
     }, tab.label));
@@ -11683,7 +11838,7 @@ if (typeof window !== 'undefined') {
       alert("CRITICAL ERROR: ".concat(error.message, "\n\nTap OK to see details"));
 
       // Show error to user
-      document.body.innerHTML = "\n        <div style=\"display: flex; align-items: center; justify-content: center; height: 100vh; background: #0a0604; color: #c9a961; font-family: sans-serif; padding: 20px; text-align: center;\">\n          <div>\n            <h1 style=\"margin-bottom: 10px; color: #d48a86;\">App Failed to Start</h1>\n            <p style=\"color: #c9a961; margin: 20px 0;\">".concat(error.message, "</p>\n            <pre style=\"background: #1a110a; padding: 10px; border-radius: 4px; font-size: 11px; text-align: left; overflow: auto; max-width: 90vw;\">").concat(error.stack || 'No stack trace', "</pre>\n            <button onclick=\"location.reload()\" style=\"margin-top: 20px; padding: 10px 20px; background: #c9a961; border: none; color: #0a0604; cursor: pointer; font-size: 16px; border-radius: 4px;\">Reload App</button>\n          </div>\n        </div>\n      ");
+      document.body.innerHTML = "\n        <div style=\"display: flex; align-items: center; justify-content: center; height: 100vh; background: var(--tq-surface-deep); color: var(--tq-gold); font-family: sans-serif; padding: 20px; text-align: center;\">\n          <div>\n            <h1 style=\"margin-bottom: 10px; color: var(--tq-danger);\">App Failed to Start</h1>\n            <p style=\"color: var(--tq-gold); margin: 20px 0;\">".concat(error.message, "</p>\n            <pre style=\"background: var(--tq-surface); padding: 10px; border-radius: 4px; font-size: 11px; text-align: left; overflow: auto; max-width: 90vw;\">").concat(error.stack || 'No stack trace', "</pre>\n            <button onclick=\"location.reload()\" style=\"margin-top: 20px; padding: 10px 20px; background: var(--tq-gold); border: none; color: var(--tq-surface-deep); cursor: pointer; font-size: 16px; border-radius: 4px;\">Reload App</button>\n          </div>\n        </div>\n      ");
     }
   };
   if (document.readyState === 'loading') {
