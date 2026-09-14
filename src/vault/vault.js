@@ -707,6 +707,33 @@ function CommanderVault() {
     }
   }, "+ Add Deck"), React.createElement("button", {
     onClick: function onClick() {
+      if (!window.TQ) return;
+      // Live camera first; the photo flow is the fallback inside it.
+      var open = window.TQ.openLiveScanner || window.TQ.openScanner;
+      if (!open) return;
+      open(function (text) {
+        if (!text) return;
+        // Drop straight into the new-deck form with the scanned list in place.
+        resetForm();
+        setEditId(null);
+        setFormList(text);
+        setShowAdd(true);
+      });
+    },
+    style: {
+      padding: "10px 16px",
+      borderRadius: 8,
+      background: "transparent",
+      border: "1px solid var(--tq-edge-strong)",
+      color: ACCENT,
+      fontFamily: "inherit",
+      fontSize: 14,
+      fontWeight: 700,
+      cursor: "pointer",
+      whiteSpace: "nowrap"
+    }
+  }, "Scan Deck"), React.createElement("button", {
+    onClick: function onClick() {
       var lines = filtered.map(function (d) {
         var colors = d.colors.join('');
         var tags = [d.theme, d.power && "Power ".concat(d.power), d.budget].filter(Boolean).join(' · ');

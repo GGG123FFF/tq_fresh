@@ -269,16 +269,16 @@
   async function resolve(names, { store, offline = false, onProgress } = {}) {
     const cache = store || memoryStore();
     const data = {};
-    const need = [];
+    const need2 = [];
     for (const n of names) {
       const hit = await cache.get(n.toLowerCase());
       if (hit) data[n.toLowerCase()] = hit;
-      else need.push(n);
+      else need2.push(n);
     }
-    if (!need.length || offline) return { data, misses: offline ? need : [], fuzzy: {} };
+    if (!need2.length || offline) return { data, misses: offline ? need2 : [], fuzzy: {} };
     let misses = [];
-    for (let i = 0; i < need.length; i += 75) {
-      const chunk = need.slice(i, i + 75);
+    for (let i = 0; i < need2.length; i += 75) {
+      const chunk = need2.slice(i, i + 75);
       try {
         const r = await fetch(COLLECTION_URL, {
           method: "POST",
@@ -301,10 +301,10 @@
         misses.push(...chunk);
         continue;
       }
-      if (onProgress) onProgress(Math.min(i + 75, need.length), need.length);
+      if (onProgress) onProgress(Math.min(i + 75, need2.length), need2.length);
       await sleep(120);
     }
-    misses = [.../* @__PURE__ */ new Set([...misses, ...need.filter((n) => !data[n.toLowerCase()])])];
+    misses = [.../* @__PURE__ */ new Set([...misses, ...need2.filter((n) => !data[n.toLowerCase()])])];
     const fuzzy = {};
     const stillMissing = [];
     for (const n of misses) {
@@ -368,17 +368,17 @@
     /** Hall's condition across all 31 non-empty colour subsets. */
     feasible(demand, pool) {
       for (let s = 1; s < 32; s++) {
-        let need = 0, b = s;
+        let need2 = 0, b = s;
         while (b) {
           const low = b & -b;
-          need += demand[low] || 0;
+          need2 += demand[low] || 0;
           b ^= low;
         }
-        if (!need) continue;
+        if (!need2) continue;
         let cap = 0;
         const types = this.subsetTypes[s];
         for (let i = 0; i < types.length; i++) cap += pool[types[i]];
-        if (need > cap) return false;
+        if (need2 > cap) return false;
       }
       return true;
     }
@@ -395,12 +395,12 @@
       let total = 0;
       for (let i = 0; i < pool.length; i++) total += pool[i];
       const demand = {};
-      let need = generic;
+      let need2 = generic;
       for (const [bit, n] of cost.pips) {
         demand[bit] = (demand[bit] || 0) + n;
-        need += n;
+        need2 += n;
       }
-      if (total < need) return null;
+      if (total < need2) return null;
       const bits = Object.keys(demand).map(Number);
       if (bits.length && !this.feasible(demand, pool)) return null;
       const left = pool.slice();
@@ -636,7 +636,7 @@
       for (; ; ) {
         if (!free) break;
         const poolKey = pool.join(",");
-        let pick = null, pickKey = null, pickSp = null;
+        let pick2 = null, pickKey = null, pickSp = null;
         for (const i of hand) {
           if (D.isLand[i]) continue;
           const sp = D.solver.pay(D.cost[i].key, D.cost[i], pool, poolKey);
@@ -644,11 +644,11 @@
           const key = [D.ramp[i] && turn <= 5 ? 0 : 1, -D.mv[i]];
           if (!pickKey || cmpKey(key, pickKey) < 0) {
             pickKey = key;
-            pick = i;
+            pick2 = i;
             pickSp = sp;
           }
         }
-        if (pick === null) {
+        if (pick2 === null) {
           for (const i of hand) if (!D.isLand[i] && D.mv[i] <= free) {
             screwed = true;
             break;
@@ -659,11 +659,11 @@
           pool[t] -= pickSp[t];
           free -= pickSp[t];
         }
-        hand.splice(hand.indexOf(pick), 1);
-        spent += D.mv[pick];
+        hand.splice(hand.indexOf(pick2), 1);
+        spent += D.mv[pick2];
         res.cardsCast++;
-        if (D.ramp[pick]) pending.push([D.rampSrc[pick], D.ramp[pick]]);
-        for (let k = 0; k < D.draw[pick]; k++) drawCard();
+        if (D.ramp[pick2]) pending.push([D.rampSrc[pick2], D.ramp[pick2]]);
+        for (let k = 0; k < D.draw[pick2]; k++) drawCard();
       }
       res.manaSpent.push(spent);
       if (screwed) res.colourScrewTurns++;
@@ -1117,6 +1117,31 @@
         resize: "vertical"
       }
     }));
+    kids.push(e("button", {
+      key: "scan",
+      onClick: () => {
+        const open = window.TQ && (window.TQ.openLiveScanner || window.TQ.openScanner);
+        if (open) {
+          open((scanned) => {
+            if (scanned) setText((prev) => prev ? prev + "\n" + scanned : scanned);
+          });
+        }
+      },
+      style: {
+        marginTop: 10,
+        width: "100%",
+        minHeight: "var(--tq-tap)",
+        borderRadius: 4,
+        cursor: "pointer",
+        background: "transparent",
+        border: `1px solid ${C.edge}`,
+        color: C.dim,
+        fontFamily: DISPLAY,
+        fontSize: 11,
+        letterSpacing: "0.16em",
+        textTransform: "uppercase"
+      }
+    }, "Scan cards in"));
     kids.push(e("div", {
       key: "onplay",
       style: { display: "flex", gap: 6, marginTop: 10 }
@@ -1287,8 +1312,8 @@
       window.dispatchEvent(new CustomEvent("tq:sim-deck", { detail: deck }));
       if (typeof window.TQ.setTab === "function") window.TQ.setTab("odds");
     };
-    window.TQ.mountSimulator = function(el3) {
-      if (!el3 || roots.has(el3)) return;
+    window.TQ.mountSimulator = function(el4) {
+      if (!el4 || roots.has(el4)) return;
       const React2 = window.React;
       const ReactDOM = window.ReactDOM;
       if (!React2 || !ReactDOM) return;
@@ -1321,8 +1346,8 @@
         initialSummary: readLast(),
         initialDeck: window.TQ._pendingDeck || null
       };
-      const root = ReactDOM.createRoot ? ReactDOM.createRoot(el3) : { render: (node) => ReactDOM.render(node, el3) };
-      roots.set(el3, root);
+      const root = ReactDOM.createRoot ? ReactDOM.createRoot(el4) : { render: (node) => ReactDOM.render(node, el4) };
+      roots.set(el4, root);
       root.render(React2.createElement(SimulatorTab, props));
     };
   }
@@ -1684,7 +1709,7 @@
     var col = COLORS[c];
     var letter = (c || "C").toUpperCase();
     var primary = "https://svgs.scryfall.io/card-symbols/" + letter + ".svg";
-    var fallback = "img/mana/" + letter + ".svg";
+    var fallback2 = "img/mana/" + letter + ".svg";
     return React.createElement("img", {
       src: primary,
       alt: "{" + letter + "}",
@@ -1692,7 +1717,7 @@
       onError: function onError(e) {
         if (e.currentTarget.dataset.tqFb === "1") return;
         e.currentTarget.dataset.tqFb = "1";
-        e.currentTarget.src = fallback;
+        e.currentTarget.src = fallback2;
       },
       style: {
         display: "inline-block",
@@ -2040,6 +2065,31 @@
         whiteSpace: "nowrap"
       }
     }, "+ Add Deck"), React.createElement("button", {
+      onClick: function onClick() {
+        if (!window.TQ) return;
+        var open = window.TQ.openLiveScanner || window.TQ.openScanner;
+        if (!open) return;
+        open(function(text) {
+          if (!text) return;
+          resetForm();
+          setEditId(null);
+          setFormList(text);
+          setShowAdd(true);
+        });
+      },
+      style: {
+        padding: "10px 16px",
+        borderRadius: 8,
+        background: "transparent",
+        border: "1px solid var(--tq-edge-strong)",
+        color: ACCENT,
+        fontFamily: "inherit",
+        fontSize: 14,
+        fontWeight: 700,
+        cursor: "pointer",
+        whiteSpace: "nowrap"
+      }
+    }, "Scan Deck"), React.createElement("button", {
       onClick: function onClick() {
         var lines = filtered.map(function(d) {
           var colors = d.colors.join("");
@@ -2933,13 +2983,13 @@
     const roots = /* @__PURE__ */ new WeakMap();
     window.TQ = window.TQ || {};
     window.TQ.CommanderVault = CommanderVault;
-    window.TQ.mountVault = function(el3) {
-      if (!el3 || roots.has(el3)) return;
+    window.TQ.mountVault = function(el4) {
+      if (!el4 || roots.has(el4)) return;
       const React2 = window.React;
       const ReactDOM = window.ReactDOM;
       if (!React2 || !ReactDOM) return;
-      const root = ReactDOM.createRoot ? ReactDOM.createRoot(el3) : { render: (node) => ReactDOM.render(node, el3) };
-      roots.set(el3, root);
+      const root = ReactDOM.createRoot ? ReactDOM.createRoot(el4) : { render: (node) => ReactDOM.render(node, el4) };
+      roots.set(el4, root);
       root.render(React2.createElement(CommanderVault, null));
     };
   }
@@ -2997,8 +3047,8 @@
   }
   function build() {
     styles();
-    const host = document.createElement("div");
-    host.id = ID;
+    const host2 = document.createElement("div");
+    host2.id = ID;
     const s = svg("svg", { width: 260, height: 260, viewBox: "-130 -130 260 260" });
     const stack = svg("g", { class: "stack" });
     stack.appendChild(svg("circle", {
@@ -3085,9 +3135,9 @@
     }));
     stack.appendChild(core);
     s.appendChild(stack);
-    host.appendChild(s);
-    document.body.appendChild(host);
-    return { host, arc, runes, core, circumference };
+    host2.appendChild(s);
+    document.body.appendChild(host2);
+    return { host: host2, arc, runes, core, circumference };
   }
   function ensure() {
     if (el && document.body.contains(el.host)) return el;
@@ -3514,7 +3564,7 @@
   function openScanner(onDone) {
     const found = [];
     let fanned = false;
-    const overlay = el2("div", {
+    const overlay2 = el2("div", {
       position: "fixed",
       inset: "0",
       zIndex: "140",
@@ -3708,7 +3758,7 @@
       }
     };
     const close = (commit) => {
-      overlay.remove();
+      overlay2.remove();
       if (commit && onDone) {
         onDone(found.map((f) => `${f.qty} ${f.name}`).join("\n"), found);
       }
@@ -3731,14 +3781,720 @@
       }, INSTALL);
       head.append(hint);
     }
-    overlay.append(head, list, foot);
-    document.body.append(overlay);
+    overlay2.append(head, list, foot);
+    document.body.append(overlay2);
     render();
   }
   function install6() {
     window.TQ = window.TQ || {};
     window.TQ.openScanner = openScanner;
     window.TQ.identifyCard = identify;
+  }
+
+  // src/scan/live.js
+  var TICK_MS = 900;
+  var CONFIRM_MS = 1400;
+  var REPEAT_LOCK_MS = 2500;
+  var C3 = {
+    ink: "var(--tq-ink)",
+    dim: "var(--tq-ink-dim)",
+    gold: "var(--tq-gold)",
+    bright: "var(--tq-gold-bright)",
+    warn: "var(--tq-danger)",
+    edge: "var(--tq-edge)"
+  };
+  var DISPLAY3 = "var(--tq-display)";
+  var BODY3 = "var(--tq-text)";
+  var MONO3 = "var(--tq-mono)";
+  function el3(tag, style, text) {
+    const n = document.createElement(tag);
+    Object.assign(n.style, style || {});
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function button2(label, primary, onClick) {
+    const b = el3("button", {
+      minHeight: "var(--tq-tap)",
+      padding: "0 16px",
+      borderRadius: "4px",
+      fontFamily: DISPLAY3,
+      fontSize: "11px",
+      letterSpacing: "0.16em",
+      textTransform: "uppercase",
+      cursor: "pointer",
+      border: "1px solid " + C3.edge,
+      background: primary ? "linear-gradient(180deg, var(--tq-gold-bright), var(--tq-gold))" : "rgba(5,3,4,0.7)",
+      color: primary ? "#1a1208" : C3.ink
+    }, label);
+    b.onclick = onClick;
+    return b;
+  }
+  async function openLiveScanner(onDone) {
+    const found = [];
+    let stream = null;
+    let timer = null;
+    let stopped = false;
+    let pending = null;
+    let pendingSince = 0;
+    const recentlyAdded = /* @__PURE__ */ new Map();
+    const overlay2 = el3("div", {
+      position: "fixed",
+      inset: "0",
+      zIndex: "150",
+      background: "#000",
+      display: "flex",
+      flexDirection: "column"
+    });
+    const stage = el3("div", { position: "relative", flex: "1", overflow: "hidden" });
+    const video = document.createElement("video");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("muted", "");
+    video.autoplay = true;
+    video.muted = true;
+    Object.assign(video.style, {
+      position: "absolute",
+      inset: "0",
+      width: "100%",
+      height: "100%",
+      objectFit: "cover"
+    });
+    stage.appendChild(video);
+    const guide = el3("div", {
+      position: "absolute",
+      left: "50%",
+      top: "46%",
+      transform: "translate(-50%, -50%)",
+      width: "74%",
+      aspectRatio: "63 / 88",
+      borderRadius: "10px",
+      border: "2px solid " + C3.gold,
+      boxShadow: "0 0 0 100vmax rgba(0,0,0,0.55)",
+      pointerEvents: "none"
+    });
+    const band = el3("div", {
+      position: "absolute",
+      left: "4%",
+      right: "4%",
+      top: "4%",
+      height: "13%",
+      border: "1px dashed var(--tq-gold-bright)",
+      borderRadius: "3px",
+      background: "rgba(245,217,143,0.06)"
+    });
+    guide.appendChild(band);
+    stage.appendChild(guide);
+    const status = el3("div", {
+      position: "absolute",
+      left: "0",
+      right: "0",
+      bottom: "10px",
+      textAlign: "center",
+      fontFamily: BODY3,
+      fontSize: "15px",
+      color: C3.ink,
+      textShadow: "0 1px 6px rgba(0,0,0,0.9)",
+      padding: "0 16px"
+    }, "Line the card name up inside the dashes.");
+    stage.appendChild(status);
+    const tally = el3("div", {
+      position: "absolute",
+      top: "max(12px, env(safe-area-inset-top))",
+      left: "12px",
+      fontFamily: MONO3,
+      fontSize: "13px",
+      color: C3.bright,
+      background: "rgba(5,3,4,0.72)",
+      padding: "6px 10px",
+      borderRadius: "4px",
+      border: "1px solid " + C3.edge
+    }, "0 cards");
+    stage.appendChild(tally);
+    const last = el3("div", {
+      position: "absolute",
+      top: "max(12px, env(safe-area-inset-top))",
+      right: "12px",
+      left: "96px",
+      textAlign: "right",
+      fontFamily: BODY3,
+      fontSize: "14px",
+      color: C3.dim,
+      textShadow: "0 1px 6px rgba(0,0,0,0.9)"
+    }, "");
+    stage.appendChild(last);
+    const foot = el3("div", {
+      display: "flex",
+      gap: "8px",
+      padding: "10px 12px",
+      paddingBottom: "max(10px, env(safe-area-inset-bottom))",
+      background: "#05030a",
+      borderTop: "1px solid " + C3.edge
+    });
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    function grabBand() {
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      if (!vw || !vh) return null;
+      const sRatio = stage.clientWidth / stage.clientHeight;
+      const vRatio = vw / vh;
+      let cw = vw, chh = vh, ox = 0, oy = 0;
+      if (vRatio > sRatio) {
+        cw = vh * sRatio;
+        ox = (vw - cw) / 2;
+      } else {
+        chh = vw / sRatio;
+        oy = (vh - chh) / 2;
+      }
+      const gw = cw * 0.74;
+      const gh = gw * (88 / 63);
+      const gx = ox + (cw - gw) / 2;
+      const gy = oy + chh * 0.46 - gh / 2;
+      const bx = gx + gw * 0.04;
+      const by = gy + gh * 0.04;
+      const bw = gw * 0.92;
+      const bh = gh * 0.13;
+      if (bw < 8 || bh < 4) return null;
+      const scale = Math.min(3, Math.max(1, 900 / bw));
+      canvas.width = Math.round(bw * scale);
+      canvas.height = Math.round(bh * scale);
+      ctx.drawImage(video, bx, by, bw, bh, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/jpeg", 0.85);
+    }
+    function setStatus(text, warn) {
+      status.textContent = text;
+      status.style.color = warn ? C3.warn : C3.ink;
+    }
+    function add(name) {
+      const hit = found.find((f) => f.name.toLowerCase() === name.toLowerCase());
+      if (hit) hit.qty += 1;
+      else found.push({ name, qty: 1 });
+      recentlyAdded.set(name.toLowerCase(), Date.now());
+      tally.textContent = found.reduce((a, f) => a + f.qty, 0) + " cards";
+      last.textContent = hit ? `${name} x${hit.qty}` : name;
+      if (window.TQ && window.TQ.haptic) window.TQ.haptic(18);
+      guide.animate(
+        [{ borderColor: "var(--tq-gold-bright)" }, { borderColor: "#7fdc8a" }, { borderColor: "var(--tq-gold)" }],
+        { duration: 500 }
+      );
+    }
+    async function tick2() {
+      if (stopped) return;
+      try {
+        const dataUrl = grabBand();
+        if (dataUrl) {
+          const lines = await recognise({ dataUrl });
+          if (lines.length) {
+            const result = await identify(lines, { minConfidence: 0.55 });
+            if (result) {
+              const name = result.card.name;
+              const lockedUntil = (recentlyAdded.get(name.toLowerCase()) || 0) + REPEAT_LOCK_MS;
+              if (Date.now() < lockedUntil) {
+                setStatus("Next card\u2026");
+              } else if (pending === name) {
+                if (Date.now() - pendingSince >= CONFIRM_MS) {
+                  add(name);
+                  pending = null;
+                  setStatus("Next card\u2026");
+                } else {
+                  setStatus(`${name}\u2026  hold still`);
+                }
+              } else {
+                pending = name;
+                pendingSince = Date.now();
+                setStatus(`${name}\u2026  hold still`);
+              }
+            } else {
+              pending = null;
+              setStatus("Read the text but no match. Try a touch closer.");
+            }
+          } else {
+            pending = null;
+            setStatus("Line the card name up inside the dashes.");
+          }
+        }
+      } catch (err) {
+        setStatus(err.message || String(err), true);
+      }
+      timer = setTimeout(tick2, TICK_MS);
+    }
+    function close(commit) {
+      stopped = true;
+      clearTimeout(timer);
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+      overlay2.remove();
+      if (commit && onDone) {
+        onDone(found.map((f) => `${f.qty} ${f.name}`).join("\n"), found);
+      }
+    }
+    const doneBtn = button2("Done", true, () => close(true));
+    const cancelBtn = button2("Cancel", false, () => close(false));
+    doneBtn.style.flex = "1";
+    foot.append(cancelBtn, doneBtn);
+    overlay2.append(stage, foot);
+    document.body.appendChild(overlay2);
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      return fallback(
+        overlay2,
+        foot,
+        setStatus,
+        close,
+        "This build cannot open the camera in-app."
+      );
+    }
+    if (!available()) {
+      return fallback(
+        overlay2,
+        foot,
+        setStatus,
+        close,
+        "No OCR plugin installed in this build."
+      );
+    }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
+      });
+      video.srcObject = stream;
+      await video.play();
+      timer = setTimeout(tick2, 600);
+    } catch (err) {
+      const msg = err && err.name === "NotAllowedError" ? "Camera permission was refused." : "Could not open the camera in-app.";
+      return fallback(overlay2, foot, setStatus, close, msg);
+    }
+  }
+  function fallback(overlay2, foot, setStatus, close, message) {
+    setStatus(message + " Use single photos instead.", true);
+    const b = button2("Photo mode", true, () => {
+      close(false);
+      if (window.TQ && window.TQ.openScanner) window.TQ.openScanner();
+    });
+    b.style.flex = "1";
+    foot.prepend(b);
+  }
+  function install7() {
+    window.TQ = window.TQ || {};
+    window.TQ.openLiveScanner = openLiveScanner;
+  }
+
+  // src/sanctum/orbs.js
+  var STYLE_ID = "tq-orb-style";
+  function styles2() {
+    if (document.getElementById(STYLE_ID)) return;
+    const s = document.createElement("style");
+    s.id = STYLE_ID;
+    s.textContent = `
+    @keyframes tqOrbReject {
+      0%   { transform: translateX(0);    filter: none; }
+      15%  { transform: translateX(-5px); filter: hue-rotate(-40deg) brightness(1.5); }
+      35%  { transform: translateX(5px);  filter: hue-rotate(-40deg) brightness(1.5); }
+      55%  { transform: translateX(-3px); filter: hue-rotate(-40deg) brightness(1.2); }
+      75%  { transform: translateX(3px);  filter: none; }
+      100% { transform: translateX(0);    filter: none; }
+    }
+    body.tq-orb-reject .tq-orb { animation: tqOrbReject 420ms ease-out; }
+    body.tq-orb-reject .tq-orb-rail {
+      box-shadow: 0 0 18px var(--tq-danger);
+      border-color: var(--tq-danger) !important;
+    }
+    @keyframes tqOrbAccept { 50% { transform: scale(1.18); } }
+    body.tq-orb-accept .tq-orb:last-of-type { animation: tqOrbAccept 260ms ease-out; }
+    @media (prefers-reduced-motion: reduce) {
+      body.tq-orb-reject .tq-orb, body.tq-orb-accept .tq-orb:last-of-type { animation: none; }
+    }
+  `;
+    document.head.appendChild(s);
+  }
+  var rejectTimer = null;
+  function orbReject() {
+    styles2();
+    clearTimeout(rejectTimer);
+    document.body.classList.remove("tq-orb-reject");
+    void document.body.offsetWidth;
+    document.body.classList.add("tq-orb-reject");
+    rejectTimer = setTimeout(() => document.body.classList.remove("tq-orb-reject"), 460);
+  }
+  function orbAccept() {
+    styles2();
+    document.body.classList.add("tq-orb-accept");
+    setTimeout(() => document.body.classList.remove("tq-orb-accept"), 280);
+  }
+  function install8() {
+    styles2();
+    window.TQ = window.TQ || {};
+    window.TQ.orbReject = orbRejectCounted;
+    window.TQ.orbAccept = orbAccept;
+    window.TQ.orbResetHints = orbResetHints;
+  }
+  var rejects = 0;
+  function nudge() {
+    const existing = document.getElementById("tq-orb-nudge");
+    if (existing) existing.remove();
+    const n = document.createElement("div");
+    n.id = "tq-orb-nudge";
+    Object.assign(n.style, {
+      position: "fixed",
+      left: "50%",
+      bottom: "14%",
+      transform: "translateX(-50%)",
+      zIndex: "126",
+      maxWidth: "78%",
+      padding: "9px 14px",
+      borderRadius: "4px",
+      background: "rgba(10,6,4,0.95)",
+      border: "1px solid var(--tq-edge-strong)",
+      fontFamily: "var(--tq-text)",
+      fontSize: "14px",
+      fontStyle: "italic",
+      color: "var(--tq-ink-dim)",
+      textAlign: "center",
+      pointerEvents: "none",
+      boxShadow: "0 4px 20px rgba(0,0,0,0.7)"
+    });
+    n.textContent = rejects >= 6 ? "the order every mana symbol is printed in" : "the order a card lists its colours";
+    document.body.appendChild(n);
+    n.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, fill: "forwards" });
+    setTimeout(() => {
+      n.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: "forwards" }).onfinish = () => n.remove();
+    }, 4200);
+  }
+  var baseReject = orbReject;
+  function orbRejectCounted() {
+    rejects += 1;
+    baseReject();
+    if (rejects === 3 || rejects === 6) setTimeout(nudge, 500);
+  }
+  function orbResetHints() {
+    rejects = 0;
+    const n = document.getElementById("tq-orb-nudge");
+    if (n) n.remove();
+  }
+
+  // src/pet/life.js
+  var STYLE_ID2 = "tq-petlife-style";
+  var OVERLAY = "tq-pet-overlay";
+  var host = null;
+  var overlay = null;
+  var bubble = null;
+  var state = {};
+  var idleTimer = null;
+  var bubbleTimer = null;
+  var breathing = null;
+  var lastBubbleAt = 0;
+  var LINES = {
+    asleep: ["\u2026", "zzz", "dreaming of tokens"],
+    starving: [
+      "I could eat a Phyrexian.",
+      "Feed me. Please.",
+      "My stomach is making the noise again."
+    ],
+    hungry: ["Peckish.", "Is it feeding time?", "I smell nothing. This is a problem."],
+    bored: [
+      "Play with me?",
+      "I have counted the stars twice.",
+      "Something. Anything. Please."
+    ],
+    lonely: ["You were gone a while.", "I waited.", "Oh! You came back."],
+    content: [
+      "All is well.",
+      "A good day.",
+      "I like it here.",
+      "Warm. Fed. Content."
+    ],
+    happy: [
+      "Best day.",
+      "I feel enormous.",
+      "Did you see me? I was magnificent.",
+      "More of this, please."
+    ],
+    petted: ["Mmm.", "Again.", "That is the good spot.", "Purring. Metaphorically."],
+    fed: ["Delicious.", "Finally.", "Thank you.", "That will do nicely."],
+    played: ["Again! Again!", "I win.", "Good game.", "That was fun."],
+    grew: ["Something is different.", "I feel bigger.", "Look at me now."]
+  };
+  function pick(key, name) {
+    const pool = LINES[key] || LINES.content;
+    const line = pool[Math.floor(Math.random() * pool.length)];
+    return name && Math.random() < 0.2 ? `${line}` : line;
+  }
+  function need(s) {
+    if (s.asleep) return "asleep";
+    if (s.hunger >= 90) return "starving";
+    if (s.hunger >= 70) return "hungry";
+    if (s.boredom >= 75) return "bored";
+    if (s.awayHours >= 20) return "lonely";
+    if (s.hunger < 25 && s.boredom < 25) return "happy";
+    return "content";
+  }
+  function styles3() {
+    if (document.getElementById(STYLE_ID2)) return;
+    const s = document.createElement("style");
+    s.id = STYLE_ID2;
+    s.textContent = `
+    .${OVERLAY} {
+      position: absolute; inset: 0; pointer-events: none;
+      overflow: visible; z-index: 3;
+    }
+    .tq-pet-bubble {
+      position: absolute; left: 50%; top: -6px;
+      transform: translate(-50%, -100%) scale(0.9);
+      max-width: 88%; padding: 7px 11px; border-radius: 4px;
+      background: linear-gradient(180deg, rgba(36,24,9,0.97), rgba(10,6,4,0.97));
+      border: 1px solid var(--tq-edge-strong);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      font-family: var(--tq-text); font-size: 14px; line-height: 1.35;
+      color: var(--tq-ink); text-align: center;
+      opacity: 0; transition: opacity 260ms ease, transform 260ms cubic-bezier(.2,1.4,.4,1);
+    }
+    .tq-pet-bubble.on { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+    .tq-pet-bubble::after {
+      content: ''; position: absolute; left: 50%; bottom: -5px;
+      width: 8px; height: 8px; margin-left: -4px;
+      background: rgba(10,6,4,0.97);
+      border-right: 1px solid var(--tq-edge-strong);
+      border-bottom: 1px solid var(--tq-edge-strong);
+      transform: rotate(45deg);
+    }
+    .tq-pet-zzz {
+      position: absolute; right: 8%; top: 8%;
+      font-family: var(--tq-display); font-size: 15px;
+      color: var(--tq-ink-dim); opacity: 0;
+    }
+    @keyframes tqZzz {
+      0%   { opacity: 0; transform: translate(0,0) scale(0.7); }
+      25%  { opacity: 0.9; }
+      100% { opacity: 0; transform: translate(14px,-26px) scale(1.15); }
+    }
+    .tq-pet-spark {
+      position: absolute; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--tq-gold-bright); pointer-events: none;
+      box-shadow: 0 0 8px var(--tq-gold-bright);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tq-pet-bubble { transition: opacity 200ms ease; }
+    }
+  `;
+    document.head.appendChild(s);
+  }
+  function breathe() {
+    if (!canAnimate(host)) return;
+    if (breathing) breathing.cancel();
+    const s = state.asleep ? 1.4 : 1;
+    breathing = host.animate(
+      [
+        { transform: "translateY(0) scale(1)" },
+        { transform: `translateY(${state.asleep ? -1.5 : -3}px) scale(1.006)` },
+        { transform: "translateY(0) scale(1)" }
+      ],
+      { duration: (state.asleep ? 5200 : 3400) * s, iterations: Infinity, easing: "ease-in-out" }
+    );
+  }
+  function say(key, hold = 3600) {
+    if (!bubble) return;
+    bubble.textContent = pick(key, state.name);
+    bubble.classList.add("on");
+    clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(() => bubble.classList.remove("on"), hold);
+    lastBubbleAt = Date.now();
+  }
+  var canAnimate = (n) => !!(n && typeof n.animate === "function");
+  function sparkle(count = 8) {
+    if (!overlay || !canAnimate(overlay)) return;
+    const rect = overlay.getBoundingClientRect();
+    for (let i = 0; i < count; i++) {
+      const d = document.createElement("div");
+      d.className = "tq-pet-spark";
+      d.style.left = `${20 + Math.random() * 60}%`;
+      d.style.top = `${30 + Math.random() * 40}%`;
+      overlay.appendChild(d);
+      if (!canAnimate(d)) {
+        d.remove();
+        continue;
+      }
+      d.animate(
+        [
+          { transform: "translate(0,0) scale(0.4)", opacity: 0 },
+          { opacity: 1, offset: 0.25 },
+          {
+            transform: `translate(${(Math.random() - 0.5) * rect.width * 0.5}px, ${-30 - Math.random() * 40}px) scale(1)`,
+            opacity: 0
+          }
+        ],
+        { duration: 900 + Math.random() * 500, easing: "cubic-bezier(.2,.7,.3,1)" }
+      ).onfinish = () => d.remove();
+    }
+  }
+  function zzz() {
+    if (!overlay || !state.asleep) return;
+    const z = document.createElement("div");
+    z.className = "tq-pet-zzz";
+    z.textContent = "z";
+    overlay.appendChild(z);
+    z.style.animation = "tqZzz 2600ms ease-out forwards";
+    setTimeout(() => z.remove(), 2700);
+  }
+  function fidget() {
+    if (!canAnimate(host) || state.asleep) return;
+    const kind = Math.random();
+    if (kind < 0.4) {
+      host.animate(
+        [
+          { transform: "rotate(0deg)" },
+          { transform: "rotate(1.4deg)" },
+          { transform: "rotate(-1deg)" },
+          { transform: "rotate(0deg)" }
+        ],
+        { duration: 900, easing: "ease-in-out" }
+      );
+    } else if (kind < 0.7) {
+      host.animate(
+        [{ transform: "scale(1)" }, { transform: "scale(1.03)" }, { transform: "scale(1)" }],
+        { duration: 700, easing: "ease-out" }
+      );
+    } else {
+      host.animate(
+        [
+          { transform: "translateX(0)" },
+          { transform: "translateX(3px)" },
+          { transform: "translateX(-2px)" },
+          { transform: "translateX(0)" }
+        ],
+        { duration: 800, easing: "ease-in-out" }
+      );
+    }
+  }
+  function tick() {
+    if (!host || !document.body.contains(host)) return stop();
+    if (state.asleep) {
+      if (Math.random() < 0.7) zzz();
+    } else {
+      const n = need(state);
+      const urgent = n === "starving" || n === "bored" || n === "lonely";
+      const gap = Date.now() - lastBubbleAt;
+      if (gap > (urgent ? 14e3 : 42e3) && Math.random() < (urgent ? 0.7 : 0.25)) say(n);
+      else if (Math.random() < 0.45) fidget();
+    }
+    idleTimer = setTimeout(tick, 5e3 + Math.random() * 5e3);
+  }
+  function stop() {
+    clearTimeout(idleTimer);
+    clearTimeout(bubbleTimer);
+    if (breathing) breathing.cancel();
+    idleTimer = breathing = null;
+  }
+  function attach(el4, next) {
+    if (!el4) return;
+    styles3();
+    const changedHost = el4 !== host;
+    const wasAsleep = state.asleep;
+    state = Object.assign({}, state, next || {});
+    if (changedHost) {
+      stop();
+      host = el4;
+      if (window.getComputedStyle(el4).position === "static") el4.style.position = "relative";
+      overlay = el4.querySelector("." + OVERLAY);
+      if (!overlay) {
+        overlay = document.createElement("div");
+        overlay.className = OVERLAY;
+        bubble = document.createElement("div");
+        bubble.className = "tq-pet-bubble";
+        overlay.appendChild(bubble);
+        el4.appendChild(overlay);
+      } else {
+        bubble = overlay.querySelector(".tq-pet-bubble");
+      }
+      el4.addEventListener("click", onPoke);
+      breathe();
+      idleTimer = setTimeout(tick, 2500);
+      if (state.awayHours >= 6 && !state.asleep) setTimeout(() => say("lonely"), 900);
+    } else if (wasAsleep !== state.asleep) {
+      breathe();
+    }
+  }
+  function onPoke() {
+    if (!host) return;
+    if (state.asleep) {
+      say("asleep", 2e3);
+      return;
+    }
+    if (!canAnimate(host)) {
+      say("petted", 2400);
+      return;
+    }
+    host.animate(
+      [
+        { transform: "scale(1)" },
+        { transform: "scale(0.94)" },
+        { transform: "scale(1.05)" },
+        { transform: "scale(1)" }
+      ],
+      { duration: 480, easing: "cubic-bezier(.3,1.5,.4,1)" }
+    );
+    sparkle(6);
+    say("petted", 2400);
+    if (window.TQ && window.TQ.haptic) window.TQ.haptic(12);
+  }
+  function celebrate(kind) {
+    if (!host) return;
+    sparkle(kind === "grew" ? 18 : 10);
+    say(kind, 3e3);
+    if (!canAnimate(host)) return;
+    host.animate(
+      [{ transform: "scale(1)" }, { transform: "scale(1.08)" }, { transform: "scale(1)" }],
+      { duration: kind === "grew" ? 900 : 560, easing: "ease-out" }
+    );
+  }
+  function detach() {
+    if (host) host.removeEventListener("click", onPoke);
+    stop();
+    host = overlay = bubble = null;
+  }
+  function install9() {
+    window.TQ = window.TQ || {};
+    window.TQ.petLife = attach;
+    window.TQ.petCelebrate = celebrate;
+    window.TQ.petDetach = detach;
+  }
+
+  // src/sanctum/backdrop.js
+  function motes() {
+    const g = "#c9a961";
+    const out = [];
+    let seed = 7;
+    const rnd = () => (seed = seed * 1103515245 + 12345 & 2147483647) / 2147483647;
+    for (let i = 0; i < 46; i++) {
+      const x = (rnd() * 400).toFixed(1);
+      const y = (rnd() * 700).toFixed(1);
+      const r = (0.6 + rnd() * 1.8).toFixed(2);
+      const o = (0.12 + rnd() * 0.4).toFixed(2);
+      out.push(`<circle cx="${x}" cy="${y}" r="${r}" fill="${g}" opacity="${o}"/>`);
+    }
+    return out.join("");
+  }
+  function sanctumBackdropSvg() {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700" width="400" height="700" preserveAspectRatio="xMidYMin slice">
+  <defs>
+    <radialGradient id="halo" cx="50%" cy="8%" r="62%">
+      <stop offset="0%" stop-color="#c9a961" stop-opacity="0.13"/>
+      <stop offset="100%" stop-color="#c9a961" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="700" fill="url(#halo)"/>
+  <g opacity="0.55">
+    <path d="M40,660 L40,300 A160,160 0 0 1 360,300 L360,660"
+          fill="none" stroke="#c9a961" stroke-width="1" opacity="0.10"/>
+    <path d="M78,660 L78,314 A122,122 0 0 1 322,314 L322,660"
+          fill="none" stroke="#c9a961" stroke-width="0.7" opacity="0.07"/>
+  </g>
+  ${motes()}
+</svg>`;
+  }
+  function sanctumBackdropUrl() {
+    return `url("data:image/svg+xml,${encodeURIComponent(sanctumBackdropSvg())}")`;
+  }
+  function install10() {
+    window.TQ = window.TQ || {};
+    window.TQ.sanctumBackdrop = sanctumBackdropUrl;
   }
 
   // src/main.js
@@ -3748,4 +4504,8 @@
   install4();
   install5();
   install6();
+  install7();
+  install8();
+  install10();
+  install9();
 })();

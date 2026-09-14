@@ -260,6 +260,27 @@ export function SimulatorTab(props) {
     },
   }));
 
+  // Scanning straight into the simulator, for when you just want to rate a
+  // pile of cards without filing it as a deck first.
+  kids.push(e('button', {
+    key: 'scan',
+    onClick: () => {
+      const open = window.TQ && (window.TQ.openLiveScanner || window.TQ.openScanner);
+      if (open) {
+        open((scanned) => {
+          if (scanned) setText((prev) => (prev ? prev + '\n' + scanned : scanned));
+        });
+      }
+    },
+    style: {
+      marginTop: 10, width: '100%', minHeight: 'var(--tq-tap)',
+      borderRadius: 4, cursor: 'pointer', background: 'transparent',
+      border: `1px solid ${C.edge}`, color: C.dim,
+      fontFamily: DISPLAY, fontSize: 11, letterSpacing: '0.16em',
+      textTransform: 'uppercase',
+    },
+  }, 'Scan cards in'));
+
   kids.push(e('div', {
     key: 'onplay',
     style: { display: 'flex', gap: 6, marginTop: 10 },

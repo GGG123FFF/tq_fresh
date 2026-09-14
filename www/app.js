@@ -1444,6 +1444,20 @@ var PetCreature = function PetCreature(_ref9) {
       '--pet-glow-max': glowMax,
       animation: 'petGlowBox 3s ease-in-out infinite',
       position: 'relative'
+    },
+    ref: function ref(el) {
+      if (el && window.TQ && window.TQ.petLife) {
+        var nowH = new Date().getHours();
+        var lastSeen = Math.max(pet.lastFedAt || 0, pet.lastPlayedAt || 0);
+        window.TQ.petLife(el, {
+          name: cardName,
+          mood: mood,
+          hunger: computeHunger(pet),
+          boredom: computeBoredom(pet),
+          asleep: nowH >= 23 || nowH < 7,
+          awayHours: lastSeen ? (Date.now() - lastSeen) / 3600000 : 0
+        });
+      }
     }
   }, loading ? /*#__PURE__*/React.createElement("div", {
     style: {
@@ -2070,7 +2084,74 @@ var PetPanel = function PetPanel(_ref10) {
       borderRadius: '3px',
       borderLeft: "2px solid ".concat(coreData.symbol, "66")
     }
-  }, flavour), /*#__PURE__*/React.createElement("div", {
+  }, flavour), /*#__PURE__*/function () {
+    // Hunger and boredom drive the whole mood system but were never shown, so
+    // a sad pet gave you no idea which of the two to fix, or when you could.
+    var needs = [{
+      label: 'Fed',
+      pct: 100 - computeHunger(pet),
+      cd: feedCdMs,
+      tint: 'var(--tq-life)'
+    }, {
+      label: 'Played',
+      pct: 100 - computeBoredom(pet),
+      cd: playCdMs,
+      tint: 'var(--tq-info)'
+    }];
+    return /*#__PURE__*/React.createElement("div", {
+      className: "px-4 mb-3",
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8
+      }
+    }, needs.map(function (n) {
+      var low = n.pct < 25;
+      return /*#__PURE__*/React.createElement("div", {
+        key: n.label,
+        style: {
+          display: 'flex',
+          alignItems: 'center',
+          gap: 9
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontFamily: "'Cinzel', serif",
+          fontSize: 9,
+          letterSpacing: '0.16em',
+          textTransform: 'uppercase',
+          color: 'var(--tq-ink-dim)',
+          width: 52,
+          flexShrink: 0
+        }
+      }, n.label), /*#__PURE__*/React.createElement("div", {
+        style: {
+          flex: 1,
+          height: 5,
+          borderRadius: 3,
+          background: 'rgba(201,169,97,0.12)',
+          overflow: 'hidden'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          width: Math.max(2, n.pct) + '%',
+          height: '100%',
+          borderRadius: 3,
+          background: low ? 'var(--tq-danger)' : n.tint,
+          transition: 'width 600ms ease, background 600ms ease'
+        }
+      })), /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 9,
+          color: n.cd > 0 ? 'var(--tq-ink-faint)' : 'var(--tq-gold-deep)',
+          width: 46,
+          textAlign: 'right',
+          flexShrink: 0
+        }
+      }, n.cd > 0 ? fmtCd(n.cd) : 'ready'));
+    }));
+  }(), /*#__PURE__*/React.createElement("div", {
     className: "px-4 mb-3 grid grid-cols-2 gap-2.5"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: feedPet,
@@ -2195,7 +2276,34 @@ var PetPanel = function PetPanel(_ref10) {
       fontSize: "0.75rem",
       fontWeight: 700
     }
-  }, Math.round(pet.xp || 0))), /*#__PURE__*/React.createElement("div", {
+  }, Math.round(pet.xp || 0)), /*#__PURE__*/function () {
+    // A bare XP number says nothing about how close the next stage is.
+    var st = computeStage(pet);
+    var nextT = STAGE_THRESHOLDS[st + 1];
+    if (!nextT) return null;
+    var prevT = STAGE_THRESHOLDS[st];
+    var xp = pet.xp || 0;
+    var span = Math.max(1, nextT.xp - prevT.xp);
+    var pct = Math.max(0, Math.min(100, (xp - prevT.xp) / span * 100));
+    return /*#__PURE__*/React.createElement("div", {
+      title: Math.round(xp) + " / " + nextT.xp + " to next stage",
+      style: {
+        marginTop: 4,
+        height: 3,
+        borderRadius: 2,
+        background: "rgba(201,169,97,0.15)",
+        overflow: "hidden"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: Math.max(2, pct) + "%",
+        height: "100%",
+        borderRadius: 2,
+        background: "var(--tq-gold)",
+        transition: "width 700ms ease"
+      }
+    }));
+  }()), /*#__PURE__*/React.createElement("div", {
     className: "px-2 py-1",
     style: {
       background: "rgba(10,6,4,0.5)",
@@ -5461,6 +5569,7 @@ function TokenTracker() {
     var nextExpected = expectedOrder[unlockedOrbs.length];
     if (colour === nextExpected) {
       haptic(15);
+      if (window.TQ && window.TQ.orbAccept) window.TQ.orbAccept();
       var newLit = [].concat(_toConsumableArray(unlockedOrbs), [colour]);
       setUnlockedOrbs(newLit);
       if (newLit.length === 5) {
@@ -5476,8 +5585,10 @@ function TokenTracker() {
         }, 350);
       }
     } else {
-      // Wrong order -- reset
+      // Wrong order -- reset. The shake makes it clear a reset happened;
+      // without it this reads as the app dropping taps.
       haptic([40, 80]);
+      if (window.TQ && window.TQ.orbReject) window.TQ.orbReject();
       setUnlockedOrbs([]);
     }
   };
@@ -5516,6 +5627,7 @@ function TokenTracker() {
   // Play cooldown 6h
   var PLAY_COOLDOWN_MS = 6 * 60 * 60 * 1000;
   var feedPet = function feedPet() {
+    if (window.TQ && window.TQ.petCelebrate) window.TQ.petCelebrate('fed');
     if (!pet) return;
     var now = Date.now();
     if (now - pet.lastFedAt < FEED_COOLDOWN_MS) {
@@ -5531,6 +5643,7 @@ function TokenTracker() {
     showToast('Your companion is sated');
   };
   var playWithPet = function playWithPet() {
+    if (window.TQ && window.TQ.petCelebrate) window.TQ.petCelebrate('played');
     if (!pet) return;
     var now = Date.now();
     if (now - pet.lastPlayedAt < PLAY_COOLDOWN_MS) {
@@ -9416,6 +9529,9 @@ function TokenTracker() {
     className: "fixed inset-0 z-[120]",
     style: {
       background: "radial-gradient(ellipse at top, rgba(40, 25, 60, 0.98) 0%, rgba(5, 3, 10, 0.99) 70%)",
+      backgroundImage: (window.TQ && window.TQ.sanctumBackdrop ? window.TQ.sanctumBackdrop() + ", " : "") + "radial-gradient(ellipse at top, rgba(40, 25, 60, 0.98) 0%, rgba(5, 3, 10, 0.99) 70%)",
+      backgroundSize: "cover, cover",
+      backgroundPosition: "center top, center top",
       backdropFilter: "blur(14px) saturate(120%)",
       WebkitBackdropFilter: "blur(14px) saturate(120%)",
       animation: "sanctumIn 0.4s ease-out",
@@ -9758,10 +9874,10 @@ function TokenTracker() {
       onClick: function onClick() {
         return handleOrbTap(c);
       },
-      className: "active:scale-90 transition-all",
+      className: "active:scale-90 transition-all tq-orb",
       style: {
-        width: '40px',
-        height: '40px',
+        width: '44px',
+        height: '44px',
         borderRadius: '50%',
         background: 'transparent',
         border: "2px solid ".concat(lit ? cd.symbol : cd.symbol + '44'),

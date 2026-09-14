@@ -40,4 +40,10 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Live deck scanning. Android has two permission layers for a WebView
+         camera: this OS grant, and the WebView's own PermissionRequest, which
+         Capacitor's WebChromeClient answers once this is held. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
 </manifest>

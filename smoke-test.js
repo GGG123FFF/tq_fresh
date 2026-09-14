@@ -108,12 +108,59 @@ vc.on('jsdomError', e => errors.push(String(e.stack || e.message || e)));
       })()
     },
     {
-      name: 'Card scanner registered',
-      ok: !!w.TQ && typeof w.TQ.openScanner === 'function' && typeof w.TQ.identifyCard === 'function'
+      name: 'Pet is alive: overlay, speech and reactions',
+      ok: (() => {
+        try {
+          const frame = w.document.createElement('div');
+          frame.style.position = 'relative';
+          w.document.body.appendChild(frame);
+          w.TQ.petLife(frame, { name: 'Test', mood: 80, hunger: 95, boredom: 10, asleep: false, awayHours: 0 });
+          const bubble = frame.querySelector('.tq-pet-bubble');
+          if (!bubble) return false;
+          frame.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+          const spoke = bubble.classList.contains('on') && bubble.textContent.length > 0;
+          w.TQ.petDetach();
+          return spoke;
+        } catch (e) { return false; }
+      })()
     },
     {
-      name: 'Scan button wired into the Vault deck form',
-      ok: modulesJs.includes('Scan cards') && modulesJs.includes('window.TQ.openScanner')
+      name: 'Pet XP shows progress to the next stage',
+      ok: appJs.includes('STAGE_THRESHOLDS[st + 1]') && appJs.includes('to next stage')
+    },
+    {
+      name: 'Sanctum has a backdrop',
+      ok: !!w.TQ && typeof w.TQ.sanctumBackdrop === 'function'
+          && appJs.includes('window.TQ.sanctumBackdrop')
+    },
+    {
+      name: 'Pet needs are shown, not just computed',
+      ok: appJs.includes("label: 'Fed'") && appJs.includes("label: 'Played'")
+          && appJs.includes('100 - computeHunger(pet)')
+    },
+    {
+      name: 'Orb puzzle gives visible reject feedback',
+      ok: appJs.includes('window.TQ.orbReject()') && modulesJs.includes('tq-orb-reject')
+          && appJs.includes('tq-orb')
+    },
+    {
+      name: 'Card scanner registered, live and photo',
+      ok: !!w.TQ && typeof w.TQ.openScanner === 'function'
+          && typeof w.TQ.openLiveScanner === 'function'
+          && typeof w.TQ.identifyCard === 'function'
+    },
+    {
+      name: 'CAMERA permission declared for in-app scanning',
+      ok: fs.readFileSync(path.join(__dirname, 'android/app/src/main/AndroidManifest.xml'), 'utf-8')
+            .includes('android.permission.CAMERA')
+    },
+    {
+      name: 'Scanning reachable from the Vault toolbar and the Odds tab',
+      ok: modulesJs.includes('Scan Deck')
+          && modulesJs.includes('Scan cards in')
+          && modulesJs.includes('Scan cards')
+          // Both entry points prefer the live scanner and fall back to photos.
+          && (modulesJs.match(/openLiveScanner \|\| /g) || []).length >= 2
     },
     {
       name: 'Design tokens declared in index.html',
