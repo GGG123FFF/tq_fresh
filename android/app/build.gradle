@@ -1,5 +1,15 @@
 apply plugin: 'com.android.application'
 
+// Resolved before the android block on purpose.
+//
+// Writing this inline as `versionCode (System.getenv(...) ?: "1").toInteger()`
+// does not do what it looks like: Groovy reads it as
+// `versionCode(...).toInteger()` - the method is called with the String, and
+// .toInteger() is then applied to versionCode's return value, which is null.
+// That is the "Value is null" this file used to fail with.
+def tqVersionCode = Integer.parseInt(System.getenv("TQ_VERSION_CODE") ?: "1")
+def tqVersionName = System.getenv("TQ_VERSION_NAME") ?: "1.0"
+
 android {
     namespace = "com.sodiumfabrications.tokenqueen"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -23,8 +33,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // CI passes the run number so each build is a real version bump.
-        versionCode (System.getenv("TQ_VERSION_CODE") ?: "1").toInteger()
-        versionName (System.getenv("TQ_VERSION_NAME") ?: "1.0")
+        versionCode tqVersionCode
+        versionName tqVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

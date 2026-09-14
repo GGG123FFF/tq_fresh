@@ -88,6 +88,26 @@ vc.on('jsdomError', e => errors.push(String(e.stack || e.message || e)));
       ok: typeof w.ReactDOM !== 'undefined'
     },
     {
+      name: 'build.gradle versionCode is not the Groovy null trap',
+      ok: (() => {
+        const raw = fs.readFileSync(path.join(__dirname, 'android/app/build.gradle'), 'utf-8');
+        // Strip comments first - the file documents the old broken form, and
+        // the check should look at code, not prose.
+        const g = raw.split('\n').filter(l => !l.trim().startsWith('//')).join('\n');
+        // `versionCode (expr).toInteger()` parses as versionCode(expr).toInteger(),
+        // calling .toInteger() on a null return value. Catch it if it returns.
+        return !/versionCode\s*\([^)]*\)\s*\./.test(g) && /versionCode\s+\w+\s*$/m.test(g);
+      })()
+    },
+    {
+      name: 'build.gradle has a fixed signing config',
+      ok: (() => {
+        const g = fs.readFileSync(path.join(__dirname, 'android/app/build.gradle'), 'utf-8');
+        return g.includes('signingConfigs') && g.includes('tokenqueen-debug.keystore')
+            && fs.existsSync(path.join(__dirname, 'android/app/tokenqueen-debug.keystore'));
+      })()
+    },
+    {
       name: 'Card scanner registered',
       ok: !!w.TQ && typeof w.TQ.openScanner === 'function' && typeof w.TQ.identifyCard === 'function'
     },
